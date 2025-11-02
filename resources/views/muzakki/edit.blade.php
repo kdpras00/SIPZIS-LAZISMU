@@ -418,7 +418,7 @@
             </div>
 
             <!-- Status Section (only for admin) -->
-            @if (request()->route()->hasParameter('muzakki') && in_array(auth()->user()->role, ['admin', 'staff']))
+            @if (request()->route()->hasParameter('muzakki') && auth()->user()->role === 'admin')
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-body">
                         <h6 class="mb-3">Status Akun</h6>

@@ -12,7 +12,7 @@ class HomeController extends Controller
 {
     private function preventAdminAccess()
     {
-        if (Auth::check() && (Auth::user()->role === 'admin' || Auth::user()->role === 'staff')) {
+        if (Auth::check() && Auth::user()->role === 'admin') {
             return redirect()->route('dashboard')
                 ->with('warning', 'Anda harus logout terlebih dahulu untuk mengakses halaman umum.');
         }

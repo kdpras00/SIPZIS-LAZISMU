@@ -97,8 +97,8 @@ class AuthController extends Controller
                 return back()->withErrors(['email' => 'Akun Anda tidak aktif. Silakan hubungi administrator.']);
             }
 
-            // Check if user has admin or staff role
-            if ($user->role !== 'admin' && $user->role !== 'staff') {
+            // Check if user has admin role
+            if ($user->role !== 'admin') {
                 Auth::logout();
                 return back()->withErrors(['email' => 'Anda tidak memiliki akses ke halaman admin.']);
             }
@@ -107,9 +107,6 @@ class AuthController extends Controller
 
             // Redirect to appropriate dashboard based on role
             if ($user->role === 'admin') {
-                return redirect()->route('dashboard');
-            } else {
-                // For staff, you might want a different dashboard
                 return redirect()->route('dashboard');
             }
         }

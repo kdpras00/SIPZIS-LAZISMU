@@ -17,7 +17,7 @@ class ZakatPaymentObserver
      */
     public function creating(ZakatPayment $zakatPayment): void
     {
-        // Validate that received_by can only be set by admin or staff
+        // Validate that received_by can only be set by admin
         $this->validateReceivedBy($zakatPayment);
     }
 
@@ -26,7 +26,7 @@ class ZakatPaymentObserver
      */
     public function updating(ZakatPayment $zakatPayment): void
     {
-        // Validate that received_by can only be set by admin or staff
+        // Validate that received_by can only be set by admin
         $this->validateReceivedBy($zakatPayment);
     }
 
@@ -100,15 +100,15 @@ class ZakatPaymentObserver
     }
 
     /**
-     * Validate that received_by can only be set by admin or staff users
+     * Validate that received_by can only be set by admin users
      */
     private function validateReceivedBy(ZakatPayment $zakatPayment): void
     {
-        // If received_by is being set, check that it references an admin or staff user
+        // If received_by is being set, check that it references an admin user
         if ($zakatPayment->received_by !== null) {
             $user = User::find($zakatPayment->received_by);
-            if ($user && $user->role !== 'admin' && $user->role !== 'staff') {
-                // Reset to null if not admin or staff
+            if ($user && $user->role !== 'admin') {
+                // Reset to null if not admin
                 $zakatPayment->received_by = null;
             }
         }

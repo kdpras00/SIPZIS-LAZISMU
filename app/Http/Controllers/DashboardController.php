@@ -20,8 +20,8 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Ensure only admin/staff can access admin dashboard
-        if ($user->role === 'admin' || $user->role === 'staff') {
+        // Ensure only admin can access admin dashboard
+        if ($user->role === 'admin') {
             return $this->adminDashboard();
         }
 

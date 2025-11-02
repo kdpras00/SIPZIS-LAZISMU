@@ -20,8 +20,8 @@ class RedirectBasedOnRole
         if (Auth::check()) {
             $user = Auth::user();
 
-            // If user is admin or staff, redirect them to admin dashboard
-            if ($user->role === 'admin' || $user->role === 'staff') {
+            // If user is admin, redirect them to admin dashboard
+            if ($user->role === 'admin') {
                 // Only redirect if they're trying to access public pages
                 if ($request->is('/') || $request->is('program*') || $request->is('berita*') || $request->is('artikel*') || $request->is('tentang*')) {
                     return redirect()->route('dashboard');

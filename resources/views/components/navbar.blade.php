@@ -20,7 +20,7 @@
                             $unreadCount = $user->unread_notifications_count;
                         }
 
-                        // Also count pending mustahik for admin/staff
+                        // Also count pending mustahik for admin
                         $pendingMustahik = 0;
                         if ($user->role !== 'muzakki') {
                             $pendingMustahik = \App\Models\Mustahik::pending()->count();
@@ -40,7 +40,7 @@
                             $notifications = $user->muzakki->notifications()->latest()->limit(5)->get();
                         } else {
                             $notifications = $user->notifications()->latest()->limit(5)->get();
-                            // For admin/staff, also include pending mustahik as a notification
+                            // For admin, also include pending mustahik as a notification
                             if ($pendingMustahik > 0) {
                                 $mustahikNotification = new \stdClass();
                                 $mustahikNotification->id = 'mustahik_pending';

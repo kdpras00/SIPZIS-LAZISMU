@@ -31,7 +31,7 @@ class MustahikSeeder extends Seeder
                 'verification_status' => 'verified',
                 'verification_notes' => 'Telah disurvei dan memenuhi kriteria fakir',
                 'verified_at' => now(),
-                'verified_by' => 2, // Staff 1
+                'verified_by' => 1, // Admin
                 'is_active' => true,
             ],
             [
@@ -52,7 +52,7 @@ class MustahikSeeder extends Seeder
                 'verification_status' => 'verified',
                 'verification_notes' => 'Penghasilan tidak cukup untuk kebutuhan keluarga',
                 'verified_at' => now(),
-                'verified_by' => 2, // Staff 1
+                'verified_by' => 1, // Admin
                 'is_active' => true,
             ],
             [
@@ -73,7 +73,7 @@ class MustahikSeeder extends Seeder
                 'verification_status' => 'verified',
                 'verification_notes' => 'Bertugas sebagai amil zakat di Masjid Al-Ikhlas',
                 'verified_at' => now(),
-                'verified_by' => 3, // Staff 2
+                'verified_by' => 1, // Admin
                 'is_active' => true,
             ],
             [
@@ -94,7 +94,7 @@ class MustahikSeeder extends Seeder
                 'verification_status' => 'verified',
                 'verification_notes' => 'Baru masuk Islam 6 bulan yang lalu',
                 'verified_at' => now(),
-                'verified_by' => 3, // Staff 2
+                'verified_by' => 1, // Admin
                 'is_active' => true,
             ],
             [
@@ -115,7 +115,7 @@ class MustahikSeeder extends Seeder
                 'verification_status' => 'verified',
                 'verification_notes' => 'Berutang untuk biaya pengobatan keluarga',
                 'verified_at' => now(),
-                'verified_by' => 2, // Staff 1
+                'verified_by' => 1, // Admin
                 'is_active' => true,
             ],
             [

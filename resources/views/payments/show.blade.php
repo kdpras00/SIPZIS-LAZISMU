@@ -17,7 +17,7 @@
             <i class="bi bi-receipt"></i> Kwitansi
         </a>
         @endif
-        @if(in_array(auth()->user()->role, ['admin', 'staff']) && $payment->status !== 'completed')
+        @if(auth()->user()->role === 'admin' && $payment->status !== 'completed')
         <a href="{{ route('payments.edit', $payment) }}" class="btn btn-outline-primary">
             <i class="bi bi-pencil"></i> Edit
         </a>
@@ -327,7 +327,7 @@
                 </div>
                 @endif
 
-                @if(in_array(auth()->user()->role, ['admin', 'staff']))
+                @if(auth()->user()->role === 'admin')
                 <div class="border-top pt-3 mt-3">
                     <a href="{{ route('muzakki.show', $payment->muzakki) }}" class="btn btn-outline-primary btn-sm w-100">
                         <i class="bi bi-eye me-1"></i> Lihat Detail Muzakki
@@ -399,8 +399,8 @@
     </div>
 </div>
 
-<!-- Payment Actions (if admin/staff) -->
-@if(in_array(auth()->user()->role, ['admin', 'staff']) && $payment->status !== 'completed')
+<!-- Payment Actions (if admin) -->
+@if(auth()->user()->role === 'admin' && $payment->status !== 'completed')
 <div class="row mt-4">
     <div class="col-12">
         <div class="card border-warning">

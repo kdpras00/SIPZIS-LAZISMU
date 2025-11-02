@@ -312,7 +312,7 @@
                                             <i class="bi bi-receipt"></i>
                                         </a>
                                         @endif
-                                        @if(in_array(auth()->user()->role, ['admin', 'staff']))
+                                        @if(auth()->user()->role === 'admin')
                                         <a href="{{ route('payments.edit', $payment) }}" class="btn btn-outline-primary btn-sm" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </a>

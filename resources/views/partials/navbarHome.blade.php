@@ -89,7 +89,7 @@
                             class="px-4 py-2 text-white hover:bg-green-700 transition duration-300 navbar-link">Artikel</a>
 
                         @auth
-                        @if(Auth::user()->role === 'admin' || Auth::user()->role === 'staff')
+                        @if(Auth::user()->role === 'admin')
                         <div class="border-t border-green-700 mt-4 pt-4">
                             <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-white hover:bg-green-700 transition duration-300">
                                 Dashboard Admin
@@ -132,8 +132,8 @@
             <div class="hidden md:flex items-center space-x-2">
                 @auth
                 <!-- Show different navigation based on user role -->
-                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'staff')
-                <!-- Admin/Staff Navigation -->
+                @if(Auth::user()->role === 'admin')
+                <!-- Admin Navigation -->
                 <div class="flex items-center space-x-4">
                     <a href="{{ route('dashboard') }}" class="text-white hover:text-green-200 transition duration-300 font-medium">
                         Dashboard Admin

@@ -633,7 +633,7 @@ class ZakatPaymentController extends Controller
             }
             $allMuzakki = collect([$muzakki]); // Only show current user
         } else {
-            // For admin/staff, allow selecting any muzakki
+            // For admin, allow selecting any muzakki
             $muzakkiId = $request->get('muzakki_id');
             $muzakki = $muzakkiId ? Muzakki::findOrFail($muzakkiId) : null;
             $allMuzakki = Muzakki::active()->orderBy('name')->get();
@@ -667,9 +667,9 @@ class ZakatPaymentController extends Controller
             // Check if the authenticated user can set received_by
             $receivedBy = null;
             if (Auth::check()) {
-                // Only admin or staff can set received_by
+                // Only admin can set received_by
                 $user = Auth::user();
-                if ($user->role === 'admin' || $user->role === 'staff') {
+                if ($user->role === 'admin') {
                     $receivedBy = $user->id;
                 }
                 // For muzakki users, received_by remains null
@@ -1689,8 +1689,8 @@ class ZakatPaymentController extends Controller
 
         if (Auth::check()) {
             $user = Auth::user();
-            // Allow admin or staff to update received_by if provided
-            if (($user->role === 'admin' || $user->role === 'staff') && $request->has('received_by')) {
+            // Allow admin to update received_by if provided
+            if ($user->role === 'admin' && $request->has('received_by')) {
                 $updateData['received_by'] = $request->received_by;
             }
         } else {

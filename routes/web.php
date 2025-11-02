@@ -420,8 +420,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/management', [DashboardController::class, 'accountManagement'])->name('management');
     });
 
-    // Admin and Staff only routes
-    Route::middleware('role:admin,staff')->group(function () {
+    // Admin only routes
+    Route::middleware('role:admin')->group(function () {
 
         // Muzakki management
         Route::resource('muzakki', MuzakkiController::class);
@@ -435,7 +435,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/mustahik/by-category', [MustahikController::class, 'getByCategory'])->name('api.mustahik.by-category');
         Route::get('/api/mustahik/search', [MustahikController::class, 'search'])->name('api.mustahik.search');
 
-        // Zakat payments management (Admin/Staff can manage all)
+        // Zakat payments management (Admin can manage all)
         Route::resource('payments', ZakatPaymentController::class)->except(['create', 'store']);
         Route::get('/api/payments/search', [ZakatPaymentController::class, 'search'])->name('api.payments.search');
 

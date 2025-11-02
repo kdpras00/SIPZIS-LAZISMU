@@ -24,26 +24,6 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        // Create Staff Users
-        User::create([
-            'name' => 'Staff Zakat 1',
-            'email' => 'staff1@zakat.com',
-            'password' => Hash::make('password'),
-            'role' => 'staff',
-            'is_active' => true,
-            'phone' => '081234567891',
-            'email_verified_at' => now(),
-        ]);
-
-        User::create([
-            'name' => 'Staff Zakat 2',
-            'email' => 'staff2@zakat.com',
-            'password' => Hash::make('password'),
-            'role' => 'staff',
-            'is_active' => true,
-            'phone' => '081234567892',
-            'email_verified_at' => now(),
-        ]);
 
         // Create Sample Muzakki Users
         User::create([

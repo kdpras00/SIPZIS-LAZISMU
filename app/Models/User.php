@@ -82,10 +82,6 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
-    public function isStaff()
-    {
-        return $this->role === 'staff';
-    }
 
     public function isMuzakki()
     {

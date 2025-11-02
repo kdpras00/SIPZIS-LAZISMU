@@ -26,7 +26,7 @@ $currentRoute = Route::currentRouteName();
         </li>
 
         @if($user->role !== 'muzakki')
-        {{-- Admin/Staff Menu --}}
+        {{-- Admin Menu --}}
         <li class="nav-item">
             <a href="{{ route('muzakki.index') }}"
                 class="nav-link {{ str_starts_with($currentRoute, 'muzakki.') && !str_contains($currentRoute, 'dashboard') ? 'active' : '' }}">

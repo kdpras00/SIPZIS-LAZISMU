@@ -16,7 +16,7 @@
 
 ### 👥 Manajemen Pengguna & Hak Akses
 
-- Autentikasi berbasis role: Admin, Pengelola (Staff), dan Muzakki
+- Autentikasi berbasis role: Admin dan Muzakki
 - Manajemen akun muzakki, verifikasi mustahik (dengan upload dokumen)
 - Edit profil pengguna, reset password, aktivitas log
 - Login & registrasi dengan OTP dan integrasi email
@@ -145,7 +145,6 @@ php artisan serve
 | Role    | Email           | Password | Hak Akses            |
 | ------- | --------------- | -------- | -------------------- |
 | Admin   | admin@zakat.com | password | Semua fitur          |
-| Staff   | staff@zakat.com | password | Program & distribusi |
 | Muzakki | user@zakat.com  | password | Riwayat & pembayaran |
 
 ---
