@@ -52,15 +52,16 @@ class DashboardController extends Controller
             'total_distributions_this_month' => ZakatDistribution::byYear($currentYear)->whereMonth('distribution_date', $currentMonth)->sum('amount'),
         ];
 
-        // Recent payments
+        // Recent payments (include payments with null muzakki for guest payments)
         $recentPayments = ZakatPayment::with(['muzakki', 'programType'])
             ->completed()
             ->latest('payment_date')
             ->take(5)
             ->get();
 
-        // Recent distributions
+        // Recent distributions (filter out distributions without mustahik to prevent errors)
         $recentDistributions = ZakatDistribution::with(['mustahik'])
+            ->whereHas('mustahik') // Only get distributions with valid mustahik
             ->latest('distribution_date')
             ->take(5)
             ->get();

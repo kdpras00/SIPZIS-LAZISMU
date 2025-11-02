@@ -130,7 +130,11 @@ class Campaign extends Model
     // Scopes
     public function scopePublished($query)
     {
-        return $query->where('status', 'published');
+        return $query->where('status', 'published')
+            ->where(function($q) {
+                $q->whereNull('end_date')
+                  ->orWhere('end_date', '>=', now()->startOfDay());
+            });
     }
 
     public function scopeByCategory($query, $category)

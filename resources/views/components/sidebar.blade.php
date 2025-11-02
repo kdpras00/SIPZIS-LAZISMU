@@ -1,129 +1,151 @@
 @php
-$user = auth()->user();
-$currentRoute = Route::currentRouteName();
+    // Gunakan parameter user jika ada, atau ambil dari auth
+    $user = $user ?? auth()->user();
+    $currentRoute = $currentRoute ?? Route::currentRouteName();
+
+    // Safety check: jika user null, return early untuk mencegah error
+    if (!$user) {
+        return;
+    }
 @endphp
 
-<div id="sidebar" class="sidebar d-flex flex-column p-3 h-100">
+<div id="sidebar" class="sidebar flex flex-col h-screen" style="padding: 1rem 0.5rem 1rem 0.75rem;">
     {{-- SIPZIS Logo --}}
-    <div class="d-flex justify-content-center align-items-center mb-3">
+    <div class="flex justify-center items-center mb-4 px-2">
         <a href="{{ $user->role === 'muzakki' ? route('muzakki.dashboard') : route('dashboard') }}"
-            class="navbar-brand text-decoration-none d-flex align-items-center">
-            <i class="fas fa-mosque me-2 text-white fs-4"></i>
-            <span class="fw-bold fs-5 text-white" style="font-family: 'Poppins', sans-serif;">SIPZIS</span>
+            class="flex items-center text-white no-underline">
+            <i class="fas fa-mosque mr-2 text-white text-2xl"></i>
+            <span class="font-bold text-xl text-white" style="font-family: 'Poppins', sans-serif;">SIPZIS</span>
         </a>
     </div>
 
-    <hr class="text-white opacity-25">
+    <hr class="border-white opacity-25 my-0 mx-2">
 
-    <ul class="nav nav-pills flex-column mb-auto">
+    <ul class="flex flex-col mb-auto list-none p-0" style="padding-left: 0.5rem; padding-right: 0.5rem;">
         {{-- Dashboard --}}
-        <li class="nav-item">
+        <li class="nav-item mb-1">
             <a href="{{ $user->role === 'muzakki' ? route('muzakki.dashboard') : route('dashboard') }}"
-                class="nav-link {{ $currentRoute === 'dashboard' || $currentRoute === 'muzakki.dashboard' ? 'active' : '' }}">
-                <i class="bi bi-speedometer2 me-2"></i>
-                <span>Dashboard</span>
+                class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ $currentRoute === 'dashboard' || $currentRoute === 'muzakki.dashboard' ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                <i class="bi bi-speedometer2 mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Dashboard</span>
             </a>
         </li>
 
-        @if($user->role !== 'muzakki')
-        {{-- Admin Menu --}}
-        <li class="nav-item">
-            <a href="{{ route('muzakki.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'muzakki.') && !str_contains($currentRoute, 'dashboard') ? 'active' : '' }}">
-                <i class="bi bi-people me-2"></i>
-                <span>Muzakki</span>
-            </a>
-        </li>
+        @if ($user->role !== 'muzakki')
+            {{-- Admin Menu --}}
+            <li class="nav-item mb-1">
+                <a href="{{ route('muzakki.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'muzakki.') && !str_contains($currentRoute, 'dashboard') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-people mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Muzakki</span>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a href="{{ route('mustahik.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'mustahik.') ? 'active' : '' }}">
-                <i class="bi bi-person-hearts me-2"></i>
-                <span>Mustahik</span>
-            </a>
-        </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('mustahik.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'mustahik.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-person-hearts mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Mustahik</span>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a href="{{ route('payments.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'payments.') ? 'active' : '' }}">
-                <i class="bi bi-credit-card me-2"></i>
-                <span>Pembayaran Zakat</span>
-            </a>
-        </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('payments.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'payments.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-credit-card mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Pembayaran Zakat</span>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a href="{{ route('distributions.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'distributions.') ? 'active' : '' }}">
-                <i class="bi bi-box-seam me-2"></i>
-                <span>Distribusi Zakat</span>
-            </a>
-        </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('distributions.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'distributions.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-box-seam mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Distribusi Zakat</span>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a href="{{ route('admin.news.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'admin.news.') ? 'active' : '' }}">
-                <i class="bi bi-newspaper me-2"></i>
-                <span>Kelola Berita</span>
-            </a>
-        </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('admin.news.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'admin.news.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-newspaper mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Kelola Berita</span>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a href="{{ route('admin.artikel.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'admin.artikel.') ? 'active' : '' }}">
-                <i class="bi bi-file-text me-2"></i>
-                <span>Kelola Artikel</span>
-            </a>
-        </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('admin.artikel.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'admin.artikel.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-file-text mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Kelola Artikel</span>
+                </a>
+            </li>
 
-        {{-- Reports Dropdown --}}
-        <li class="nav-item">
-            <a href="javascript:void(0)"
-                class="nav-link d-flex align-items-center {{ str_starts_with($currentRoute, 'reports.') ? 'active' : '' }}"
-                aria-expanded="true"
-                aria-controls="reportsSubmenu"
-                id="reportsDropdown">
-                <i class="bi bi-file-earmark-text me-2"></i>
-                <span>Laporan</span>
-                <i class="bi bi-chevron-down ms-auto"></i>
-            </a>
+            {{-- Reports Dropdown --}}
+            <li class="nav-item mb-1">
+                <a href="javascript:void(0)"
+                    class="reports-dropdown-toggle nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'reports.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;"
+                    aria-expanded="{{ str_starts_with($currentRoute, 'reports.') ? 'true' : 'false' }}"
+                    aria-controls="reportsSubmenu" id="reportsDropdown">
+                    <i class="bi bi-file-earmark-text mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Laporan</span>
+                    <i class="bi bi-chevron-down ml-auto mr-2 text-sm chevron-icon"
+                        style="transition: transform 0.3s ease; transform-origin: center; display: inline-block;"></i>
+                </a>
 
-            <ul class="collapse show" id="reportsSubmenu">
-                <li class="nav-item">
-                    <a href="{{ route('reports.incoming') }}"
-                        class="nav-link {{ $currentRoute === 'reports.incoming' ? 'active' : '' }}">
-                        <i class="bi bi-arrow-down-circle me-2"></i>
-                        <span>Laporan Masuk</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('reports.outgoing') }}"
-                        class="nav-link {{ $currentRoute === 'reports.outgoing' ? 'active' : '' }}">
-                        <i class="bi bi-arrow-up-circle me-2"></i>
-                        <span>Laporan Keluar</span>
-                    </a>
-                </li>
-            </ul>
-        </li>
+                <ul class="bg-opacity-20 rounded-lg my-1 transition-all duration-300 overflow-hidden list-none p-0 {{ str_starts_with($currentRoute, 'reports.') ? '' : 'hidden' }}"
+                    id="reportsSubmenu"
+                    style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.3) 0%, rgba(6, 95, 70, 0.3) 50%, rgba(4, 120, 87, 0.3) 100%); max-height: {{ str_starts_with($currentRoute, 'reports.') ? '500px' : '0' }}; opacity: {{ str_starts_with($currentRoute, 'reports.') ? '1' : '0' }}; padding-top: {{ str_starts_with($currentRoute, 'reports.') ? '0.5rem' : '0' }}; padding-bottom: {{ str_starts_with($currentRoute, 'reports.') ? '0.5rem' : '0' }}; padding-left: 0.5rem; padding-right: 0.5rem;">
+                    <li class="nav-item mb-1">
+                        <a href="{{ route('reports.incoming') }}"
+                            class="nav-link flex items-center py-2.5 rounded-lg transition-all duration-200 text-sm {{ $currentRoute === 'reports.incoming' ? 'text-white font-bold bg-white bg-opacity-20' : 'text-white text-opacity-80 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                            style="padding-left: 1.25rem; padding-right: 0.75rem;">
+                            <i
+                                class="bi bi-arrow-down-circle mr-3 text-base min-w-[20px] text-center flex-shrink-0"></i>
+                            <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Laporan Masuk</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{{ route('reports.outgoing') }}"
+                            class="nav-link flex items-center py-2.5 rounded-lg transition-all duration-200 text-sm {{ $currentRoute === 'reports.outgoing' ? 'text-white font-bold bg-white bg-opacity-20' : 'text-white text-opacity-80 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                            style="padding-left: 1.25rem; padding-right: 0.75rem;">
+                            <i class="bi bi-arrow-up-circle mr-3 text-base min-w-[20px] text-center flex-shrink-0"></i>
+                            <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Laporan
+                                Keluar</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
 
-        <li class="nav-item">
-            <a href="{{ route('admin.campaigns.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'admin.campaigns.') ? 'active' : '' }}">
-                <i class="bi bi-bullseye me-2"></i>
-                <span>Kelola Campaign</span>
-            </a>
-        </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('admin.campaigns.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'admin.campaigns.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-bullseye mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Kelola Campaign</span>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a href="{{ route('admin.programs.index') }}"
-                class="nav-link {{ str_starts_with($currentRoute, 'admin.programs.') ? 'active' : '' }}">
-                <i class="bi bi-grid me-2"></i>
-                <span>Kelola Program</span>
-            </a>
-        </li>
+            <li class="nav-item mb-1">
+                <a href="{{ route('admin.programs.index') }}"
+                    class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ str_starts_with($currentRoute, 'admin.programs.') ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                    style="padding-left: 0.75rem; padding-right: 0.75rem;">
+                    <i class="bi bi-grid mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
+                    <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Kelola Program</span>
+                </a>
+            </li>
         @endif
 
-        <hr class="text-white opacity-25 mt-2">
+        <hr class="border-white opacity-25 my-4 mx-2">
     </ul>
 
     {{-- User Info --}}
@@ -171,6 +193,15 @@ $currentRoute = Route::currentRouteName();
         top: 0;
         transition: transform 0.3s ease-in-out;
         will-change: transform;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding-left: 0 !important;
+        padding-right: 0.5rem !important;
+    }
+
+    #sidebar::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
     }
 
     /* ===== DESKTOP: Toggle functionality ===== */
@@ -266,101 +297,93 @@ $currentRoute = Route::currentRouteName();
 
     /* ===== NAV LINKS ===== */
     #sidebar .nav-link {
-        color: rgba(255, 255, 255, 0.85);
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
+        position: relative;
+    }
+
+    /* Prevent white background flash on click */
+    #sidebar .nav-link {
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+
+    /* Active state - maintain bg-white bg-opacity-20 (light green) */
+    #sidebar .nav-link.bg-white {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* Hover for active items - keep same background */
+    #sidebar .nav-link.bg-white:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* Hover for non-active items */
+    #sidebar .nav-link:not(.bg-white):hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Focus/active states for non-active items only */
+    #sidebar .nav-link:not(.bg-white):active,
+    #sidebar .nav-link:not(.bg-white):focus,
+    #sidebar .nav-link:not(.bg-white):focus-visible {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Reports dropdown submenu animation */
+    #sidebar #reportsSubmenu {
+        max-height: 0;
+        transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out;
+        opacity: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        display: none;
+        visibility: hidden;
+    }
+
+    #sidebar #reportsSubmenu:not(.hidden) {
+        max-height: 500px;
+        opacity: 1;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        display: block !important;
+        visibility: visible !important;
+        transition: max-height 0.3s ease-in, opacity 0.3s ease-in, padding 0.3s ease-in, visibility 0.3s ease-in;
+    }
+
+    /* Submenu items styling */
+    #sidebar #reportsSubmenu .nav-link {
         margin-bottom: 0.25rem;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-        width: 100%;
     }
 
-    #sidebar .nav-link:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #ffffff;
+    /* Active state for submenu items */
+    #sidebar #reportsSubmenu .nav-link.bg-white {
+        background-color: rgba(255, 255, 255, 0.2) !important;
     }
 
-    #sidebar .nav-link.active {
-        background-color: rgba(255, 255, 255, 0.2);
-        color: #ffffff;
-        font-weight: 500;
+    /* Hover for active submenu items - keep same background */
+    #sidebar #reportsSubmenu .nav-link.bg-white:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important;
     }
 
-    #sidebar .nav-link i {
-        font-size: 1.1rem;
-        width: 24px;
-        min-width: 24px;
-        text-align: center;
-        flex-shrink: 0;
+    /* Hover for non-active submenu items */
+    #sidebar #reportsSubmenu .nav-link:not(.bg-white):hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
     }
 
-    #sidebar .nav-link span {
-        flex-grow: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    /* Chevron rotation for reports dropdown */
+    #sidebar .chevron-icon {
+        transition: transform 0.3s ease;
+        display: inline-block;
+        transform-origin: center;
     }
 
-    /* ===== SUBMENU / COLLAPSE ===== */
-    #sidebar .collapse {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 0.5rem;
-        margin: 0.25rem 0;
-        padding: 0.5rem 0;
+    #sidebar #reportsDropdown[aria-expanded="true"] .chevron-icon {
+        transform: rotate(180deg) !important;
     }
 
-    #sidebar .collapse .nav-link {
-        padding: 0.6rem 1rem 0.6rem 2.5rem;
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    #sidebar .collapse .nav-link:hover {
-        color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    #sidebar .collapse .nav-link.active {
-        color: #ffffff;
-        font-weight: bold;
-        background-color: transparent;
-    }
-
-    /* Chevron rotation */
-    #sidebar .nav-link[data-bs-toggle="collapse"] .bi-chevron-down {
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 0.8rem;
-        margin-left: auto;
-    }
-
-    #sidebar .nav-link[data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-down {
-        transform: rotate(180deg);
-    }
-
-    /* Hide scrollbar */
-    #sidebar::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
-    }
-
-    #sidebar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    /* ===== UTILITAS LAINNYA ===== */
-    #sidebar ul {
-        padding-left: 0;
-        margin-bottom: 0;
-        list-style: none;
-    }
-
-    #sidebar hr {
-        margin: 1rem 0;
-        opacity: 0.25;
-        border-color: white;
+    #sidebar #reportsDropdown[aria-expanded="false"] .chevron-icon {
+        transform: rotate(0deg) !important;
     }
 
     aside.col-md-3,
@@ -373,6 +396,13 @@ $currentRoute = Route::currentRouteName();
 
     .sidebar {
         overflow-x: hidden;
+    }
+
+    /* List styling */
+    #sidebar ul {
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
     }
 
     /* Desktop collapse */
@@ -394,28 +424,6 @@ $currentRoute = Route::currentRouteName();
     #sidebar-overlay.show {
         opacity: 1;
         visibility: visible;
-    }
-
-    /* Align bullet/indicator styling with default profiles */
-    #sidebar .nav-link.active::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #ffffff;
-    }
-
-    #sidebar .nav-link {
-        position: relative;
-        padding-left: 1.5rem;
-    }
-
-    #sidebar .nav-link.active {
-        position: relative;
     }
 </style>
 
@@ -501,5 +509,88 @@ $currentRoute = Route::currentRouteName();
         }, 150);
 
         window.addEventListener("resize", handleResize);
+
+        // Handle Reports dropdown toggle (for Tailwind, since we're not using Bootstrap collapse)
+        function initReportsDropdown() {
+            const reportsDropdown = document.querySelector(".reports-dropdown-toggle");
+            const reportsSubmenu = document.getElementById("reportsSubmenu");
+
+            if (!reportsDropdown || !reportsSubmenu) {
+                console.warn("Reports dropdown elements not found");
+                return;
+            }
+
+            const chevronIcon = reportsDropdown.querySelector(".chevron-icon");
+
+            // Function to update chevron rotation
+            function updateChevron(isExpanded) {
+                if (chevronIcon) {
+                    // Force immediate update
+                    chevronIcon.style.transition = "transform 0.3s ease";
+                    chevronIcon.style.transformOrigin = "center";
+                    chevronIcon.style.display = "inline-block";
+                    chevronIcon.style.transform = isExpanded ? "rotate(180deg)" : "rotate(0deg)";
+                }
+            }
+
+            // Function to open dropdown
+            function openDropdown() {
+                reportsDropdown.setAttribute("aria-expanded", "true");
+                updateChevron(true);
+
+                reportsSubmenu.classList.remove("hidden");
+                reportsSubmenu.style.display = "block";
+                reportsSubmenu.style.visibility = "visible";
+                // Force reflow
+                void reportsSubmenu.offsetHeight;
+                const height = reportsSubmenu.scrollHeight;
+                reportsSubmenu.style.maxHeight = height + "px";
+                reportsSubmenu.style.opacity = "1";
+                reportsSubmenu.style.paddingTop = "0.5rem";
+                reportsSubmenu.style.paddingBottom = "0.5rem";
+            }
+
+            // Function to close dropdown
+            function closeDropdown() {
+                reportsDropdown.setAttribute("aria-expanded", "false");
+                updateChevron(false);
+
+                reportsSubmenu.style.maxHeight = "0";
+                reportsSubmenu.style.opacity = "0";
+                reportsSubmenu.style.paddingTop = "0";
+                reportsSubmenu.style.paddingBottom = "0";
+                setTimeout(() => {
+                    reportsSubmenu.classList.add("hidden");
+                    reportsSubmenu.style.display = "none";
+                    reportsSubmenu.style.visibility = "hidden";
+                }, 300);
+            }
+
+            // Click handler
+            reportsDropdown.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                const isExpanded = this.getAttribute("aria-expanded") === "true";
+
+                if (isExpanded) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            });
+
+            // Set initial state based on current route
+            const isReportsActive = reportsDropdown.getAttribute("aria-expanded") === "true";
+            if (isReportsActive) {
+                openDropdown();
+            } else {
+                closeDropdown();
+            }
+        }
+
+        // Initialize dropdown
+        initReportsDropdown();
     });
 </script>

@@ -164,8 +164,8 @@
                         <tr>
                             <td>{{ $loop->iteration + ($payments->currentPage() - 1) * $payments->perPage() }}</td>
                             <td>{{ $payment->payment_code }}</td>
-                            <td>{{ $payment->muzakki->name }}</td>
-                            <td>{{ $payment->zakatType->name ?? '-' }}</td>
+                            <td>{{ $payment->muzakki?->name ?? '-' }}</td>
+                            <td>{{ $payment->zakatType?->name ?? '-' }}</td>
                             <td>
                                 @switch($payment->payment_method)
                                 @case('cash')

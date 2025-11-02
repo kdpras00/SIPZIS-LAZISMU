@@ -120,8 +120,8 @@
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>{{ $payment->payment_code }}</td>
-                <td>{{ $payment->muzakki->name }}</td>
-                <td>{{ $payment->zakatType->name ?? '-' }}</td>
+                <td>{{ $payment->muzakki?->name ?? '-' }}</td>
+                <td>{{ $payment->zakatType?->name ?? '-' }}</td>
                 <td>{{ $payment->programType ? $payment->programType->name : 'Donasi Umum' }}</td>
                 <td>
                     @switch($payment->payment_method)

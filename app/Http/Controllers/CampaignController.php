@@ -15,6 +15,9 @@ class CampaignController extends Controller
      */
     public function all()
     {
+        // Delete expired campaigns before fetching
+        $this->deleteExpiredCampaigns();
+        
         $campaigns = Campaign::published()
             ->orderBy('created_at', 'desc')
             ->get();
@@ -24,9 +27,6 @@ class CampaignController extends Controller
         $totalTarget = 0;
 
         foreach ($campaigns as $campaign) {
-            // Check if campaign should be completed automatically
-            $campaign->checkAndCompleteIfExpired();
-
             // Calculate collected amount for each campaign (now using dynamic calculation)
             $collected = $campaign->collected_amount;
             // Add to campaign object as a custom attribute for the view
@@ -43,14 +43,16 @@ class CampaignController extends Controller
      */
     public function index($category)
     {
+        // Delete expired campaigns before fetching
+        $this->deleteExpiredCampaigns();
+        
         $campaigns = Campaign::published()
             ->byCategory($category)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Update collected amounts dynamically and check for expired campaigns
+        // Update collected amounts dynamically
         foreach ($campaigns as $campaign) {
-            $campaign->checkAndCompleteIfExpired();
             $campaign->display_collected_amount = $campaign->collected_amount;
         }
 
@@ -80,8 +82,14 @@ class CampaignController extends Controller
      */
     public function show($category, Campaign $campaign)
     {
-        // Check if campaign should be completed automatically
-        $campaign->checkAndCompleteIfExpired();
+        // Check if campaign is expired and delete if so
+        if ($campaign->isExpired() && $campaign->status === 'published') {
+            if ($campaign->photo) {
+                Storage::disk('public')->delete($campaign->photo);
+            }
+            $campaign->delete();
+            abort(404, 'Campaign sudah berakhir dan telah dihapus.');
+        }
 
         // Load related payments for this campaign and update collected amount
         $campaign->load('zakatPayments.muzakki');
@@ -344,6 +352,35 @@ class CampaignController extends Controller
             'bg_color' => 'bg-emerald-100',
             'border_color' => 'border-emerald-200'
         ];
+    }
+
+    /**
+     * Delete expired campaigns
+     */
+    private function deleteExpiredCampaigns()
+    {
+        $expiredCampaigns = Campaign::where('status', 'published')
+            ->whereNotNull('end_date')
+            ->where('end_date', '<', now()->startOfDay())
+            ->get();
+
+        foreach ($expiredCampaigns as $campaign) {
+            try {
+                // Delete photo if exists
+                if ($campaign->photo) {
+                    Storage::disk('public')->delete($campaign->photo);
+                }
+                
+                // Delete the campaign
+                $campaign->delete();
+            } catch (\Exception $e) {
+                // Log error but don't break the request
+                \Log::error("Failed to delete expired campaign", [
+                    'campaign_id' => $campaign->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
     }
 
     public function showPersonalCampaign($email)

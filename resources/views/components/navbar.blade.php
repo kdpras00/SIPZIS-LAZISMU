@@ -209,4 +209,138 @@
             padding-right: 0.5rem;
         }
     }
+
+    /* Ensure dropdowns are clickable and above everything */
+    .navbar .dropdown {
+        position: relative;
+        z-index: 1052;
+    }
+
+    .navbar .dropdown-menu {
+        z-index: 1053 !important;
+        position: absolute !important;
+        pointer-events: auto !important;
+    }
+
+    .navbar .dropdown-toggle {
+        cursor: pointer;
+        pointer-events: auto !important;
+        z-index: 1052;
+    }
+
+    /* Ensure navbar buttons are clickable */
+    .navbar button,
+    .navbar .btn {
+        pointer-events: auto !important;
+        z-index: 1052;
+        position: relative;
+    }
+
+    /* Override any parent elements that might block clicks */
+    .navbar * {
+        pointer-events: auto !important;
+    }
+
+    /* Ensure dropdown container doesn't block */
+    .navbar .ms-auto {
+        position: relative;
+        z-index: 1052;
+    }
+
+    /* Make sure nothing overlays the navbar */
+    .navbar {
+        position: relative !important;
+        z-index: 1051 !important;
+        isolation: isolate;
+    }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Force enable clicks on navbar dropdowns
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.style.pointerEvents = 'auto';
+            navbar.style.zIndex = '1051';
+        }
+
+        // Find all dropdown buttons in navbar
+        const dropdownButtons = navbar ? navbar.querySelectorAll('[data-bs-toggle="dropdown"]') : [];
+
+        dropdownButtons.forEach(button => {
+            // Remove any pointer-events blocking
+            button.style.pointerEvents = 'auto';
+            button.style.zIndex = '1052';
+            button.style.position = 'relative';
+
+            // Add direct click handler as fallback
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const dropdownMenu = this.nextElementSibling ||
+                    this.parentElement.querySelector('.dropdown-menu');
+
+                if (dropdownMenu) {
+                    // Toggle dropdown manually if Bootstrap didn't work
+                    const isShown = dropdownMenu.classList.contains('show');
+
+                    // Close all other dropdowns first
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        if (menu !== dropdownMenu) {
+                            menu.classList.remove('show');
+                        }
+                    });
+
+                    // Toggle current dropdown
+                    dropdownMenu.classList.toggle('show');
+
+                    // Try Bootstrap way too
+                    if (typeof bootstrap !== 'undefined') {
+                        try {
+                            const bsDropdown = bootstrap.Dropdown.getInstance(button);
+                            if (!isShown && bsDropdown) {
+                                bsDropdown.show();
+                            } else if (isShown && bsDropdown) {
+                                bsDropdown.hide();
+                            } else {
+                                const newDropdown = new bootstrap.Dropdown(button);
+                                if (!isShown) {
+                                    newDropdown.show();
+                                }
+                            }
+                        } catch (err) {
+                            console.log('Bootstrap dropdown fallback:', err);
+                        }
+                    }
+                }
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!navbar.contains(e.target)) {
+                document.querySelectorAll('.navbar .dropdown-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
+        // Initialize Bootstrap dropdowns after a short delay to ensure Bootstrap is loaded
+        setTimeout(function() {
+            if (typeof bootstrap !== 'undefined') {
+                dropdownButtons.forEach(button => {
+                    try {
+                        // Check if already initialized
+                        let bsDropdown = bootstrap.Dropdown.getInstance(button);
+                        if (!bsDropdown) {
+                            bsDropdown = new bootstrap.Dropdown(button);
+                        }
+                    } catch (e) {
+                        console.log('Error initializing Bootstrap dropdown:', e);
+                    }
+                });
+            }
+        }, 500);
+    });
+</script>

@@ -142,6 +142,28 @@
             opacity: 1;
             visibility: visible;
         }
+
+        /* Ensure sidebar overlay doesn't block navbar */
+        #sidebar-overlay {
+            z-index: 1040 !important;
+        }
+
+        /* Ensure navbar is always above sidebar overlay */
+        .navbar {
+            z-index: 1051 !important;
+        }
+
+        /* Ensure no element blocks navbar clicks */
+        main {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Make sure container-fluid doesn't block */
+        .navbar .container-fluid {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 
@@ -192,33 +214,99 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     @stack('scripts')
 
     <script>
-        // Auto-hide alerts after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }, 5000);
-            });
+        // Wait for Bootstrap to be fully loaded
+        (function() {
+            function initializeBootstrap() {
+                // Check if bootstrap is available
+                if (typeof bootstrap === 'undefined') {
+                    console.warn('Bootstrap is not loaded yet, retrying...');
+                    setTimeout(initializeBootstrap, 100);
+                    return;
+                }
 
-            // Add loading state to forms
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function() {
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                // Initialize all Bootstrap dropdowns when DOM is ready
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Wait a bit longer to ensure everything is loaded
+                    setTimeout(function() {
+                        // Initialize all Bootstrap dropdowns manually
+                        const dropdownElementList = document.querySelectorAll(
+                            '[data-bs-toggle="dropdown"]');
+                        dropdownElementList.forEach(dropdownToggleEl => {
+                            try {
+                                // Destroy existing dropdown instance if any
+                                const existingDropdown = bootstrap.Dropdown.getInstance(
+                                    dropdownToggleEl);
+                                if (existingDropdown) {
+                                    existingDropdown.dispose();
+                                }
+
+                                // Create new dropdown instance
+                                const newDropdown = new bootstrap.Dropdown(dropdownToggleEl, {
+                                    boundary: 'viewport',
+                                    popperConfig: {
+                                        modifiers: [{
+                                            name: 'preventOverflow',
+                                            options: {
+                                                boundary: 'viewport'
+                                            }
+                                        }]
+                                    }
+                                });
+
+                                console.log('Dropdown initialized:', dropdownToggleEl);
+                            } catch (e) {
+                                console.error('Error initializing dropdown:', e,
+                                    dropdownToggleEl);
+                            }
+                        });
+                    }, 300);
+
+                    // Auto-hide alerts after 5 seconds
+                    const alerts = document.querySelectorAll('.alert');
+                    alerts.forEach(alert => {
+                        setTimeout(() => {
+                            try {
+                                const bsAlert = new bootstrap.Alert(alert);
+                                bsAlert.close();
+                            } catch (e) {
+                                console.error('Error closing alert:', e);
+                            }
+                        }, 5000);
+                    });
+
+                    // Add loading state to forms
+                    const forms = document.querySelectorAll('form');
+                    forms.forEach(form => {
+                        form.addEventListener('submit', function() {
+                            const submitBtn = this.querySelector('button[type="submit"]');
+                            if (submitBtn) {
+                                submitBtn.disabled = true;
+                                submitBtn.innerHTML =
+                                    '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                            }
+                        });
+                    });
+
+                    // Ensure navbar dropdowns are clickable (fix z-index issues)
+                    const navbar = document.querySelector('.navbar');
+                    if (navbar) {
+                        navbar.style.zIndex = '1051';
                     }
+
+                    // Fix dropdown menu positioning
+                    const dropdownMenus = document.querySelectorAll('.navbar .dropdown-menu');
+                    dropdownMenus.forEach(menu => {
+                        menu.style.zIndex = '1053';
+                    });
                 });
-            });
-        });
+            }
+
+            // Start initialization
+            initializeBootstrap();
+        })();
 
         // CSRF Token for AJAX requests
         const csrfToken = document.querySelector('meta[name="csrf-token"]');
@@ -231,6 +319,8 @@
             }
         }
     </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 
 </html>
