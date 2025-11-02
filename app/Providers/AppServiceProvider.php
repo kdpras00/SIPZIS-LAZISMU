@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Models\ZakatPayment;
+use App\Models\Muzakki;
 use App\Observers\ZakatPaymentObserver;
+use App\Observers\MuzakkiObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ZakatPayment::observe(ZakatPaymentObserver::class);
+        Muzakki::observe(MuzakkiObserver::class);
     }
 }

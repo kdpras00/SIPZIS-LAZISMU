@@ -186,9 +186,17 @@ class AuthController extends Controller
                 ]
             );
 
+            // Send welcome email to new muzakki
+            try {
+                \Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
+            } catch (\Exception $e) {
+                // Log error but don't stop registration process
+                \Log::error('Failed to send welcome email: ' . $e->getMessage());
+            }
+
             session(['registered_email' => $request->email]);
 
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan cek email Anda untuk konfirmasi.');
         } catch (\Exception $e) {
             if (isset($user)) {
                 $user->delete();
@@ -241,6 +249,9 @@ class AuthController extends Controller
                 ]
             );
 
+            // Check if this is a new user (just created)
+            $isNewUser = $user->wasRecentlyCreated;
+
             // Update or create muzakki profile
             // Generate campaign URL
             $campaignUrl = url('/campaigner/' . $request->email);
@@ -255,6 +266,17 @@ class AuthController extends Controller
                     'campaign_url' => $campaignUrl, // Add campaign URL
                 ]
             );
+
+            // Send welcome email to new users registered via Firebase
+            if ($isNewUser) {
+                try {
+                    \Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
+                    \Log::info('Welcome email sent to Firebase user: ' . $user->email);
+                } catch (\Exception $e) {
+                    // Log error but don't stop login process
+                    \Log::error('Failed to send welcome email to Firebase user: ' . $e->getMessage());
+                }
+            }
 
             // Log in the user
             Auth::login($user);

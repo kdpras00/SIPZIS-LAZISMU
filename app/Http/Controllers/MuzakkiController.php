@@ -129,6 +129,9 @@ class MuzakkiController extends Controller
             $ktpPhotoPath = $request->file('ktp_photo')->store('ktp_photos', 'public');
         }
 
+        // Generate campaign URL if email exists
+        $campaignUrl = $request->email ? url('/campaigner/' . $request->email) : null;
+
         $muzakki = Muzakki::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -141,6 +144,7 @@ class MuzakkiController extends Controller
             'village' => $village,
             'postal_code' => $request->postal_code,
             'country' => $country, // Add country
+            'campaign_url' => $campaignUrl, // Auto-generate campaign URL
             'profile_photo' => $profilePhotoPath, // Add profile photo
             'ktp_photo' => $ktpPhotoPath, // Add KTP photo
             'bio' => $request->bio, // Add bio

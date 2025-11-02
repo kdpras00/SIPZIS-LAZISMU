@@ -39,4 +39,10 @@ return [
         'api_key' => env('GEMINI_API_KEY'),
     ],
 
+    'whatsapp' => [
+        'api_url' => env('WHATSAPP_API_URL', 'https://api.fonnte.com/send'),
+        'token' => env('WHATSAPP_API_TOKEN'),
+        'enabled' => env('WHATSAPP_ENABLED', false),
+    ],
+
 ];

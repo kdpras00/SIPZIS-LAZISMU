@@ -990,16 +990,60 @@ class ZakatPaymentController extends Controller
             // Use logged-in user data if available, otherwise use form data
             $donorName = $loggedInMuzakki ? $loggedInMuzakki->name : ($request->donor_name ?: 'Hamba Allah');
             $donorEmail = $loggedInMuzakki ? $loggedInMuzakki->email : ($request->donor_email ?: ('guest_' . time() . '@anonymous.com'));
-            $donorPhone = $loggedInMuzakki ? $loggedInMuzakki->phone : $request->donor_phone;
 
-            $muzakki = Muzakki::firstOrCreate(
-                ['email' => $donorEmail],
-                [
+            // Format phone number for WhatsApp (62xxx format)
+            $donorPhone = null;
+            if ($loggedInMuzakki && $loggedInMuzakki->phone) {
+                $donorPhone = $loggedInMuzakki->phone;
+            } elseif ($request->donor_phone) {
+                // Format phone number: combine country code with phone number
+                $countryCode = $request->country_code ?? '+62';
+                $countryCode = str_replace('+', '', $countryCode); // Remove + sign
+                $phone = $request->donor_phone;
+
+                // Remove any non-numeric characters
+                $phone = preg_replace('/[^0-9]/', '', $phone);
+
+                // Remove leading zero if present (08xxx → 8xxx)
+                if (substr($phone, 0, 1) === '0') {
+                    $phone = substr($phone, 1);
+                }
+
+                // Remove country code if user typed it
+                if (substr($phone, 0, 2) === '62') {
+                    $phone = substr($phone, 2);
+                }
+
+                // Combine country code with phone number
+                $donorPhone = $countryCode . $phone;
+
+                Log::info('Phone number formatted', [
+                    'original' => $request->donor_phone,
+                    'country_code' => $countryCode,
+                    'formatted' => $donorPhone
+                ]);
+            }
+
+            // Find or create muzakki - also update phone if provided
+            $muzakki = Muzakki::where('email', $donorEmail)->first();
+
+            if ($muzakki) {
+                // Update existing muzakki - update phone if new one is provided
+                $updateData = ['name' => $donorName];
+                if ($donorPhone && !$muzakki->phone) {
+                    // Only update phone if muzakki doesn't have one yet
+                    $updateData['phone'] = $donorPhone;
+                }
+                $muzakki->update($updateData);
+            } else {
+                // Create new muzakki
+                $muzakki = Muzakki::create([
                     'name'  => $donorName,
+                    'email' => $donorEmail,
                     'phone' => $donorPhone,
                     'is_active' => true,
-                ]
-            );
+                ]);
+            }
 
             // Ensure paid_amount is a valid number
             $paidAmount = is_numeric($request->paid_amount) ? (float)$request->paid_amount : 0;
@@ -1123,9 +1167,15 @@ class ZakatPaymentController extends Controller
 
     public function guestSummary($paymentCode)
     {
+        // Remove status filter - allow any status to view summary
         $payment = ZakatPayment::where('payment_code', $paymentCode)
-            ->where('status', 'pending')
+            ->with(['muzakki', 'programType'])
             ->firstOrFail();
+
+        // If payment is already completed, redirect to success page
+        if ($payment->status === 'completed') {
+            return redirect()->route('guest.payment.success', $payment->payment_code);
+        }
 
         return view('payments.guest-summary', compact('payment'));
     }

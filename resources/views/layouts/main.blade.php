@@ -13,46 +13,24 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('img/lazismu-icon.ico') }}">
 
     <title>{{ isset($title) && $title ? $title . ' - SIPZIS' : 'SIPZIS' }}</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- Swiper -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Fonts - Optimized -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind via Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Puter AI -->
-    <script src="https://js.puter.com/v2/"></script>
-
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="{{ asset('js/firebase-config.js') }}"></script>
+    <!-- Additional Styles from Pages -->
+    @stack('styles')
 
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
+        body{font-family:'Poppins',sans-serif}
+        *{-webkit-tap-highlight-color:transparent}
     </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50" style="overflow-x:hidden">
     {{-- Navbar --}}
     @yield('navbar')
 
@@ -74,6 +52,9 @@
 
     {{-- Script Tambahan --}}
     @yield('scripts')
+    
+    {{-- Additional Scripts from Pages --}}
+    @stack('scripts')
 </body>
 
 </html>

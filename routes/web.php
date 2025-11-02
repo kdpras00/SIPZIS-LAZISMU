@@ -391,12 +391,12 @@ Route::prefix('donasi')->name('guest.payment.')->group(function () {
     Route::post('/store', [ZakatPaymentController::class, 'guestStore'])->name('store');
     Route::get('/summary/{paymentCode}', [ZakatPaymentController::class, 'guestSummary'])->name('summary');
     Route::get('/success/{paymentCode}', [ZakatPaymentController::class, 'guestSuccess'])->name('success');
+    Route::get('/check-status/{paymentCode}', [ZakatPaymentController::class, 'guestCheckStatus'])->name('checkStatus');
+    Route::post('/leave-page/{paymentCode}', [ZakatPaymentController::class, 'guestLeavePage'])->name('leavePage');
     Route::post('/get-token/{paymentCode}', [ZakatPaymentController::class, 'getSnapToken'])->name('getToken');
     Route::post('/{paymentCode}/get-token-custom', [ZakatPaymentController::class, 'getTokenCustom'])->name('getTokenCustom');
     Route::get('/{paymentCode}/receipt', [ZakatPaymentController::class, 'guestReceiptByCode'])->name('receipt');
     Route::get('/{paymentCode}/receipt/download', [ZakatPaymentController::class, 'downloadGuestReceipt'])->name('receipt.download');
-    Route::post('/leave-page/{paymentCode}', [ZakatPaymentController::class, 'guestLeavePage'])->name('leavePage');
-    Route::get('/check-status/{paymentCode}', [ZakatPaymentController::class, 'guestCheckStatus'])->name('checkStatus');
 });
 
 
@@ -667,3 +667,34 @@ Route::post('/resend-otp', [OTPController::class, 'resendOTP'])->name('otp.resen
 // Personal campaign URL based on email
 Route::get('/campaigner/{email}', [CampaignController::class, 'showPersonalCampaign'])
     ->name('campaigner.personal');
+
+
+use Illuminate\Support\Facades\Mail;
+use App\Services\WhatsAppService;
+
+// Route::get('/test-email', function () {
+//     Mail::raw('Ini percobaan kirim email via Gmail SMTP.', function ($message) {
+//         $message->to('kdpras00@gmail.com')
+//             ->subject('Test Email Laravel Gmail');
+//     });
+
+//     return 'Email percobaan sudah dikirim! Cek inbox/spam.';
+// });
+
+// Test WhatsApp notification
+Route::get('/test-whatsapp', function (Request $request) {
+    $whatsappService = new WhatsAppService();
+
+    // Get phone from query parameter or use default
+    $testPhone = $request->get('phone', '628123456789'); // Format: 62xxx
+
+    $result = $whatsappService->testConnection($testPhone);
+
+    return response()->json([
+        'success' => $result['success'],
+        'message' => $result['message'],
+        'phone' => $testPhone,
+        'response' => $result['response'] ?? null,
+        'guide' => 'Ganti nomor dengan: ?phone=628123456789'
+    ]);
+})->name('test.whatsapp');

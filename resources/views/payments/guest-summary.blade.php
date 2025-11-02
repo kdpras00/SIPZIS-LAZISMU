@@ -316,56 +316,79 @@
         }
     }
 
-    checkStatusButton.addEventListener('click', async () => {
-        const res = await fetch('{{ route("guest.payment.checkStatus", $payment->payment_code) }}');
-        const data = await res.json();
-        if (data.success) showNotification(data.message, 'info');
-        else showNotification('Gagal cek status', 'error');
-    });
-
-    leavePageButton.addEventListener('click', async () => {
-        if (confirm('Yakin ingin meninggalkan halaman ini?')) {
-            const res = await fetch('{{ route("guest.payment.leavePage", $payment->payment_code) }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            });
+    // Check if elements exist before adding event listeners
+    if (checkStatusButton) {
+        checkStatusButton.addEventListener('click', async () => {
+            const res = await fetch('{{ route("guest.payment.checkStatus", $payment->payment_code) }}');
             const data = await res.json();
-            if (data.success) window.location.href = '{{ route("home") }}';
-            else showNotification('Gagal memperbarui status.', 'error');
-        }
-    });
+            if (data.success) showNotification(data.message, 'info');
+            else showNotification('Gagal cek status', 'error');
+        });
+    }
+
+    if (leavePageButton) {
+        leavePageButton.addEventListener('click', async () => {
+            if (confirm('Yakin ingin meninggalkan halaman ini?')) {
+                const res = await fetch('{{ route("guest.payment.leavePage", $payment->payment_code) }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (data.success) window.location.href = '{{ route("home") }}';
+                else showNotification('Gagal memperbarui status.', 'error');
+            }
+        });
+    }
 </script>
 @endsection
 
 @if ($payment->status === 'pending')
 <script>
-    // Auto check every 3 seconds
+    // Auto check every 5 seconds (reduced frequency to avoid overload)
     const paymentCode = "{{ $payment->payment_code }}";
     const checkUrl = "{{ route('guest.payment.checkStatus', $payment->payment_code) }}";
+    let checkCount = 0;
+    const maxChecks = 60; // Max 5 minutes (60 checks * 5 seconds)
 
     async function checkPaymentStatus() {
         try {
+            checkCount++;
+            console.log(`Checking payment status... (${checkCount}/${maxChecks})`);
+            
             const res = await fetch(checkUrl);
             const data = await res.json();
 
+            console.log('Payment status:', data);
+
             if (data.status === 'completed') {
                 // Langsung redirect ke success page
+                console.log('Payment completed! Redirecting...');
                 window.location.href = "{{ route('guest.payment.success', $payment->payment_code) }}";
-            } else if (data.status === 'cancelled') {
+            } else if (data.status === 'cancelled' || data.status === 'failed') {
+                console.log('Payment cancelled/failed! Redirecting...');
                 window.location.href = "{{ route('guest.payment.failed', $payment->payment_code) }}";
+            } else if (checkCount >= maxChecks) {
+                // Stop checking after max attempts
+                console.log('Max check attempts reached. Please refresh the page manually.');
+                showNotification('Pembayaran masih pending. Silakan refresh halaman atau hubungi support jika sudah bayar.', 'warning');
+                clearInterval(statusCheckInterval);
             } else {
-                console.log('Masih pending...');
+                console.log('Status masih pending... akan cek lagi dalam 5 detik');
             }
         } catch (e) {
-            console.error('Gagal cek status:', e);
+            console.error('Error checking payment status:', e);
+            // Don't stop checking on error, just log it
         }
     }
 
-    // Cek tiap 3 detik
-    setInterval(checkPaymentStatus, 3000);
+    // Initial check after 2 seconds
+    setTimeout(checkPaymentStatus, 2000);
+    
+    // Then check every 5 seconds
+    const statusCheckInterval = setInterval(checkPaymentStatus, 5000);
 </script>
 @endif
