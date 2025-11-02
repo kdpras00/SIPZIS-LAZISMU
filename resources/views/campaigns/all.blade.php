@@ -7,13 +7,13 @@
 @endsection
 
 @section('content')
-<div class="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 min-h-screen overflow-hidden">
+<div class="relative bg-gradient-to-br from-green-50 via-emerald-50 to-lime-100 min-h-screen overflow-hidden">
     <!-- Animated Background Elements -->
     <div class="absolute inset-0">
-        <div class="absolute inset-0 bg-gradient-to-br from-blue-600/40 via-indigo-600/30 to-purple-600/40"></div>
-        <div class="absolute top-10 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce animation-delay-1000"></div>
-        <div class="absolute top-20 right-10 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce animation-delay-3000"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce animation-delay-5000"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-green-600/40 via-emerald-600/30 to-lime-600/40"></div>
+        <div class="absolute top-10 left-10 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce animation-delay-1000"></div>
+        <div class="absolute top-20 right-10 w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce animation-delay-3000"></div>
+        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-lime-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce animation-delay-5000"></div>
     </div>
 
     <div class="relative z-10 py-20">
