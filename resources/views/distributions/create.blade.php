@@ -333,24 +333,18 @@
     function toggleGoodsField() {
         const typeValue = distributionType.value;
         
-        // Debug log untuk memastikan fungsi berjalan
-        console.log('Distribution Type:', typeValue);
-        
         if (typeValue === 'goods' || typeValue === 'service') {
             goodsDescriptionField.classList.remove('d-none');
             goodsDescField.setAttribute('required', 'required');
-            console.log('Field ditampilkan');
         } else {
             goodsDescriptionField.classList.add('d-none');
             goodsDescField.removeAttribute('required');
             goodsDescField.value = '';
-            console.log('Field disembunyikan');
         }
     }
 
     // PENTING: Event listener harus dipasang SEBELUM memanggil fungsi
     distributionType.addEventListener('change', function() {
-        console.log('Change event triggered');
         toggleGoodsField();
     });
 

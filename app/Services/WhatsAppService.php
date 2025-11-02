@@ -288,17 +288,5 @@ class WhatsAppService
         return 'Donasi Umum';
     }
 
-    /**
-     * Test WhatsApp connection
-     */
-    public function testConnection($phone)
-    {
-        $message = "🧪 *TEST MESSAGE*\n\n";
-        $message .= "This is a test message from SIPZIS WhatsApp Service.\n\n";
-        $message .= "If you receive this, the WhatsApp integration is working correctly! ✅\n\n";
-        $message .= "Sent at: " . now()->format('d M Y H:i:s');
-
-        return $this->sendMessage($phone, $message);
-    }
 }
 

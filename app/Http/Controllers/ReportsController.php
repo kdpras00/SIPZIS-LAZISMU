@@ -15,13 +15,6 @@ class ReportsController extends Controller
 {
     public function incoming(Request $request)
     {
-        // Log the request for debugging
-        Log::info('Incoming report request', [
-            'query_params' => $request->all(),
-            'has_export' => $request->has('export'),
-            'export_value' => $request->get('export')
-        ]);
-
         // Build query for zakat payments
         $query = ZakatPayment::with(['muzakki', 'programType', 'receivedBy']);
 

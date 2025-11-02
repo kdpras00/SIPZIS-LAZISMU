@@ -503,7 +503,6 @@
             element.addEventListener('click', function() {
                 navigator.clipboard.writeText(this.textContent).then(function() {
                     // Show toast or notification
-                    console.log('Copied to clipboard');
                 });
             });
         });

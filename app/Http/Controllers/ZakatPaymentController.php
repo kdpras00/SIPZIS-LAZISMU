@@ -754,44 +754,6 @@ class ZakatPaymentController extends Controller
     }
 
     /**
-     * Test database connection and required data
-     */
-    public function testData()
-    {
-        try {
-            $zakatTypes = ZakatType::count();
-            $muzakkiCount = Muzakki::count();
-
-            return response()->json([
-                'database_connection' => 'ok',
-                'zakat_types_count' => $zakatTypes,
-                'muzakki_count' => $muzakkiCount,
-                'message' => 'Database connection successful'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'database_connection' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Test Midtrans configuration
-     */
-    public function testMidtrans()
-    {
-        return response()->json([
-            'midtrans_configured' => !empty(config('midtrans.server_key')),
-            'server_key' => config('midtrans.server_key') ? 'configured' : 'missing',
-            'client_key' => config('midtrans.client_key') ? 'configured' : 'missing',
-            'is_production' => config('midtrans.is_production', false),
-            'is_sanitized' => config('midtrans.is_sanitized', true),
-            'is_3ds' => config('midtrans.is_3ds', true),
-        ]);
-    }
-
-    /**
      * Show guest payment form (no login required)
      */
     public function guestCreate(Request $request)

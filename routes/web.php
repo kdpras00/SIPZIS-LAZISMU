@@ -19,7 +19,7 @@ use App\Http\Controllers\MustahikController;
 use App\Http\Controllers\ZakatDistributionController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ArtikelController;
-use App\Http\Controllers\RegionController; // Add this 
+use App\Http\Controllers\RegionController; // Add this
 use App\Http\Controllers\OTPController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; // Add this import
@@ -558,39 +558,6 @@ Route::get('/payment/error', [ZakatPaymentController::class, 'error']);
 
 // Midtrans Notification Route
 Route::post('/midtrans/notification', [ZakatPaymentController::class, 'handleNotification']);
-
-// Test route for notification popup
-Route::get('/test/notification-popup', function () {
-    // Get the first muzakki user
-    $user = \App\Models\User::where('role', 'muzakki')->first();
-
-    if (!$user) {
-        // If no muzakki user exists, get any user
-        $user = \App\Models\User::first();
-        if (!$user) {
-            return response()->json(['error' => 'No user found'], 404);
-        }
-
-        // Change role to muzakki for testing
-        $user->role = 'muzakki';
-        $user->save();
-    }
-
-    // Authenticate the user
-    Auth::login($user);
-
-    // Get the controller instance
-    $controller = new \App\Http\Controllers\ZakatPaymentController();
-
-    // Create a request object
-    $request = new \Illuminate\Http\Request();
-
-    // Call the ajaxNotifications method
-    $response = $controller->ajaxNotifications($request);
-
-    return $response;
-})->name('test.notification-popup');
-
 // Add this route for Firebase login
 Route::post('/firebase-login', function (Request $request) {
     $request->validate([
@@ -670,7 +637,6 @@ Route::get('/campaigner/{email}', [CampaignController::class, 'showPersonalCampa
 
 
 use Illuminate\Support\Facades\Mail;
-use App\Services\WhatsAppService;
 
 // Route::get('/test-email', function () {
 //     Mail::raw('Ini percobaan kirim email via Gmail SMTP.', function ($message) {
@@ -680,21 +646,3 @@ use App\Services\WhatsAppService;
 
 //     return 'Email percobaan sudah dikirim! Cek inbox/spam.';
 // });
-
-// Test WhatsApp notification
-Route::get('/test-whatsapp', function (Request $request) {
-    $whatsappService = new WhatsAppService();
-
-    // Get phone from query parameter or use default
-    $testPhone = $request->get('phone', '628123456789'); // Format: 62xxx
-
-    $result = $whatsappService->testConnection($testPhone);
-
-    return response()->json([
-        'success' => $result['success'],
-        'message' => $result['message'],
-        'phone' => $testPhone,
-        'response' => $result['response'] ?? null,
-        'guide' => 'Ganti nomor dengan: ?phone=628123456789'
-    ]);
-})->name('test.whatsapp');
