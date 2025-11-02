@@ -1,326 +1,290 @@
-# 🕌 Sistem Zakat - Laravel Information System
+# 🕌 Sistem Zakat Terintegrasi - Laravel Web Application
 
-## 🎯 Overview
+## 🎯 Ringkasan
 
-**Sistem Zakat** adalah sistem informasi pengelolaan zakat berbasis web yang dibangun menggunakan **Laravel 12**. Sistem ini menyediakan platform digital modern untuk pengelolaan zakat yang transparan, efisien, dan sesuai dengan ketentuan syariah Islam.
-
----
-
-## 🚀 Key Features
-
-### 📊 Dashboard & Analytics
-
-- **Admin Dashboard**: Statistik real-time pembayaran dan distribusi zakat
-- **Muzakki Dashboard**: Riwayat pembayaran dan kalkulator zakat personal
-- **Interactive Charts**: Grafik pembayaran bulanan dan statistik per jenis zakat
-- **Program Progress Tracking**: Monitoring progress pengumpulan dana per program
-
-### 👥 User Management
-
-- **Role-based Authentication**: Admin, Staff, dan Muzakki dengan hak akses berbeda
-- **Muzakki Management**: Registrasi dan pengelolaan data pembayar zakat
-- **Mustahik Management**: Verifikasi dan kategorisasi penerima zakat (8 Asnaf)
-- **Profile Management**: Pengelolaan profil pengguna dengan integrasi Firebase
-
-### 💰 Zakat & Donation Management
-
-- **Multi-type Zakat Support**: Zakat Mal, Fitrah, Profesi, Pertanian, Perdagangan
-- **Infaq & Shadaqah Programs**: Program infaq masjid, pendidikan, kemanusiaan, dll
-- **Pilar Zakat Programs**: Program berbasis pilar zakat (pendidikan, kesehatan, ekonomi, sosial-dakwah, kemanusiaan, lingkungan)
-- **Smart Calculator**: Perhitungan otomatis berdasarkan nisab dan tarif zakat
-- **Payment Processing**: Pencatatan pembayaran dengan berbagai metode termasuk Midtrans
-- **Guest Donations**: Sistem donasi untuk pengguna yang belum login
-- **Receipt Generation**: Kwitansi otomatis untuk setiap pembayaran dengan opsi download PDF
-
-### 📣 Campaign Management
-
-- **Program Campaigns**: Kampanye penggalangan dana untuk program-program spesifik
-- **Target Amount Tracking**: Monitoring target pengumpulan dana per kampanye
-- **Progress Visualization**: Visualisasi progress kampanye dengan indikator persentase
-
-### 🎯 Distribution System
-
-- **8 Asnaf Categories**: Distribusi sesuai dengan 8 golongan mustahik
-- **Distribution Tracking**: Monitoring penyaluran zakat kepada mustahik
-- **Goods & Cash Distribution**: Dukungan untuk distribusi berupa uang maupun barang
-- **Distribution Receipts**: Bukti distribusi dengan detail penerima dan lokasi
-
-### 📈 Reporting & Documentation
-
-- **Comprehensive Reports**: Laporan pembayaran, distribusi, dan statistik
-- **Export Features**: Ekspor data ke berbagai format (PDF, Excel)
-- **Audit Trail**: Pencatatan lengkap semua aktivitas dan transaksi
-- **News & Articles**: Sistem publikasi berita dan artikel terkait kegiatan zakat
-
-### 🔔 Notification System
-
-- **Real-time Notifications**: Sistem notifikasi untuk status pembayaran dan distribusi
-- **Payment Status Updates**: Pemberitahuan otomatis ketika status pembayaran berubah
-- **User Dashboard Alerts**: Indikator notifikasi di dashboard pengguna
+**Sistem Zakat Terintegrasi** adalah platform digital canggih berbasis web untuk pengelolaan zakat, infak, dan sedekah yang dibangun dengan **Laravel 12**. Sistem ini mendukung pencatatan, pelaporan, hingga distribusi secara online yang transparan, realtime, dan patuh syariah.
 
 ---
 
-## 🛠️ Technology Stack
+## 🚀 Fitur Unggulan
 
-| Layer    | Technologies                        |
-| -------- | ----------------------------------- |
-| Backend  | Laravel 12.0, PHP 8.2+              |
-| Frontend | Bootstrap 5, Tailwind CSS 4.0, Vite |
-| Database | MySQL (configurable)                |
-| Auth     | Laravel Authentication, Firebase    |
-| Payment  | Midtrans Payment Gateway            |
-| Charts   | Chart.js                            |
-| Icons    | Bootstrap Icons                     |
-| PDF      | DomPDF                              |
+### 📈 Dashboard Zakat
+
+- Statistik harian, bulanan, dan total pembayaran serta distribusi zakat
+- Grafik pembayaran, tren program, dan notifikasi dashboard
+- Widget ringkasan muzakki, mustahik, dan dana terkumpul
+
+### 👥 Manajemen Pengguna & Hak Akses
+
+- Autentikasi berbasis role: Admin, Pengelola (Staff), dan Muzakki
+- Manajemen akun muzakki, verifikasi mustahik (dengan upload dokumen)
+- Edit profil pengguna, reset password, aktivitas log
+- Login & registrasi dengan OTP dan integrasi email
+
+### 💳 Pengelolaan Zakat, Infaq, dan Sedekah
+
+- Dukungan banyak jenis zakat: mal, fitrah, profesi, pertanian, perdagangan, saham, tabungan
+- Fitur kalkulator zakat otomatis berbasis harga emas/nisab terkini
+- Sistem pembayaran multi-channel: Midtrans, QRIS, transfer manual
+- Pembayaran dan donasi tanpa akun (guest), bukti/kwitansi digital (PDF)
+
+### 🎯 Distribusi Zakat
+
+- Data penyaluran by mustahik (8 asnaf), dengan tracking status distribusi
+- Penyaluran dalam bentuk dana, barang, atau voucher digital
+- Riwayat penerimaan bagi mustahik (dokumentasi receipt & lokasi distribusi)
+- Fitur batch distribusi via upload excel/csv
+
+### 📣 Manajemen Program & Campaign
+
+- Campaign donasi terjadwal, sistem target dana, visualisasi progres
+- Management program (pendidikan, kesehatan, sosial, ekonomi, kemanusiaan)
+- Publikasi berita & artikel (with image upload)
+
+### 📊 Laporan & Audit
+
+- Laporan komprehensif semua aktivitas, filter periode, ekspor PDF/XLS
+- Audit trail (histori akses, perubahan, aktivitas seluruh user)
+- Fitur pelacakan dana dan pendistribusian secara detail
+
+### 🔔 Sistem Notifikasi
+
+- Notifikasi realtime pembayaran, distribusi, approval data
+- Email reminder status pembayaran, approval, dan update campaign
 
 ---
 
-## 📋 System Requirements
+## 🛠️ Stack Teknologi
+
+| Layer         | Teknologi                                           |
+| ------------- | --------------------------------------------------- |
+| Backend       | Laravel 12, PHP 8.2+, REST API                      |
+| Frontend      | Blade, Tailwind CSS 4, Bootstrap 5, Vite, Alpine    |
+| Database      | MySQL, MariaDB                                      |
+| Auth          | Laravel Auth, OTP (email/SMS), Socialite (opsional) |
+| Payment       | Midtrans, dukungan QRIS & Transfer Manual           |
+| PDF & Excel   | DomPDF, Spout                                       |
+| Visualization | Chart.js, ApexCharts                                |
+| Hosting       | Shared/VPS/Docker-ready                             |
+
+---
+
+## 📋 Kebutuhan Sistem
 
 - PHP 8.2+
 - Composer
 - Node.js & NPM
-- MySQL 5.7+ atau MariaDB
-- Web server (Apache/Nginx)
+- MySQL 5.7+/MariaDB
+- Web Server (Apache/Nginx)
+- Akses Midtrans (opsional: SMTP/email gateway untuk OTP & notif)
 
 ---
 
-## 🔧 Installation Guide
+## 🚦 Panduan Instalasi
 
 ### 1. Clone Repository
 
 ```bash
 git clone <repository-url>
-cd SistemZakat
+cd sistem-zakat
 ```
 
-### 2. Install Dependencies
+### 2. Instalasi Dependency
 
 ```bash
-# Install PHP dependencies
 composer install
-
-# Install Node dependencies
 npm install
 ```
 
-### 3. Environment Configuration
+### 3. Konfigurasi Lingkungan
 
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-### 4. Database Setup
-
-Edit `.env`:
+Edit `.env` untuk database & payment:
 
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=sistem_zakat
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_USERNAME=root
+DB_PASSWORD=
+MIDTRANS_SERVER_KEY=isi_key
+MIDTRANS_CLIENT_KEY=isi_key
+MIDTRANS_IS_PRODUCTION=false
 ```
 
-Run migration and seeders:
+### 4. Migrasi & Seeder
 
 ```bash
 php artisan migrate:fresh --seed
 ```
 
-### 5. Configure Midtrans Payment Gateway
-
-Add Midtrans credentials to `.env`:
-
-```
-MIDTRANS_SERVER_KEY=your_server_key
-MIDTRANS_CLIENT_KEY=your_client_key
-MIDTRANS_IS_PRODUCTION=false
-```
-
-### 6. Build Assets
+### 5. Build Asset
 
 ```bash
 npm run build
-
-# or for development
+# untuk development:
 npm run dev
 ```
 
-### 7. Start Application
+### 6. Jalankan Aplikasi
 
 ```bash
 php artisan serve
-
-# Access at http://localhost:8000
+# Buka http://localhost:8000
 ```
 
 ---
 
-## 👨‍💻 Default User Accounts
+## 👤 Akun Default Testing
 
-| Role    | Email             | Password | Access Level      |
-| ------- | ----------------- | -------- | ----------------- |
-| Admin   | admin@zakat.com   | password | Full access       |
-| Staff   | staff1@zakat.com  | password | Management access |
-| Muzakki | ahmad@example.com | password | User access       |
-
----
-
-## 📚 Database Structure
-
-| Table                 | Description                                 |
-| --------------------- | ------------------------------------------- |
-| `users`               | Sistem autentikasi dengan role-based access |
-| `muzakki`             | Data pembayar zakat                         |
-| `mustahik`            | Data penerima zakat (8 asnaf)               |
-| `zakat_payments`      | Transaksi pembayaran zakat                  |
-| `zakat_distributions` | Distribusi zakat kepada mustahik            |
-| `programs`            | Program-program zakat, infaq, shadaqah      |
-| `campaigns`           | Kampanye penggalangan dana                  |
-| `program_types`       | Jenis program (zakat, infaq, shadaqah)      |
-| `notifications`       | Sistem notifikasi pengguna                  |
-| `news`                | Berita dan informasi terkini                |
-| `artikels`            | Artikel edukasi dan informasi               |
+| Role    | Email           | Password | Hak Akses            |
+| ------- | --------------- | -------- | -------------------- |
+| Admin   | admin@zakat.com | password | Semua fitur          |
+| Staff   | staff@zakat.com | password | Program & distribusi |
+| Muzakki | user@zakat.com  | password | Riwayat & pembayaran |
 
 ---
 
-## 🔐 Security Features
+## 🗄️ Struktur Database Inti
 
-- CSRF Protection
-- SQL Injection Prevention
-- XSS Protection
-- Role-based Authorization
-- Password Hashing (Bcrypt)
-- Secure Session Management
-- Payment Gateway Integration Security
-
----
-
-## 🧮 Zakat Calculation Engine
-
-### Supported Zakat Types
-
-| Jenis Zakat               | Nisab                         | Rate                             |
-| ------------------------- | ----------------------------- | -------------------------------- |
-| Zakat Mal (Emas/Perak)    | 85 gram emas / 595 gram perak | 2.5%                             |
-| Zakat Mal (Uang/Tabungan) | Setara 85 gram emas           | 2.5%                             |
-| Zakat Profesi             | Setara 85 gram emas per bulan | 2.5%                             |
-| Zakat Fitrah              | Tetap per orang               | Sesuai ketentuan                 |
-| Zakat Pertanian           | 653 kg gabah kering           | 5% (irigasi) / 10% (tadah hujan) |
-| Zakat Perdagangan         | Setara 85 gram emas           | 2.5%                             |
+| Table              | Keterangan                    |
+| ------------------ | ----------------------------- |
+| `users`            | Data & role user              |
+| `muzakki`          | Data wajib zakat              |
+| `mustahik`         | Data penerima zakat (8 asnaf) |
+| `zakat_payments`   | Pembayaran zakat              |
+| `distributions`    | Distribusi zakat              |
+| `programs`         | Daftar program/campaign       |
+| `campaigns`        | Campaign dana                 |
+| `notifications`    | Notifikasi sistem             |
+| `articles`, `news` | Berita, artikel & dokumentasi |
+| `audit_logs`       | Audit trail aktivitas         |
 
 ---
 
-## 📊 8 Asnaf Mustahik
+## 🔒 Keamanan
 
-1. **Fakir** — Tidak memiliki harta dan pekerjaan
-2. **Miskin** — Memiliki pekerjaan tapi tidak mencukupi
-3. **Amil** — Petugas pengelola zakat
-4. **Muallaf** — Orang yang baru masuk Islam
-5. **Riqab** — Memerdekakan budak/tawanan
-6. **Gharim** — Orang berutang untuk kepentingan baik
-7. **Fisabilillah** — Kepentingan umum di jalan Allah
+- Proteksi CSRF & XSS
+- Hashing password Bcrypt
+- Two-factor login (opsional)
+- Validasi input & sanitasi file upload
+- Role & permission multi-level
+- Otentikasi & otorisasi via policy/gate
+
+---
+
+## 🧮 Kalkulator Zakat Otomatis
+
+Jenis zakat yang didukung & rumus (dapat di-update pada menu Admin):
+
+| Jenis Zakat               | Nisab                               | Tarif                        |
+| ------------------------- | ----------------------------------- | ---------------------------- |
+| Zakat Mal (Emas/Perak)    | 85 gram emas / 595 gram perak       | 2.5%                         |
+| Zakat Penghasilan/Profesi | Setara 85 gram emas per tahun/bulan | 2.5%                         |
+| Zakat Fitrah              | Sesuai ketentuan setempat           | Paket beras/uang             |
+| Zakat Pertanian           | 653 kg gabah kering                 | 5%/10% (irigasi/tadah hujan) |
+| Zakat Perdagangan         | Setara 85 gram emas                 | 2.5%                         |
+| Zakat Saham/Tabungan      | Setara 85 gram emas                 | 2.5%                         |
+
+---
+
+## 🤲 8 Asnaf Mustahik
+
+1. **Fakir** — Tak punya harta/penghasilan
+2. **Miskin** — Penghasilan sangat terbatas
+3. **Amil** — Pengelola zakat
+4. **Muallaf** — Mualaf/dibimbing Islam
+5. **Riqab** — Memerdekakan hamba/budak
+6. **Gharim** — Terlilit utang syar'i
+7. **Fisabilillah** — Dakwah/jalan Allah
 8. **Ibnu Sabil** — Musafir kehabisan bekal
 
 ---
 
-## 🔄 API Endpoints
+## 🔗 API Endpoint Terbaru
 
-### Public APIs
+### Public
 
-| Method | Endpoint                 | Description           |
-| ------ | ------------------------ | --------------------- |
-| GET    | `/calculator/gold-price` | Current gold price    |
-| POST   | `/calculator/calculate`  | Zakat calculation     |
-| GET    | `/program`               | List all programs     |
-| GET    | `/campaigns/{category}`  | Campaigns by category |
+| Method | Endpoint                | Keterangan              |
+| ------ | ----------------------- | ----------------------- |
+| GET    | `/api/gold-price`       | Harga emas terbaru      |
+| POST   | `/api/zakat/calculate`  | Hitung zakat otomatis   |
+| GET    | `/api/programs`         | Daftar program/campaign |
+| GET    | `/api/campaigns/{type}` | Campaign per kategori   |
 
-### Authenticated APIs
+### Authenticated
 
-| Method | Endpoint                                  | Description          |
-| ------ | ----------------------------------------- | -------------------- |
-| GET    | `/dashboard/stats`                        | Dashboard statistics |
-| GET    | `/api/mustahik/by-category`               | Mustahik by category |
-| GET    | `/api/distributions/mustahik-by-category` | Distribution targets |
-| GET    | `/api/muzakki/search`                     | Search muzakki       |
-| GET    | `/api/payments/search`                    | Search payments      |
-
----
-
-## 📱 Mobile Responsiveness
-
-Dibangun dengan desain _responsive_ (mobile-first) menggunakan Bootstrap 5:
-
-- Collapsible sidebar
-- Touch-friendly interface
-- Optimized forms untuk input mobile
-- Layout responsif di semua ukuran layar
+| Method | Endpoint                            | Keterangan           |
+| ------ | ----------------------------------- | -------------------- |
+| GET    | `/api/dashboard`                    | Data stats dashboard |
+| GET    | `/api/mustahik/group`               | List mustahik group  |
+| GET    | `/api/distributions/mustahik-group` | Penyaluran by group  |
+| GET    | `/api/muzakki/find`                 | Cari data muzakki    |
+| GET    | `/api/payments/search`              | Cari pembayaran      |
 
 ---
 
-## 🎨 UI/UX Features
+## 📱 Desain Responsive
 
-- Modern & clean design
-- Interactive elements (hover, smooth transitions)
-- Color-coded categories
-- Real-time feedback (loading, success/error)
-- Print-friendly receipts
-- Notification badges
-- Program progress indicators
+- Mendukung perangkat mobile & desktop
+- Navigasi sidebar collapse, menu sticky
+- Form dan tabel optimize untuk layar kecil
+- Preview dokumen & upload mobile-friendly
 
 ---
 
-## 🔍 Testing
+## ✨ Fitur UI/UX Baru
+
+- Desain fresh, mode terang/gelap
+- Status badge (pending/success/gagal)
+- Loader animasi, progress bar distribusi
+- Notifikasi web push (opsional)
+- Preview kwitansi sebelum download/cetak
+
+---
+
+## 🔍 Testing & QA
 
 ```bash
 php artisan test
 php artisan test --coverage
-./vendor/bin/pint
+npm run test
 ```
-
----
-
-## 📈 Performance Optimization
-
-- Database indexing & eager loading
-- Laravel caching
-- Optimized queries
-- Vite asset bundling & minification
-- Lazy loading for images
 
 ---
 
 ## 🚀 Deployment
 
-### Production Checklist
-
-1. **Environment Configuration**
+1. **Konfig Proksi & Env**
 
    ```
    APP_ENV=production
    APP_DEBUG=false
-   APP_URL=https://your-domain.com
+   APP_URL=https://domain-anda.com
    ```
 
-2. **Security Settings**
+2. **Keamanan dan Optimasi**
 
    ```bash
    php artisan key:generate
+   php artisan optimize
    php artisan config:cache
    php artisan route:cache
    php artisan view:cache
    ```
 
-3. **Database Migration**
+3. **Migrasi & Seed Data**
 
    ```bash
    php artisan migrate --force
    ```
 
-4. **File Permissions**
+4. **Permission Folder**
    ```bash
    chmod -R 775 storage bootstrap/cache
    chown -R www-data:www-data storage bootstrap/cache
@@ -328,31 +292,28 @@ php artisan test --coverage
 
 ---
 
-## 🤝 Contributing
+## 🙌 Kontribusi
 
-1. Fork repository
-2. Buat branch fitur: `git checkout -b feature/AmazingFeature`
-3. Commit perubahan: `git commit -m 'Add AmazingFeature'`
-4. Push ke branch: `git push origin feature/AmazingFeature`
-5. Buat Pull Request
-
----
-
-## 📄 License
-
-Proyek ini dilisensikan di bawah [MIT License](LICENSE) – lihat file LICENSE untuk detail.
+1. Fork repo
+2. Branch feature: `git checkout -b fitur/BerikanNamaFitur`
+3. Commit: `git commit -m 'fitur: Tambah fitur baru'`
+4. Push: `git push origin fitur/BerikanNamaFitur`
+5. Pull Request via GitHub
 
 ---
 
-## 📞 Support
+## 📄 Lisensi
 
-Untuk bantuan atau pertanyaan:
-
-- Buat issue di repository
-- Hubungi tim pengembang
-- Lihat dokumentasi wiki
+Dirilis di bawah [MIT License](LICENSE) — lihat file LICENSE untuk detail.
 
 ---
 
-**Built with ❤️ for the Muslim community**  
-_Modern digital platform for transparent and efficient zakat management according to Islamic principles._
+## 💬 Bantuan & Kontak
+
+- Buat issue pada repo
+- Hubungi tim via kontak di dokumentasi
+- Baca panduan & wiki pengguna
+
+---
+
+**Dibangun dengan ketulusan untuk komunitas, memudahkan urusan zakat, infak, dan sedekah secara modern, amanah, dan efisien.**
