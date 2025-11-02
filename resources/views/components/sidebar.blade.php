@@ -103,8 +103,8 @@
 
                 <ul class="bg-opacity-20 rounded-lg my-1 transition-all duration-300 overflow-hidden list-none p-0 {{ str_starts_with($currentRoute, 'reports.') ? '' : 'hidden' }}"
                     id="reportsSubmenu"
-                    style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.3) 0%, rgba(6, 95, 70, 0.3) 50%, rgba(4, 120, 87, 0.3) 100%); max-height: {{ str_starts_with($currentRoute, 'reports.') ? '500px' : '0' }}; opacity: {{ str_starts_with($currentRoute, 'reports.') ? '1' : '0' }}; padding-top: {{ str_starts_with($currentRoute, 'reports.') ? '0.5rem' : '0' }}; padding-bottom: {{ str_starts_with($currentRoute, 'reports.') ? '0.5rem' : '0' }}; padding-left: 0.5rem; padding-right: 0.5rem;">
-                    <li class="nav-item mb-1">
+                    style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.3) 0%, rgba(6, 95, 70, 0.3) 50%, rgba(4, 120, 87, 0.3) 100%); max-height: {{ str_starts_with($currentRoute, 'reports.') ? '500px' : '0' }}; opacity: {{ str_starts_with($currentRoute, 'reports.') ? '1' : '0' }}; padding-top: {{ str_starts_with($currentRoute, 'reports.') ? '0.75rem' : '0' }}; padding-bottom: {{ str_starts_with($currentRoute, 'reports.') ? '0.75rem' : '0' }}; padding-left: 0.5rem; padding-right: 0.5rem;">
+                    <li class="nav-item mb-3">
                         <a href="{{ route('reports.incoming') }}"
                             class="nav-link flex items-center py-2.5 rounded-lg transition-all duration-200 text-sm {{ $currentRoute === 'reports.incoming' ? 'text-white font-bold bg-white bg-opacity-20' : 'text-white text-opacity-80 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
                             style="padding-left: 1.25rem; padding-right: 0.75rem;">
@@ -113,7 +113,7 @@
                             <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Laporan Masuk</span>
                         </a>
                     </li>
-                    <li class="nav-item mb-1">
+                    <li class="nav-item mb-3">
                         <a href="{{ route('reports.outgoing') }}"
                             class="nav-link flex items-center py-2.5 rounded-lg transition-all duration-200 text-sm {{ $currentRoute === 'reports.outgoing' ? 'text-white font-bold bg-white bg-opacity-20' : 'text-white text-opacity-80 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
                             style="padding-left: 1.25rem; padding-right: 0.75rem;">
@@ -344,8 +344,8 @@
     #sidebar #reportsSubmenu:not(.hidden) {
         max-height: 500px;
         opacity: 1;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
         display: block !important;
         visibility: visible !important;
         transition: max-height 0.3s ease-in, opacity 0.3s ease-in, padding 0.3s ease-in, visibility 0.3s ease-in;
@@ -353,7 +353,7 @@
 
     /* Submenu items styling */
     #sidebar #reportsSubmenu .nav-link {
-        margin-bottom: 0.25rem;
+        margin-bottom: 0;
     }
 
     /* Active state for submenu items */
@@ -546,8 +546,8 @@
                 const height = reportsSubmenu.scrollHeight;
                 reportsSubmenu.style.maxHeight = height + "px";
                 reportsSubmenu.style.opacity = "1";
-                reportsSubmenu.style.paddingTop = "0.5rem";
-                reportsSubmenu.style.paddingBottom = "0.5rem";
+                reportsSubmenu.style.paddingTop = "0.75rem";
+                reportsSubmenu.style.paddingBottom = "0.75rem";
             }
 
             // Function to close dropdown

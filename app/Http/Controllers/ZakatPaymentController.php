@@ -1284,7 +1284,7 @@ class ZakatPaymentController extends Controller
             $paymentType = $notification->payment_type ?? null;
 
             // Extract payment code from order_id (order_id format: PAYMENT_CODE-TIMESTAMP)
-            // The order_id is in format: ZKT-YEAR-NUMBER-TIMESTAMP
+            // The order_id is in format: DNS-YEAR-NUMBER-TIMESTAMP
             // We need to extract everything except the last part (timestamp)
             $parts = explode('-', $orderId);
             if (count($parts) > 1) {

@@ -19,7 +19,7 @@ class ZakatPaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            'payment_code' => 'ZKT-' . date('Y') . '-' . fake()->unique()->numberBetween(100, 999),
+            'payment_code' => 'DNS-' . date('Y') . '-' . fake()->unique()->numberBetween(100, 999),
             'muzakki_id' => Muzakki::factory(),
             'zakat_amount' => fake()->randomElement([50000, 100000, 150000, 200000, 250000]),
             'paid_amount' => fake()->randomElement([50000, 100000, 150000, 200000, 250000]),

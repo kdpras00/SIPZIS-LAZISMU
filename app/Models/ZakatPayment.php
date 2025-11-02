@@ -66,7 +66,7 @@ class ZakatPayment extends Model
         // Try up to 10 times to generate a unique code
         for ($i = 0; $i < 10; $i++) {
             // Generate base code
-            $lastPayment = self::where('payment_code', 'like', "ZKT-{$year}-%")
+            $lastPayment = self::where('payment_code', 'like', "DNS-{$year}-%")
                 ->orderBy('id', 'desc')
                 ->first();
 
@@ -94,7 +94,7 @@ class ZakatPayment extends Model
             // Ensure we don't exceed reasonable limits
             $newNumber = $newNumber % 10000;
 
-            $paymentCode = "ZKT-{$year}-" . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+            $paymentCode = "DNS-{$year}-" . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
 
             // Check if this code already exists
             if (!self::where('payment_code', $paymentCode)->exists()) {
@@ -103,7 +103,7 @@ class ZakatPayment extends Model
         }
 
         // If we still can't generate a unique code, use timestamp
-        return "ZKT-{$year}-" . substr(time(), -6);
+        return "DNS-{$year}-" . substr(time(), -6);
     }
 
     public static function generateReceiptNumber()

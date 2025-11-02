@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('zakat_payments', function (Blueprint $table) {
             $table->id();
-            $table->string('payment_code')->unique(); // ZKT-2024-001
+            $table->string('payment_code')->unique(); // DNS-2024-001
             $table->foreignId('muzakki_id')->constrained('muzakki')->onDelete('cascade');
             $table->foreignId('zakat_type_id')->constrained('zakat_types')->onDelete('cascade');
             $table->decimal('wealth_amount', 15, 2)->nullable(); // Total wealth for calculation

@@ -211,6 +211,7 @@ class AuthController extends Controller
     {
         // Ambil data user sebelum logout
         $user = Auth::user();
+        $role = $user ? $user->role : null;
 
         // Logout pengguna
         Auth::logout();
@@ -218,6 +219,11 @@ class AuthController extends Controller
         // Invalidate session dan regenerate token CSRF
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        // Redirect berdasarkan role
+        if ($role === 'admin') {
+            return redirect('/admin')->with('success', 'Anda telah berhasil logout.');
+        }
 
         // Redirect dengan pesan sukses
         return redirect('/')->with('success', 'Anda telah berhasil logout.');
