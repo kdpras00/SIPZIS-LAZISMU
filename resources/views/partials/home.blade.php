@@ -34,19 +34,19 @@
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeInUp delay-1000">
             <a href="{{ route('calculator.index') }}"
-                class="no-underline group bg-white hover:bg-green-600 text-green-800 hover:text-green-700 font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 min-w-[250px]">
+                class="no-underline group bg-white hover:bg-green-600 text-green-800 hover:text-white font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 min-w-[250px]">
                 <svg class="w-6 h-6 transition-transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h10V4H7zm2 2h6v2H9V6zm0 4h6v2H9v-2zm0 4h6v2H9v-2z" />
                 </svg>
                 <span class="font-semibold tracking-wide">KALKULATOR ZAKAT</span>
             </a>
-            <a href="{{ route('guest.payment.create') }}"
-                class="no-underline group bg-white hover:bg-green-600 text-green-800 hover:text-green-700 font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 min-w-[250px]">
+            <a href="{{ route('program') }}"
+                class="no-underline group bg-white hover:bg-green-600 text-green-800 hover:text-white font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 min-w-[250px]">
                 <svg class="w-6 h-6 transition-transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2L3.09 8.26L12 22L20.91 8.26L12 2Z" />
                 </svg>
-                <span class="font-semibold tracking-wide">BAYAR ZAKAT SEKARANG</span>
+                <span class="font-semibold tracking-wide">DONASI SEKARANG</span>
             </a>
         </div>
 
@@ -471,6 +471,8 @@
             💬
         </button>
     </div>
+    <!-- Puter.js API untuk Claude AI -->
+    <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <!-- Custom CSS for Animations -->
@@ -655,6 +657,58 @@
     <script>
         // Chatbot functionality
         document.addEventListener("DOMContentLoaded", () => {
+            // Wait for Puter.js to load
+            function waitForPuter(callback, maxAttempts = 50) {
+                let attempts = 0;
+                const checkPuter = () => {
+                    attempts++;
+                    if (typeof puter !== 'undefined' && puter.ai) {
+                        console.log('Puter.js loaded successfully');
+                        callback();
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(checkPuter, 100);
+                    } else {
+                        console.warn('Puter.js not loaded after maximum attempts');
+                        // Initialize anyway, fallback will handle it
+                        callback();
+                    }
+                };
+                checkPuter();
+            }
+
+            // Suppress 401 errors from Puter whoami endpoint (not critical)
+            window.addEventListener('error', function(e) {
+                if (e.message && e.message.includes('401') && e.filename && e.filename.includes(
+                        'api.puter.com/whoami')) {
+                    console.log('Puter whoami endpoint returned 401 (non-critical, continuing...)');
+                    e.preventDefault();
+                    return false;
+                }
+            }, true);
+
+            // Also suppress fetch errors for Puter whoami (handled by fetch API)
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const url = args[0];
+                if (typeof url === 'string' && url.includes('api.puter.com/whoami')) {
+                    return originalFetch.apply(this, args).catch(err => {
+                        if (err.message && err.message.includes('401')) {
+                            console.log('Puter whoami 401 error (non-critical):', err);
+                            // Return a mock response to prevent breaking
+                            return new Response(JSON.stringify({}), {
+                                status: 200,
+                                statusText: 'OK',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        }
+                        throw err;
+                    });
+                }
+                return originalFetch.apply(this, args);
+            };
+
             // Check if puter is available, if not, wait for it
             function initializeChatbot() {
                 const sendBtn = document.getElementById("send-btn");
@@ -730,15 +784,27 @@
 
                 // Format response to HTML
                 function formatResponseToHtml(text) {
-                    // Gunakan Marked.js untuk render Markdown jadi HTML
-                    let html = marked.parse(text);
+                    // Validasi input
+                    if (!text || typeof text !== 'string') {
+                        return '<p>⚠️ Respon tidak valid dari AI. Silakan coba lagi.</p>';
+                    }
 
-                    // Tambahkan styling agar tetap terlihat rapi
-                    html = html.replace(/<h1>/g, '<h1 class="text-lg font-bold mb-2">')
-                        .replace(/<h2>/g, '<h2 class="text-base font-semibold mb-1">')
-                        .replace(/<ul>/g, '<ul class="list-disc pl-5 space-y-1">')
-                        .replace(/<p>/g, '<p class="mb-2 leading-relaxed">');
-                    return html;
+                    try {
+                        // Gunakan Marked.js untuk render Markdown jadi HTML
+                        let html = marked.parse(text);
+
+                        // Tambahkan styling agar tetap terlihat rapi
+                        html = html.replace(/<h1>/g, '<h1 class="text-lg font-bold mb-2">')
+                            .replace(/<h2>/g, '<h2 class="text-base font-semibold mb-1">')
+                            .replace(/<ul>/g, '<ul class="list-disc pl-5 space-y-1">')
+                            .replace(/<p>/g, '<p class="mb-2 leading-relaxed">');
+                        return html;
+                    } catch (error) {
+                        console.error('Error parsing markdown:', error);
+                        // Fallback: return as plain text with escaping
+                        return '<p class="mb-2 leading-relaxed">' + text.replace(/</g, '&lt;').replace(/>/g,
+                            '&gt;') + '</p>';
+                    }
                 }
 
 
@@ -829,17 +895,71 @@
                         `;
                         } else {
                             // For other questions, use the AI API if puter is available
-                            if (typeof puter !== 'undefined') {
-                                const response = await puter.ai.chat(userText, {
-                                    model: "claude-sonnet-4-5"
-                                });
+                            if (typeof puter !== 'undefined' && puter.ai) {
+                                try {
+                                    // Tambahkan konteks sistem untuk fokus pada zakat
+                                    const systemContext =
+                                        "Kamu adalah asisten digital ahli dalam sistem pengelolaan zakat, infak, dan sedekah (ZIS). " +
+                                        "Platform ini adalah SIPZIS (Sistem Informasi Pengelolaan Zakat). " +
+                                        "Jawablah pertanyaan pengguna dengan sopan, informatif, dan sesuai syariat Islam. " +
+                                        "Jika pertanyaan tidak terkait zakat/infak/sedekah, arahkan kembali ke topik zakat dengan sopan.\n\n" +
+                                        "Pertanyaan pengguna: " + userText;
 
-                                appendMessage(formatResponseToHtml(response.message.content[0].text), "bot");
+                                    const response = await puter.ai.chat(systemContext, {
+                                        model: "claude-opus-4-1"
+                                    });
+
+                                    // Validasi dan ekstraksi response dengan aman
+                                    let responseText = '';
+
+                                    if (response && response.message) {
+                                        if (response.message.content && Array.isArray(response.message
+                                                .content) && response.message.content.length > 0) {
+                                            // Format standar: response.message.content[0].text
+                                            if (response.message.content[0].text) {
+                                                responseText = response.message.content[0].text;
+                                            } else if (typeof response.message.content[0] === 'string') {
+                                                // Jika content[0] langsung string
+                                                responseText = response.message.content[0];
+                                            }
+                                        } else if (response.message.content && typeof response.message
+                                            .content === 'string') {
+                                            // Jika content langsung string
+                                            responseText = response.message.content;
+                                        } else if (typeof response.message === 'string') {
+                                            // Jika message langsung string
+                                            responseText = response.message;
+                                        }
+                                    } else if (typeof response === 'string') {
+                                        // Jika response langsung string
+                                        responseText = response;
+                                    }
+
+                                    if (responseText) {
+                                        appendMessage(formatResponseToHtml(responseText), "bot");
+                                    } else {
+                                        console.error('Unexpected response format from Puter API:', response);
+                                        appendMessage(
+                                            '<p>⚠️ Format respon dari AI tidak dikenali. Silakan coba lagi.</p>',
+                                            "bot");
+                                    }
+
+                                } catch (apiError) {
+                                    console.error('Puter API Error:', apiError);
+                                    console.error('Error details:', {
+                                        message: apiError.message,
+                                        stack: apiError.stack,
+                                        name: apiError.name
+                                    });
+                                    replyHtml =
+                                        '<p>⚠️ Terjadi kesalahan saat menghubungi AI. Silakan coba lagi nanti.</p>';
+                                    appendMessage(replyHtml, "bot");
+                                }
 
                             } else {
                                 // Fallback response if puter is not available
                                 replyHtml =
-                                    '<p>Maaf, saat ini saya tidak dapat mengakses AI. Namun Anda masih bisa bertanya tentang zakat, cara pembayaran, atau program yang tersedia.</p>';
+                                    '<p>Maaf, saat ini saya tidak dapat mengakses AI. Harap tunggu sebentar atau refresh halaman.</p>';
                                 appendMessage(replyHtml, "bot");
 
                             }
@@ -890,8 +1010,10 @@
                 });
             }
 
-            // Initialize chatbot immediately
-            initializeChatbot();
+            // Wait for Puter.js to load, then initialize chatbot
+            waitForPuter(() => {
+                initializeChatbot();
+            });
         });
 
         // Slider functionality

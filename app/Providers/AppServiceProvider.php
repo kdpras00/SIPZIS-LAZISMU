@@ -25,5 +25,10 @@ class AppServiceProvider extends ServiceProvider
     {
         ZakatPayment::observe(ZakatPaymentObserver::class);
         Muzakki::observe(MuzakkiObserver::class);
+
+        // Force HTTPS for assets when request is HTTPS (for ngrok/tunnel services)
+        if (request()->isSecure() || request()->header('X-Forwarded-Proto') === 'https') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }

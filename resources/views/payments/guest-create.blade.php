@@ -5,6 +5,7 @@
 {{-- Add CSS untuk intl-tel-input --}}
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.12/build/css/intlTelInput.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         /* Optimized styles for intl-tel-input */
         .iti {
@@ -291,6 +292,7 @@
 {{-- Add JS untuk intl-tel-input --}}
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.12/build/js/intlTelInput.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         let iti, itiOptional;
         const itiConfig = {
@@ -369,7 +371,9 @@
 
         function formatAndSetValues(el) {
             const raw = el.value.replace(/\D/g, '');
-            document.getElementById('paid_amount').value = raw || 0;
+            const numericValue = parseInt(raw) || 0;
+
+            document.getElementById('paid_amount').value = numericValue;
             if (raw) {
                 el.value = new Intl.NumberFormat('id-ID').format(raw);
                 document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('selected'));
@@ -401,14 +405,29 @@
             // Validate phones
             const phoneInput = document.querySelector("#phone_input");
             if (phoneInput && iti) {
-                if (!validatePhone(iti, phoneInput)) return alert('Mohon periksa kembali nomor telepon Anda');
+                if (!validatePhone(iti, phoneInput)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nomor Telepon Tidak Valid',
+                        text: 'Mohon periksa kembali nomor telepon Anda',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    return;
+                }
                 document.getElementById('donor_phone_full').value = iti.getNumber();
             }
 
             const phoneInputOptional = document.querySelector("#phone_input_optional");
             if (phoneInputOptional?.value.trim() && itiOptional) {
-                if (!validatePhone(itiOptional, phoneInputOptional)) return alert(
-                    'Mohon periksa kembali nomor telepon Anda');
+                if (!validatePhone(itiOptional, phoneInputOptional)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nomor Telepon Tidak Valid',
+                        text: 'Mohon periksa kembali nomor telepon Anda',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    return;
+                }
                 document.getElementById('donor_phone_full').value = itiOptional.getNumber();
             }
 
@@ -424,17 +443,43 @@
                     },
                     body: new FormData(this)
                 });
+
                 const data = await response.json();
-                if (data.success && data.redirect_url) {
+
+                if (response.ok && data.success && data.redirect_url) {
                     window.location.href = data.redirect_url;
                 } else {
-                    alert('Terjadi kesalahan: ' + (data.message || 'Silakan cek kembali data Anda.'));
+                    // Handle validation errors from controller
+                    let errorMessage = data.message || 'Silakan cek kembali data Anda.';
+                    let errorTitle = 'Terjadi Kesalahan';
+
+                    // If there are validation errors, show them
+                    if (data.errors) {
+                        const errorMessages = [];
+                        for (const field in data.errors) {
+                            errorMessages.push(data.errors[field][0]);
+                        }
+                        errorMessage = errorMessages.join('<br>');
+                        errorTitle = 'Validasi Gagal';
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: errorTitle,
+                        html: errorMessage,
+                        confirmButtonColor: '#ef4444'
+                    });
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalText;
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Tidak dapat terhubung ke server. Silakan coba lagi.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Koneksi Error',
+                    text: 'Tidak dapat terhubung ke server. Silakan coba lagi.',
+                    confirmButtonColor: '#ef4444'
+                });
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
             }

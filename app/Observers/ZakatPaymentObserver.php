@@ -8,6 +8,7 @@ use App\Models\Program;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Services\WhatsAppService;
 
 class ZakatPaymentObserver
@@ -40,11 +41,17 @@ class ZakatPaymentObserver
             $this->updateCampaignAndProgramTotals($zakatPayment);
         }
 
-        // Send email notification to muzakki about payment status
-        $this->sendPaymentEmail($zakatPayment);
-
-        // Send WhatsApp notification
-        $this->sendWhatsAppNotification($zakatPayment);
+        // Send notifications based on payment status
+        // For pending status: only send WhatsApp (no email to avoid spam)
+        // For other statuses: send both email and WhatsApp
+        if ($zakatPayment->status === 'pending') {
+            // Send WhatsApp notification for pending payments
+            $this->sendWhatsAppNotification($zakatPayment);
+        } else {
+            // Send both email and WhatsApp for non-pending statuses
+            $this->sendPaymentEmail($zakatPayment);
+            $this->sendWhatsAppNotification($zakatPayment);
+        }
     }
 
     /**
@@ -57,12 +64,25 @@ class ZakatPaymentObserver
             $this->updateCampaignAndProgramTotals($zakatPayment);
         }
 
-        // Send email notification when payment status changes
+        // Send notifications when payment status changes
         if ($zakatPayment->isDirty('status')) {
-            $this->sendPaymentEmail($zakatPayment);
+            // Get the original status before update
+            $originalStatus = $zakatPayment->getOriginal('status');
+            $newStatus = $zakatPayment->status;
 
-            // Send WhatsApp notification
-            $this->sendWhatsAppNotification($zakatPayment);
+            // Only send notifications if status actually changed
+            if ($originalStatus !== $newStatus) {
+                // For pending status: only send WhatsApp (no email to avoid spam)
+                // For other statuses: send both email and WhatsApp
+                if ($newStatus === 'pending') {
+                    // Send WhatsApp notification for pending payments
+                    $this->sendWhatsAppNotification($zakatPayment);
+                } else {
+                    // Send both email and WhatsApp for non-pending statuses
+                    $this->sendPaymentEmail($zakatPayment);
+                    $this->sendWhatsAppNotification($zakatPayment);
+                }
+            }
         }
     }
 
@@ -149,46 +169,121 @@ class ZakatPaymentObserver
             return;
         }
 
+        // Create cache key to prevent duplicate email sending
+        $cacheKey = "email_sent_{$zakatPayment->payment_code}_{$zakatPayment->status}";
+
+        // Check if email already sent for this payment_code + status combination
+        if (Cache::has($cacheKey)) {
+            Log::info('Email already sent, skipping duplicate: ' . $zakatPayment->payment_code . ' with status: ' . $zakatPayment->status);
+            return;
+        }
+
         try {
             // Send email only for completed, failed, and cancelled status
             // Pending status will NOT send email to avoid spam
             switch ($zakatPayment->status) {
                 case 'completed':
-                    // Send payment success email with receipt
-                    Mail::to($zakatPayment->muzakki->email)
-                        ->send(new \App\Mail\DonorPaymentStatus($zakatPayment, 'completed'));
+                    // Send payment success email with receipt (only one email to avoid duplicate)
+                    // DonorPaymentStatus already contains all necessary information
+                    try {
+                        Mail::to($zakatPayment->muzakki->email)
+                            ->send(new \App\Mail\DonorPaymentStatus($zakatPayment, 'completed'));
 
-                    // Also send payment confirmation
-                    Mail::to($zakatPayment->muzakki->email)
-                        ->send(new \App\Mail\DonorPaymentConfirmation($zakatPayment));
+                        // Set cache to prevent duplicate email (expires in 24 hours)
+                        Cache::put($cacheKey, true, now()->addHours(24));
 
-                    Log::info('Payment email sent to: ' . $zakatPayment->muzakki->email . ' for payment: ' . $zakatPayment->payment_code . ' with status: completed');
+                        Log::info('Payment email sent successfully', [
+                            'email' => $zakatPayment->muzakki->email,
+                            'payment_code' => $zakatPayment->payment_code,
+                            'status' => 'completed'
+                        ]);
+                    } catch (\Exception $mailException) {
+                        // Log detailed error but don't break the payment process
+                        Log::error('Failed to send payment email', [
+                            'email' => $zakatPayment->muzakki->email,
+                            'payment_code' => $zakatPayment->payment_code,
+                            'status' => 'completed',
+                            'error_message' => $mailException->getMessage(),
+                            'error_file' => $mailException->getFile(),
+                            'error_line' => $mailException->getLine(),
+                            'trace' => $mailException->getTraceAsString()
+                        ]);
+                        // Don't set cache on error so it can be retried
+                    }
                     break;
 
                 case 'pending':
                     // DO NOT send email for pending status
-                    Log::info('Payment pending, no email sent to: ' . $zakatPayment->muzakki->email . ' for payment: ' . $zakatPayment->payment_code);
+                    Log::info('Payment pending, no email sent', [
+                        'email' => $zakatPayment->muzakki->email,
+                        'payment_code' => $zakatPayment->payment_code
+                    ]);
                     break;
 
                 case 'failed':
                     // Send failed payment notification
-                    Mail::to($zakatPayment->muzakki->email)
-                        ->send(new \App\Mail\DonorPaymentStatus($zakatPayment, 'failed'));
+                    try {
+                        Mail::to($zakatPayment->muzakki->email)
+                            ->send(new \App\Mail\DonorPaymentStatus($zakatPayment, 'failed'));
 
-                    Log::info('Payment email sent to: ' . $zakatPayment->muzakki->email . ' for payment: ' . $zakatPayment->payment_code . ' with status: failed');
+                        // Set cache to prevent duplicate email (expires in 24 hours)
+                        Cache::put($cacheKey, true, now()->addHours(24));
+
+                        Log::info('Payment email sent successfully', [
+                            'email' => $zakatPayment->muzakki->email,
+                            'payment_code' => $zakatPayment->payment_code,
+                            'status' => 'failed'
+                        ]);
+                    } catch (\Exception $mailException) {
+                        Log::error('Failed to send payment email', [
+                            'email' => $zakatPayment->muzakki->email,
+                            'payment_code' => $zakatPayment->payment_code,
+                            'status' => 'failed',
+                            'error_message' => $mailException->getMessage(),
+                            'error_file' => $mailException->getFile(),
+                            'error_line' => $mailException->getLine(),
+                            'trace' => $mailException->getTraceAsString()
+                        ]);
+                    }
                     break;
 
                 case 'cancelled':
                     // Send cancelled payment notification
-                    Mail::to($zakatPayment->muzakki->email)
-                        ->send(new \App\Mail\DonorPaymentStatus($zakatPayment, 'cancelled'));
+                    try {
+                        Mail::to($zakatPayment->muzakki->email)
+                            ->send(new \App\Mail\DonorPaymentStatus($zakatPayment, 'cancelled'));
 
-                    Log::info('Payment email sent to: ' . $zakatPayment->muzakki->email . ' for payment: ' . $zakatPayment->payment_code . ' with status: cancelled');
+                        // Set cache to prevent duplicate email (expires in 24 hours)
+                        Cache::put($cacheKey, true, now()->addHours(24));
+
+                        Log::info('Payment email sent successfully', [
+                            'email' => $zakatPayment->muzakki->email,
+                            'payment_code' => $zakatPayment->payment_code,
+                            'status' => 'cancelled'
+                        ]);
+                    } catch (\Exception $mailException) {
+                        Log::error('Failed to send payment email', [
+                            'email' => $zakatPayment->muzakki->email,
+                            'payment_code' => $zakatPayment->payment_code,
+                            'status' => 'cancelled',
+                            'error_message' => $mailException->getMessage(),
+                            'error_file' => $mailException->getFile(),
+                            'error_line' => $mailException->getLine(),
+                            'trace' => $mailException->getTraceAsString()
+                        ]);
+                    }
                     break;
             }
         } catch (\Exception $e) {
             // Log error but don't break the payment process
-            Log::error('Failed to send payment email: ' . $e->getMessage() . ' for payment: ' . $zakatPayment->payment_code);
+            Log::error('Failed to send payment email - outer exception', [
+                'payment_code' => $zakatPayment->payment_code,
+                'email' => $zakatPayment->muzakki->email ?? 'N/A',
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 

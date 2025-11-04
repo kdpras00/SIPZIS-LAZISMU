@@ -11,7 +11,7 @@
     </form>
 
     {{-- Notifications List --}}
-    <div class="space-y-3 max-h-96 overflow-y-auto">
+    <div class="space-y-3">
         @foreach($notifications as $notification)
         <div class="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-sm {{ $notification->is_read ? 'bg-white' : 'bg-blue-50' }}">
             <div class="flex items-start">

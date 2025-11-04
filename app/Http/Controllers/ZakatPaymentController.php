@@ -767,10 +767,12 @@ class ZakatPaymentController extends Controller
         // If program ID is provided, get the specific program
         $program = null;
         if ($programId) {
-            $program = Program::find($programId);
-            if ($program) {
-                $programCategory = $program->category;
+            $program = Program::active()->find($programId);
+            if (!$program) {
+                // If program not found or inactive, redirect to program page
+                return redirect()->route('program')->with('error', 'Program tidak ditemukan atau tidak aktif.');
             }
+            $programCategory = $program->category;
         }
 
         // If campaign ID is provided, get the specific campaign
@@ -932,7 +934,7 @@ class ZakatPaymentController extends Controller
         $validatedData = $request->validate([
             'program_category' => 'nullable|string|max:255',
             'program_type_id'  => 'nullable|exists:program_types,id',
-            'paid_amount'      => 'required|numeric|min:1000',
+            'paid_amount'      => 'required|numeric|min:10000',
             'payment_method'   => 'nullable|string|in:cash,transfer,check,online,bca_va,bri_va,bni_va,mandiri_va,permata_va,cimb_va,other_va,gopay,dana,shopeepay,qris,credit_card,bca_klikpay,cimb_clicks,danamon_online,bri_epay,indomaret,alfamart,akulaku', // Sesuaikan dengan metode pembayaran yang tersedia (removed 'midtrans')
             'donor_name'       => 'nullable|string|max:255',
             'donor_phone'      => 'nullable|string|max:20',
@@ -1129,15 +1131,20 @@ class ZakatPaymentController extends Controller
 
     public function guestSummary($paymentCode)
     {
-        // Remove status filter - allow any status to view summary
+        // First, check status quickly without loading relationships
         $payment = ZakatPayment::where('payment_code', $paymentCode)
-            ->with(['muzakki', 'programType'])
+            ->select('id', 'payment_code', 'status')
             ->firstOrFail();
 
-        // If payment is already completed, redirect to success page
+        // If payment is already completed, redirect immediately to success page
         if ($payment->status === 'completed') {
             return redirect()->route('guest.payment.success', $payment->payment_code);
         }
+
+        // Only load relationships if status is not completed (needed for view)
+        $payment = ZakatPayment::where('payment_code', $paymentCode)
+            ->with(['muzakki', 'programType'])
+            ->firstOrFail();
 
         return view('payments.guest-summary', compact('payment'));
     }
@@ -1535,18 +1542,41 @@ class ZakatPaymentController extends Controller
     public function guestCheckStatus($paymentCode)
     {
         try {
+            // First check database status quickly (no relationships needed for this check)
             $payment = ZakatPayment::where('payment_code', $paymentCode)
                 ->where('is_guest_payment', true)
+                ->select('id', 'payment_code', 'status', 'midtrans_order_id', 'updated_at')
                 ->firstOrFail();
 
-            // Load relationships
-            $payment->load(['muzakki']);
+            // If already completed, return immediately without calling Midtrans
+            if ($payment->status === 'completed') {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'completed',
+                    'message' => 'Status pembayaran: Completed'
+                ]);
+            }
+
+            // Only skip Midtrans API call if payment was updated very recently (within last 5 seconds)
+            // This allows more frequent checks while still preventing excessive API calls
+            $recentUpdate = $payment->updated_at && $payment->updated_at->diffInSeconds(now()) < 5;
+
+            if ($recentUpdate && $payment->status === 'pending') {
+                // If very recently updated and still pending, skip Midtrans call to reduce load
+                // But still return current status so frontend can continue checking
+                return response()->json([
+                    'success' => true,
+                    'status' => $payment->status,
+                    'message' => 'Status pembayaran: ' . ucfirst($payment->status)
+                ]);
+            }
 
             // Call Midtrans API to get real-time status
             try {
                 // Configure Midtrans
                 \Midtrans\Config::$serverKey = config('midtrans.server_key');
                 \Midtrans\Config::$isProduction = config('midtrans.is_production');
+                \Midtrans\Config::$curlOptions[CURLOPT_TIMEOUT] = 3; // Set timeout to 3 seconds for faster response
 
                 // Get transaction status from Midtrans using midtrans_order_id if available
                 $orderId = $payment->midtrans_order_id ?? $payment->payment_code;
@@ -1583,6 +1613,11 @@ class ZakatPaymentController extends Controller
                 // Update payment status if it has changed
                 if ($newStatus && $payment->status !== $newStatus) {
                     $payment->update(['status' => $newStatus]);
+                    Log::info('Payment status updated via checkStatus', [
+                        'payment_code' => $paymentCode,
+                        'old_status' => $payment->status,
+                        'new_status' => $newStatus
+                    ]);
                 }
 
                 return response()->json([

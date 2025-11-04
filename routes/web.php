@@ -52,9 +52,6 @@ Route::get('/payments/search', [ZakatPaymentController::class, 'search'])->name(
 
 
 
-Route::get('/donasi/{slug}', [DonationController::class, 'show'])->name('donasi.show');
-
-
 Route::get('/payment/{paymentCode}/failed', [ZakatPaymentController::class, 'guestFailure'])
     ->name('guest.payment.failed');
 
@@ -79,247 +76,6 @@ Route::get('/program/shadaqah', function () {
 Route::get('/program/pilar', function () {
     return app(HomeController::class)->programByCategory('pilar');
 })->name('program.pilar');
-
-Route::get('/program/pendidikan', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $program = \App\Models\Program::byCategory('pendidikan')->first();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('pendidikan')->sum('paid_amount');
-    $totalTarget = $program ? $program->total_target : 0;
-    return view('programs.pendidikan', compact('zakatTypes', 'collectedAmount', 'totalTarget'));
-})->name('program.pendidikan');
-
-Route::get('/program/kesehatan', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $program = \App\Models\Program::byCategory('kesehatan')->first();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('kesehatan')->sum('paid_amount');
-    $totalTarget = $program ? $program->total_target : 0;
-    return view('programs.kesehatan', compact('zakatTypes', 'collectedAmount', 'totalTarget'));
-})->name('program.kesehatan');
-
-Route::get('/program/ekonomi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $program = \App\Models\Program::byCategory('ekonomi')->first();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('ekonomi')->sum('paid_amount');
-    $totalTarget = $program ? $program->total_target : 0;
-    return view('programs.ekonomi', compact('zakatTypes', 'collectedAmount', 'totalTarget'));
-})->name('program.ekonomi');
-
-Route::get('/program/sosial-dakwah', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $program = \App\Models\Program::byCategory('sosial-dakwah')->first();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('sosial-dakwah')->sum('paid_amount');
-    $totalTarget = $program ? $program->total_target : 0;
-    return view('programs.sosial-dakwah', compact('zakatTypes', 'collectedAmount', 'totalTarget'));
-})->name('program.sosial-dakwah');
-
-Route::get('/program/kemanusiaan', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $program = \App\Models\Program::byCategory('kemanusiaan')->first();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('kemanusiaan')->sum('paid_amount');
-    $totalTarget = $program ? $program->total_target : 0;
-    return view('programs.kemanusiaan', compact('zakatTypes', 'collectedAmount', 'totalTarget'));
-})->name('program.kemanusiaan');
-
-Route::get('/program/lingkungan', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $program = \App\Models\Program::byCategory('lingkungan')->first();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('lingkungan')->sum('paid_amount');
-    $totalTarget = $program ? $program->total_target : 0;
-    return view('programs.lingkungan', compact('zakatTypes', 'collectedAmount', 'totalTarget'));
-})->name('program.lingkungan');
-
-// Program donation routes
-Route::get('/program/pendidikan/donasi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('pendidikan')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('pendidikan')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'pendidikan';
-    return view('programs.donasi-pendidikan', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.pendidikan.donasi');
-
-Route::get('/program/kesehatan/donasi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('kesehatan')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('kesehatan')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'kesehatan';
-    return view('programs.donasi-kesehatan', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.kesehatan.donasi');
-
-Route::get('/program/ekonomi/donasi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('ekonomi')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('ekonomi')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'ekonomi';
-    return view('programs.donasi-ekonomi', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.ekonomi.donasi');
-
-Route::get('/program/sosial-dakwah/donasi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('sosial-dakwah')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('sosial-dakwah')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'sosial-dakwah';
-    return view('programs.donasi-sosial-dakwah', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.sosial-dakwah.donasi');
-
-Route::get('/program/kemanusiaan/donasi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('kemanusiaan')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('kemanusiaan')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'kemanusiaan';
-    return view('programs.donasi-kemanusiaan', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.kemanusiaan.donasi');
-
-Route::get('/program/lingkungan/donasi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('lingkungan')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('lingkungan')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'lingkungan';
-    return view('programs.donasi-lingkungan', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.lingkungan.donasi');
-
-// Zakat program routes
-Route::get('/program/zakat-mal', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('zakat-mal')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('zakat-mal')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'zakat-mal';
-    return view('programs.zakat-mal', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.zakat-mal');
-
-Route::get('/program/zakat-fitrah', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('zakat-fitrah')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('zakat-fitrah')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'zakat-fitrah';
-    return view('programs.zakat-fitrah', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.zakat-fitrah');
-
-Route::get('/program/zakat-profesi', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('zakat-profesi')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('zakat-profesi')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'zakat-profesi';
-    return view('programs.zakat-profesi', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.zakat-profesi');
-
-Route::get('/program/zakat-pertanian', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('zakat-pertanian')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('zakat-pertanian')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'zakat-pertanian';
-    return view('programs.zakat-pertanian', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.zakat-pertanian');
-
-Route::get('/program/zakat-perdagangan', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('zakat-perdagangan')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('zakat-perdagangan')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'zakat-perdagangan';
-    return view('programs.zakat-perdagangan', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.zakat-perdagangan');
-
-// Infaq program routes
-Route::get('/program/infaq-masjid', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('infaq-masjid')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('infaq-masjid')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'infaq-masjid';
-    return view('programs.infaq-masjid', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.infaq-masjid');
-
-Route::get('/program/infaq-pendidikan', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('infaq-pendidikan')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('infaq-pendidikan')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'infaq-pendidikan';
-    return view('programs.infaq-pendidikan', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.infaq-pendidikan');
-
-Route::get('/program/infaq-kemanusiaan', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('infaq-kemanusiaan')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('infaq-kemanusiaan')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'infaq-kemanusiaan';
-    return view('programs.infaq-kemanusiaan', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.infaq-kemanusiaan');
-
-Route::get('/program/infaq-bencana', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('infaq-bencana')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('infaq-bencana')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'infaq-bencana';
-    return view('programs.infaq-bencana', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.infaq-bencana');
-
-Route::get('/program/infaq-sosial', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('infaq-sosial')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('infaq-sosial')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'infaq-sosial';
-    return view('programs.infaq-sosial', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.infaq-sosial');
-
-// Shadaqah program routes
-Route::get('/program/shadaqah-rutin', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('shadaqah-rutin')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('shadaqah-rutin')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'shadaqah-rutin';
-    return view('programs.shadaqah-rutin', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.shadaqah-rutin');
-
-Route::get('/program/shadaqah-jariyah', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('shadaqah-jariyah')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('shadaqah-jariyah')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'shadaqah-jariyah';
-    return view('programs.shadaqah-jariyah', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.shadaqah-jariyah');
-
-Route::get('/program/fidyah', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('fidyah')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('fidyah')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'fidyah';
-    return view('programs.fidyah', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.fidyah');
-
-Route::get('/program/shadaqah-tetangga', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('shadaqah-tetangga')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('shadaqah-tetangga')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'shadaqah-tetangga';
-    return view('programs.shadaqah-tetangga', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.shadaqah-tetangga');
-
-Route::get('/program/shadaqah-pakaian', function () {
-    $zakatTypes = \App\Models\ZakatType::active()->get();
-    $collectedAmount = \App\Models\ZakatPayment::completed()->byProgramCategory('shadaqah-pakaian')->sum('paid_amount');
-    $program = \App\Models\Program::byCategory('shadaqah-pakaian')->first();
-    $totalTarget = $program ? $program->total_target : 0;
-    $category = 'shadaqah-pakaian';
-    return view('programs.shadaqah-pakaian', compact('zakatTypes', 'collectedAmount', 'totalTarget', 'category'));
-})->name('program.shadaqah-pakaian');
 
 // Campaign routes
 Route::get('/campaigns/all', [CampaignController::class, 'all'])->name('campaigns.all');
@@ -386,8 +142,13 @@ Route::get('/calculator/gold-price', [ZakatCalculatorController::class, 'getGold
 
 // Guest payment routes (no login required)
 Route::prefix('donasi')->name('guest.payment.')->group(function () {
-    // Redirect /donasi to guest create page instead of program page
-    Route::get('/', [ZakatPaymentController::class, 'guestCreate'])->name('create');
+    // Redirect /donasi to program page so users can choose a program first
+    Route::get('/', function () {
+        return redirect()->route('program');
+    });
+
+    // Route for creating payment with program_id (accessed from program detail page)
+    Route::get('/create', [ZakatPaymentController::class, 'guestCreate'])->name('create');
     Route::post('/store', [ZakatPaymentController::class, 'guestStore'])->name('store');
     Route::get('/summary/{paymentCode}', [ZakatPaymentController::class, 'guestSummary'])->name('summary');
     Route::get('/success/{paymentCode}', [ZakatPaymentController::class, 'guestSuccess'])->name('success');
@@ -397,6 +158,9 @@ Route::prefix('donasi')->name('guest.payment.')->group(function () {
     Route::post('/{paymentCode}/get-token-custom', [ZakatPaymentController::class, 'getTokenCustom'])->name('getTokenCustom');
     Route::get('/{paymentCode}/receipt', [ZakatPaymentController::class, 'guestReceiptByCode'])->name('receipt');
     Route::get('/{paymentCode}/receipt/download', [ZakatPaymentController::class, 'downloadGuestReceipt'])->name('receipt.download');
+
+    // Route for campaign donation by slug (must be last to avoid conflict with specific routes)
+    Route::get('/{slug}', [DonationController::class, 'show'])->name('show');
 });
 
 

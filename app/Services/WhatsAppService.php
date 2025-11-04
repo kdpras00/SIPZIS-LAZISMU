@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Models\ZakatPayment;
 
 class WhatsAppService
@@ -21,7 +22,7 @@ class WhatsAppService
 
     /**
      * Send WhatsApp message using Fonnte API
-     * 
+     *
      * @param string $phone Phone number in format 628xxx
      * @param string $message Message content
      * @return array Response from API
@@ -48,7 +49,7 @@ class WhatsAppService
 
         // Format phone number
         $formattedPhone = $this->formatPhoneNumber($phone);
-        
+
         if (!$formattedPhone) {
             Log::error('Invalid phone number format', ['phone' => $phone]);
             return [
@@ -82,7 +83,6 @@ class WhatsAppService
                 'message' => $result['message'] ?? 'Message sent',
                 'response' => $result
             ];
-
         } catch (\Exception $e) {
             Log::channel('whatsapp')->error('Failed to send WhatsApp message', [
                 'phone' => $formattedPhone,
@@ -99,7 +99,7 @@ class WhatsAppService
 
     /**
      * Format phone number to 62xxx format
-     * 
+     *
      * @param string $phone
      * @return string|null
      */
@@ -149,19 +149,40 @@ class WhatsAppService
         $message .= "• Status: ⏳ Menunggu Pembayaran\n\n";
         $message .= "💳 Silakan selesaikan pembayaran Anda.\n\n";
         $message .= "Cek status: {$trackingUrl}\n\n";
+        $message .= "Setelah pembayaran berhasil, kwitansi akan dikirim ke email Anda.\n\n";
         $message .= "_SIPZIS - Sistem Informasi Pengelolaan Zakat_";
 
         return $this->sendMessage($phone, $message);
     }
 
     /**
-     * Send payment success notification
+     * Send payment success notification with PDF receipt
      */
     public function sendPaymentSuccess(ZakatPayment $payment, $phone)
     {
         $programName = $this->getProgramName($payment);
         $amount = number_format($payment->paid_amount, 0, ',', '.');
-        $date = $payment->payment_date ? $payment->payment_date->format('d M Y H:i') : now()->format('d M Y H:i');
+
+        // Use updated_at for completed payments to get accurate date and time when payment was completed
+        // This ensures we show the actual date and time when the payment status changed to completed
+        if ($payment->updated_at && $payment->status === 'completed') {
+            // Use updated_at when status is completed (shows when payment was actually completed)
+            $dateTime = $payment->updated_at;
+        } elseif ($payment->created_at) {
+            // Fallback to created_at if updated_at not available
+            $dateTime = $payment->created_at;
+        } else {
+            // Last fallback to current time
+            $dateTime = now();
+        }
+
+        // Convert to Carbon if not already
+        if (!$dateTime instanceof \Carbon\Carbon) {
+            $dateTime = \Carbon\Carbon::parse($dateTime);
+        }
+
+        // Format with timezone Indonesia (WIB) - shows actual date and time
+        $date = $dateTime->setTimezone('Asia/Jakarta')->format('d M Y H:i');
 
         $message = "✅ *DONASI BERHASIL*\n\n";
         $message .= "Alhamdulillah! 🎉\n\n";
@@ -173,10 +194,153 @@ class WhatsAppService
         $message .= "• Nominal: Rp {$amount}\n";
         $message .= "• Tanggal: {$date}\n\n";
         $message .= "Jazakallahu khairan katsiran! 🤲\n\n";
-        $message .= "Bukti donasi telah dikirim ke email Anda.\n\n";
+        $message .= "📄 Kwitansi pembayaran dilampirkan pada pesan ini.\n";
+        $message .= "Kwitansi juga telah dikirim ke email Anda dalam format PDF.\n\n";
         $message .= "_SIPZIS - Sistem Informasi Pengelolaan Zakat_";
 
-        return $this->sendMessage($phone, $message);
+        // Send message with PDF receipt in one go
+        return $this->sendReceiptPDF($payment, $phone, $message);
+    }
+
+    /**
+     * Send PDF receipt as document via WhatsApp
+     *
+     * @param ZakatPayment $payment
+     * @param string $phone
+     * @param string|null $customMessage Custom message to send with PDF. If null, uses default message.
+     * @return array
+     */
+    public function sendReceiptPDF(ZakatPayment $payment, $phone, $customMessage = null)
+    {
+        // Check if WhatsApp is enabled
+        if (!$this->enabled) {
+            return [
+                'success' => false,
+                'message' => 'WhatsApp is disabled in config'
+            ];
+        }
+
+        // Validate token
+        if (empty($this->token)) {
+            Log::error('WhatsApp API token not configured');
+            return [
+                'success' => false,
+                'message' => 'WhatsApp API token not configured'
+            ];
+        }
+
+        // Format phone number
+        $formattedPhone = $this->formatPhoneNumber($phone);
+
+        if (!$formattedPhone) {
+            return [
+                'success' => false,
+                'message' => 'Invalid phone number format'
+            ];
+        }
+
+        try {
+            // Generate PDF receipt
+            $payment->load(['muzakki', 'programType']);
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('payments.guest-receipt-pdf', [
+                'payment' => $payment
+            ]);
+            $pdf->setPaper('A4');
+
+            // Generate PDF content
+            $pdfContent = $pdf->output();
+
+            // Save PDF to public storage for backup/reference
+            $filename = 'kwitansi-' . $payment->payment_code . '.pdf';
+            $storagePath = 'receipts/' . $filename;
+            Storage::disk('public')->put($storagePath, $pdfContent);
+
+            // Use custom message if provided, otherwise use default
+            $message = $customMessage ?? 'Kwitansi Pembayaran Donasi Anda';
+
+            // Get the full public URL for the PDF
+            // Ensure storage symlink exists: php artisan storage:link
+            $publicUrl = asset('storage/' . $storagePath);
+
+            // If using localhost/development, use APP_URL for full URL
+            $appUrl = config('app.url');
+            if (str_contains($publicUrl, 'localhost') || str_contains($publicUrl, '127.0.0.1')) {
+                // For local development, use the configured APP_URL
+                $publicUrl = rtrim($appUrl, '/') . '/storage/' . $storagePath;
+            }
+
+            // Try method 1: Using URL (works if URL is publicly accessible)
+            $response = Http::withHeaders([
+                'Authorization' => $this->token,
+            ])->post($this->apiUrl, [
+                'target' => $formattedPhone,
+                'message' => $message,
+                'type' => 'document',
+                'document' => $publicUrl,
+                'filename' => $filename,
+            ]);
+
+            $result = $response->json();
+
+            // If URL method fails (likely because URL is not publicly accessible),
+            // try base64 method as fallback
+            if (!$response->successful()) {
+                Log::channel('whatsapp')->warning('URL method failed, trying base64 method', [
+                    'error' => $result['message'] ?? 'Unknown error',
+                    'payment_code' => $payment->payment_code,
+                    'url_tried' => $publicUrl,
+                ]);
+
+                // Convert PDF to base64 for Fonnte API
+                $base64Pdf = base64_encode($pdfContent);
+
+                $response = Http::withHeaders([
+                    'Authorization' => $this->token,
+                ])->post($this->apiUrl, [
+                    'target' => $formattedPhone,
+                    'message' => $message,
+                    'type' => 'document',
+                    'document' => $base64Pdf,
+                    'filename' => $filename,
+                ]);
+            }
+
+            $result = $response->json();
+
+            Log::channel('whatsapp')->info('WhatsApp PDF receipt sent', [
+                'phone' => $formattedPhone,
+                'payment_code' => $payment->payment_code,
+                'status' => $response->status(),
+                'response' => $result,
+            ]);
+
+            return [
+                'success' => $response->successful(),
+                'message' => $result['message'] ?? 'PDF sent',
+                'response' => $result
+            ];
+        } catch (\Exception $e) {
+            // Clean up file from storage on error if it was created
+            if (isset($storagePath)) {
+                try {
+                    Storage::disk('public')->delete($storagePath);
+                } catch (\Exception $deleteException) {
+                    // Ignore cleanup errors
+                }
+            }
+
+            Log::channel('whatsapp')->error('Failed to send WhatsApp PDF receipt', [
+                'phone' => $formattedPhone,
+                'payment_code' => $payment->payment_code,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -287,6 +451,4 @@ class WhatsAppService
 
         return 'Donasi Umum';
     }
-
 }
-

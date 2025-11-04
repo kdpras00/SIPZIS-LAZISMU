@@ -9,7 +9,6 @@
         content="{{ isset($title) && $title ? $title . ' - SIPZIS' : 'SIPZIS - Sistem Informasi Pengelolaan Zakat' }}">
     <meta name="application-name" content="SIPZIS">
 
-    <link rel="preload" as="image" href="{{ asset('img/lazismu-icon.ico') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('img/lazismu-icon.ico') }}">
 
     <title>{{ isset($title) && $title ? $title . ' - SIPZIS' : 'SIPZIS' }}</title>

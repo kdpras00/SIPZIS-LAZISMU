@@ -159,6 +159,9 @@
         let selectedMethod = null;
         let isProcessing = false; // Flag to prevent multiple calls
 
+        // Define checkPaymentStatus function in global scope so it can be called from Snap.js callbacks
+        let checkPaymentStatus = null;
+
         // Add event listeners to payment method buttons
         document.querySelectorAll('.payment-method').forEach(button => {
             button.addEventListener('click', function() {
@@ -299,10 +302,15 @@
                                     showNotification(
                                         'Pembayaran sedang diproses. Silakan tunggu konfirmasi.',
                                         'info');
+
+                                    // Immediately trigger status check after returning from payment page
+                                    // This helps catch payment that was completed while on payment page
+                                    // The checkPaymentStatus function will be available after page redirects back to summary
+
                                     setTimeout(() => {
                                         window.location.href =
                                             '{{ route('guest.payment.summary', $payment->payment_code) }}';
-                                    }, 3000);
+                                    }, 1000); // Reduced from 3000ms to 1000ms for faster redirect
                                 },
                                 onError: function(result) {
                                     if (window.snapHandled) return;
@@ -369,40 +377,71 @@
 
 @if ($payment->status === 'pending')
     <script>
-        // Auto check every 5 seconds (reduced frequency to avoid overload)
+        // Auto check every 1 second for faster detection in sandbox
         const paymentCode = "{{ $payment->payment_code }}";
         const checkUrl = "{{ route('guest.payment.checkStatus', $payment->payment_code) }}";
         let checkCount = 0;
-        const maxChecks = 60; // Max 5 minutes (60 checks * 5 seconds)
+        const maxChecks = 300; // Max ~5 minutes (300 checks * 1 second)
 
-        async function checkPaymentStatus() {
+        // Define checkPaymentStatus function and assign to global variable
+        checkPaymentStatus = async function() {
             try {
                 checkCount++;
 
-                const res = await fetch(checkUrl);
+                const res = await fetch(checkUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    cache: 'no-store'
+                });
+
+                if (!res.ok) {
+                    console.error('Check status failed:', res.status);
+                    return;
+                }
+
                 const data = await res.json();
 
                 if (data.status === 'completed') {
-                    // Langsung redirect ke success page
+                    // Clear interval immediately to prevent multiple redirects
+                    if (statusCheckInterval) clearInterval(statusCheckInterval);
+                    // Immediate redirect to success page
                     window.location.href = "{{ route('guest.payment.success', $payment->payment_code) }}";
+                    return;
                 } else if (data.status === 'cancelled' || data.status === 'failed') {
+                    if (statusCheckInterval) clearInterval(statusCheckInterval);
                     window.location.href = "{{ route('guest.payment.failed', $payment->payment_code) }}";
+                    return;
                 } else if (checkCount >= maxChecks) {
                     // Stop checking after max attempts
+                    if (statusCheckInterval) clearInterval(statusCheckInterval);
                     showNotification(
                         'Pembayaran masih pending. Silakan refresh halaman atau hubungi support jika sudah bayar.',
                         'warning');
-                    clearInterval(statusCheckInterval);
                 }
             } catch (e) {
+                console.error('Error checking payment status:', e);
                 // Don't stop checking on error, just log it
             }
         }
 
-        // Initial check after 2 seconds
-        setTimeout(checkPaymentStatus, 2000);
+        let statusCheckInterval;
 
-        // Then check every 5 seconds
-        const statusCheckInterval = setInterval(checkPaymentStatus, 5000);
+        // Initial check immediately for fastest response
+        checkPaymentStatus();
+
+        // Then check every 1 second (very aggressive for sandbox environment)
+        statusCheckInterval = setInterval(checkPaymentStatus, 1000);
+
+        // Also check immediately after user returns from payment page (e.g., after closing Snap.js)
+        // This helps catch payment status changes that happened while user was on payment page
+        window.addEventListener('focus', function() {
+            if (!statusCheckInterval) {
+                checkPaymentStatus();
+                statusCheckInterval = setInterval(checkPaymentStatus, 1000);
+            }
+        });
     </script>
 @endif

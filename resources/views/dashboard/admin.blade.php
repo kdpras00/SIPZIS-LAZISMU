@@ -301,11 +301,37 @@
                             </h1>
                         </div>
                         <div class="text-end">
-                            <div class="enhanced-card px-3 py-2">
-                                <small class="text-green-100 d-block">{{ now()->format('l') }}</small>
-                                <span class="text-white-custom fw-semibold">{{ now()->format('d F Y') }}</span>
+                            <div class="bg-white rounded-lg shadow-sm p-3 d-inline-block">
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
+                                    </div>
+                                    <div class="fw-semibold text-dark" style="font-size: 1.5rem;">
+                                        <i class="fas fa-clock me-2 text-success"></i>
+                                        <span id="dynamic-clock"></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <script>
+                            function updateClock() {
+                                const clock = document.getElementById('dynamic-clock');
+                                if (clock) {
+                                    const now = new Date();
+                                    const indonesiaTime = new Date(now.toLocaleString("en-US", {
+                                        timeZone: "Asia/Jakarta"
+                                    }));
+                                    const pad = n => n < 10 ? '0' + n : n;
+                                    const h = pad(indonesiaTime.getHours());
+                                    const m = pad(indonesiaTime.getMinutes());
+                                    const s = pad(indonesiaTime.getSeconds());
+                                    clock.textContent = `${h}:${m}:${s}`;
+                                }
+                            }
+                            setInterval(updateClock, 1000);
+                            updateClock();
+                        </script>
                     </div>
                 </div>
             </div>
