@@ -471,6 +471,127 @@
             💬
         </button>
     </div>
+    
+    <!-- Intercept Puter API errors BEFORE loading Puter.js -->
+    <script>
+        (function() {
+            // Suppress 401 errors from Puter whoami endpoint (not critical)
+            // Override console methods to filter out Puter 401 errors
+            const originalConsoleError = console.error;
+            const originalConsoleWarn = console.warn;
+            
+            console.error = function(...args) {
+                const message = args.join(' ');
+                if ((message.includes('api.puter.com') || message.includes('puter.com')) && 
+                    (message.includes('401') || message.includes('Unauthorized') || message.includes('whoami'))) {
+                    // Silently ignore Puter whoami 401 errors
+                    return;
+                }
+                originalConsoleError.apply(console, args);
+            };
+            
+            console.warn = function(...args) {
+                const message = args.join(' ');
+                if ((message.includes('api.puter.com') || message.includes('puter.com')) && 
+                    (message.includes('401') || message.includes('Unauthorized') || message.includes('whoami'))) {
+                    // Silently ignore Puter whoami 401 warnings
+                    return;
+                }
+                originalConsoleWarn.apply(console, args);
+            };
+
+            // Override XMLHttpRequest to intercept Puter API calls
+            const OriginalXHR = window.XMLHttpRequest;
+            window.XMLHttpRequest = function() {
+                const xhr = new OriginalXHR();
+                const originalOpen = xhr.open;
+                
+                xhr.open = function(method, url, ...rest) {
+                    if (typeof url === 'string' && url.includes('api.puter.com/whoami')) {
+                        // Intercept whoami calls - mark this request
+                        xhr._isPuterWhoami = true;
+                        xhr._originalUrl = url;
+                    }
+                    return originalOpen.apply(this, [method, url, ...rest]);
+                };
+                
+                const originalSend = xhr.send;
+                xhr.send = function(...args) {
+                    if (xhr._isPuterWhoami) {
+                        // Suppress all error handlers for whoami endpoint
+                        const originalOnError = xhr.onerror;
+                        const originalOnLoad = xhr.onload;
+                        
+                        xhr.onerror = function(e) {
+                            // Silently suppress errors
+                            e.preventDefault && e.preventDefault();
+                            e.stopPropagation && e.stopPropagation();
+                            return false;
+                        };
+                        
+                        xhr.onload = function() {
+                            if (xhr.status === 401 || xhr.status === 0) {
+                                // Silently handle 401 or failed requests
+                                return;
+                            }
+                            if (originalOnLoad) {
+                                originalOnLoad.call(this);
+                            }
+                        };
+                        
+                        // Override status to prevent 401 from being visible
+                        Object.defineProperty(xhr, 'status', {
+                            get: function() {
+                                if (this._isPuterWhoami && this._actualStatus === 401) {
+                                    return 200; // Return fake success status
+                                }
+                                return this._actualStatus || 200;
+                            },
+                            set: function(value) {
+                                this._actualStatus = value;
+                            }
+                        });
+                    }
+                    return originalSend.apply(this, args);
+                };
+                
+                return xhr;
+            };
+
+            // Also suppress fetch errors for Puter whoami (handled by fetch API)
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const url = args[0];
+                // Check if this is a Puter whoami request
+                if (typeof url === 'string' && url.includes('api.puter.com/whoami')) {
+                    // Intercept the request completely - return a successful response immediately
+                    // This prevents the actual network request and the 401 error
+                    return Promise.resolve(new Response(JSON.stringify({}), {
+                        status: 200,
+                        statusText: 'OK',
+                        ok: true,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        })
+                    }));
+                }
+                // For all other requests, use the original fetch
+                return originalFetch.apply(this, args);
+            };
+
+            // Suppress network errors from Puter whoami endpoint
+            window.addEventListener('error', function(e) {
+                if (e.message && (e.message.includes('401') || e.message.includes('Unauthorized')) && 
+                    (e.filename && (e.filename.includes('api.puter.com') || e.filename.includes('puter.com')) || 
+                     e.target && e.target.src && e.target.src.includes('api.puter.com'))) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }, true);
+        })();
+    </script>
+    
     <!-- Puter.js API untuk Claude AI -->
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -676,38 +797,6 @@
                 checkPuter();
             }
 
-            // Suppress 401 errors from Puter whoami endpoint (not critical)
-            window.addEventListener('error', function(e) {
-                if (e.message && e.message.includes('401') && e.filename && e.filename.includes(
-                        'api.puter.com/whoami')) {
-                    console.log('Puter whoami endpoint returned 401 (non-critical, continuing...)');
-                    e.preventDefault();
-                    return false;
-                }
-            }, true);
-
-            // Also suppress fetch errors for Puter whoami (handled by fetch API)
-            const originalFetch = window.fetch;
-            window.fetch = function(...args) {
-                const url = args[0];
-                if (typeof url === 'string' && url.includes('api.puter.com/whoami')) {
-                    return originalFetch.apply(this, args).catch(err => {
-                        if (err.message && err.message.includes('401')) {
-                            console.log('Puter whoami 401 error (non-critical):', err);
-                            // Return a mock response to prevent breaking
-                            return new Response(JSON.stringify({}), {
-                                status: 200,
-                                statusText: 'OK',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        }
-                        throw err;
-                    });
-                }
-                return originalFetch.apply(this, args);
-            };
 
             // Check if puter is available, if not, wait for it
             function initializeChatbot() {

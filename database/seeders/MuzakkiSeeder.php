@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Muzakki;
+use App\Models\User;
 
 class MuzakkiSeeder extends Seeder
 {
@@ -27,7 +28,7 @@ class MuzakkiSeeder extends Seeder
                 'monthly_income' => 15000000.00,
                 'date_of_birth' => '1980-01-01',
                 'is_active' => true,
-                'user_id' => 4, // Ahmad user
+                'user_email' => 'ahmad@example.com', // Use email to find user
             ],
             [
                 'name' => 'Fatimah Zakat',
@@ -43,7 +44,7 @@ class MuzakkiSeeder extends Seeder
                 'monthly_income' => 8000000.00,
                 'date_of_birth' => '1985-02-02',
                 'is_active' => true,
-                'user_id' => 5, // Fatimah user
+                'user_email' => 'fatimah@example.com', // Use email to find user
             ],
             [
                 'name' => 'Muhammad Dermawan',
@@ -59,7 +60,7 @@ class MuzakkiSeeder extends Seeder
                 'monthly_income' => 25000000.00,
                 'date_of_birth' => '1990-03-03',
                 'is_active' => true,
-                'user_id' => 6, // Muhammad user
+                'user_email' => 'muhammad@example.com', // Use email to find user
             ],
             [
                 'name' => 'Siti Hasanah',
@@ -75,7 +76,7 @@ class MuzakkiSeeder extends Seeder
                 'monthly_income' => 12000000.00,
                 'date_of_birth' => '1988-04-04',
                 'is_active' => true,
-                'user_id' => null,
+                'user_email' => null, // No user account
             ],
             [
                 'name' => 'Abdullah Barokah',
@@ -91,11 +92,28 @@ class MuzakkiSeeder extends Seeder
                 'monthly_income' => 18000000.00,
                 'date_of_birth' => '1992-05-05',
                 'is_active' => true,
-                'user_id' => null,
+                'user_email' => null, // No user account
             ],
         ];
 
         foreach ($muzakkiData as $data) {
+            // Extract user_email before creating
+            $userEmail = $data['user_email'] ?? null;
+            unset($data['user_email']);
+
+            // Find user by email if user_email is provided
+            if ($userEmail) {
+                $user = User::where('email', $userEmail)->first();
+                $data['user_id'] = $user ? $user->id : null;
+            } else {
+                $data['user_id'] = null;
+            }
+
+            // Generate campaign URL if email exists
+            if (isset($data['email']) && $data['email']) {
+                $data['campaign_url'] = url('/campaigner/' . $data['email']);
+            }
+
             Muzakki::create($data);
         }
     }

@@ -97,6 +97,29 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAt4qk6a7sZNCee7AT1NCG7KPSzjodj8KE",
+            authDomain: "permatajatifurniture-pras.firebaseapp.com",
+            projectId: "permatajatifurniture-pras",
+            storageBucket: "permatajatifurniture-pras.firebasestorage.app",
+            messagingSenderId: "655538583549",
+            appId: "1:655538583549:web:e6124e9e12863ff23b8b94",
+            measurementId: "G-1SX60CDLY6",
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            firebase.auth().useDeviceLanguage();
+        }
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const togglePassword = document.getElementById('togglePassword');
