@@ -324,6 +324,29 @@ Route::get('/payment/error', [ZakatPaymentController::class, 'error']);
 Route::post('/midtrans/notification', [ZakatPaymentController::class, 'handleNotification']);
 // Add this route for Firebase login
 Route::post('/firebase-login', function (Request $request) {
+    // Verify reCAPTCHA v3
+    $recaptchaToken = $request->input('g-recaptcha-response');
+    if (!$recaptchaToken) {
+        return response()->json(['success' => false, 'message' => 'Validasi reCAPTCHA diperlukan.'], 422);
+    }
+    try {
+        $verification = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => config('services.recaptcha.secret_key'),
+            'response' => $recaptchaToken,
+            'remoteip' => $request->ip(),
+        ])->json();
+        if (!($verification['success'] ?? false)) {
+            return response()->json(['success' => false, 'message' => 'Verifikasi reCAPTCHA gagal.'], 422);
+        }
+        $score = (float) ($verification['score'] ?? 0);
+        $action = $verification['action'] ?? null;
+        $threshold = (float) config('services.recaptcha.threshold', 0.5);
+        if ($score < $threshold || ($action && $action !== 'login')) {
+            return response()->json(['success' => false, 'message' => 'Aktivitas mencurigakan terdeteksi.'], 422);
+        }
+    } catch (\Throwable $e) {
+        return response()->json(['success' => false, 'message' => 'Layanan reCAPTCHA tidak tersedia.'], 503);
+    }
     $request->validate([
         'email' => 'required|email',
         'name' => 'required|string',

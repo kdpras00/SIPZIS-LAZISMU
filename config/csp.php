@@ -25,6 +25,8 @@ return [
             "https://cdnjs.cloudflare.com",
             "https://fonts.bunny.net",
             "https://fonts.googleapis.com",
+            "https://www.google.com",
+            "https://www.gstatic.com",
             "https://app.sandbox.midtrans.com",
             "https://app.midtrans.com",
             "https://snap-assets.al-pc-id-b.cdn.gtflabs.io", // midtrans asset
@@ -54,12 +56,16 @@ return [
 
         'connect-src' => [
             "'self'",
+            "https://www.google.com",
+            "https://www.gstatic.com",
             "https://app.sandbox.midtrans.com",
             "https://app.midtrans.com",
         ],
 
         'frame-src' => [
             "'self'",
+            "https://www.google.com",
+            "https://www.gstatic.com",
             "https://app.sandbox.midtrans.com",
             "https://app.midtrans.com",
         ],

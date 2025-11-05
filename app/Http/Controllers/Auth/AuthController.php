@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class AuthController extends Controller
 {
@@ -42,6 +43,35 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:6',
         ]);
+
+        // Verify reCAPTCHA v3 token
+        $recaptchaToken = $request->input('g-recaptcha-response');
+        if (!$recaptchaToken) {
+            return back()->withErrors(['email' => 'Validasi reCAPTCHA diperlukan.'])->withInput();
+        }
+
+        try {
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => config('services.recaptcha.secret_key'),
+                'response' => $recaptchaToken,
+                'remoteip' => $request->ip(),
+            ]);
+            $verification = $response->json();
+
+            if (!($verification['success'] ?? false)) {
+                return back()->withErrors(['email' => 'Verifikasi reCAPTCHA gagal.'])->withInput();
+            }
+
+            // Optional checks for v3
+            $score = (float) ($verification['score'] ?? 0);
+            $action = $verification['action'] ?? null;
+            $threshold = (float) config('services.recaptcha.threshold', 0.5);
+            if ($score < $threshold || ($action && $action !== 'login')) {
+                return back()->withErrors(['email' => 'Aktivitas mencurigakan terdeteksi. Coba lagi.'])->withInput();
+            }
+        } catch (\Throwable $e) {
+            return back()->withErrors(['email' => 'Layanan reCAPTCHA tidak tersedia. Coba lagi.'])->withInput();
+        }
 
         $credentials = $request->only('email', 'password');
 

@@ -61,6 +61,7 @@
 
                 <!-- Social Login Buttons -->
                 <div class="space-y-3">
+                    <!-- reCAPTCHA v3: token will be generated on submit -->
                     <button type="button" id="googleLogin"
                         class="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 px-6 rounded-lg transition-colors duration-200">
                         <svg class="w-5 h-5" viewBox="0 0 24 24">
@@ -100,6 +101,9 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+    <!-- Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+    </script>
 
     <!-- Firebase Configuration -->
     <script>
@@ -122,11 +126,88 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const recaptchaSiteKey = (function() {
+                const fromBlade = '{{ config('services.recaptcha.site_key') }}';
+                if (fromBlade && fromBlade.trim().length > 0 && fromBlade.indexOf('config(') === -1) {
+                    return fromBlade.trim();
+                }
+                try {
+                    const cfg = window.___grecaptcha_cfg || {};
+                    const renderArr = cfg.render || [];
+                    if (Array.isArray(renderArr) && renderArr.length > 0 && renderArr[0]) {
+                        return renderArr[0];
+                    }
+                } catch (_) {}
+                return '';
+            })();
             const togglePassword = document.getElementById('togglePassword');
             const password = document.getElementById('password');
             const icon = togglePassword.querySelector('i');
             const loginForm = document.getElementById('loginForm');
             const googleLoginBtn = document.getElementById('googleLogin');
+
+            // Generate reCAPTCHA v3 token before normal form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitForm = () => loginForm.submit();
+                try {
+                    if (!window.grecaptcha || !window.grecaptcha.execute) {
+                        alert('Memuat reCAPTCHA... silakan coba lagi.');
+                        return false;
+                    }
+                    if (!recaptchaSiteKey) {
+                        alert('Site key reCAPTCHA tidak terbaca. Coba refresh atau hubungi admin.');
+                        return false;
+                    }
+                    window.grecaptcha.ready(function() {
+                        window.grecaptcha.execute(recaptchaSiteKey, {
+                                action: 'login'
+                            })
+                            .then(function(token) {
+                                let tokenInput = loginForm.querySelector(
+                                    'input[name="g-recaptcha-response"]');
+                                if (!tokenInput) {
+                                    tokenInput = document.createElement('input');
+                                    tokenInput.type = 'hidden';
+                                    tokenInput.name = 'g-recaptcha-response';
+                                    loginForm.appendChild(tokenInput);
+                                }
+                                tokenInput.value = token;
+
+                                let actionInput = loginForm.querySelector(
+                                    'input[name="g-recaptcha-action"]');
+                                if (!actionInput) {
+                                    actionInput = document.createElement('input');
+                                    actionInput.type = 'hidden';
+                                    actionInput.name = 'g-recaptcha-action';
+                                    loginForm.appendChild(actionInput);
+                                }
+                                actionInput.value = 'login';
+
+                                submitForm();
+                            })
+                            .catch(function(err) {
+                                console.error('reCAPTCHA execute error:', err);
+                                alert('Validasi reCAPTCHA gagal. Coba lagi.');
+                            });
+                    });
+                } catch (err) {
+                    console.error('reCAPTCHA setup failed:', err);
+                    alert('Validasi reCAPTCHA gagal. Coba lagi.');
+                    return false;
+                }
+            });
+
+            // Handle redirect result (fallback flow)
+            firebase.auth().getRedirectResult()
+                .then((result) => {
+                    if (result && result.user) {
+                        handleFirebaseLogin(result.user);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error from getRedirectResult:', error);
+                });
 
             togglePassword.addEventListener('click', function() {
                 // Toggle the type attribute
@@ -150,28 +231,65 @@
                 if (isLoggingIn) return; // cegah klik ganda
                 isLoggingIn = true;
 
-                const provider = new firebase.auth.GoogleAuthProvider();
-                // Force account selector to appear every time
-                provider.setCustomParameters({
-                    prompt: 'select_account'
-                });
-
-                firebase.auth().signInWithPopup(provider)
-                    .then((result) => {
-                        const user = result.user;
-                        handleFirebaseLogin(user);
-                    })
-                    .catch((error) => {
-                        console.error('Error during Google login:', error);
-                        alert('Login dengan Google gagal: ' + error.message);
-                    })
-                    .finally(() => {
-                        isLoggingIn = false; // reset flag setelah selesai
+                const startGoogleLogin = (recaptchaToken) => {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    provider.setCustomParameters({
+                        prompt: 'select_account'
                     });
+
+                    firebase.auth().signInWithPopup(provider)
+                        .then((result) => {
+                            const user = result.user;
+                            handleFirebaseLogin(user, recaptchaToken);
+                        })
+                        .catch((error) => {
+                            console.error('Error during Google login:', error);
+                            // Fallback to redirect flow for popup issues or COOP-related blocking
+                            const popupIssues = ['auth/popup-closed-by-user',
+                                'auth/cancelled-popup-request'
+                            ];
+                            if (popupIssues.includes(error.code)) {
+                                try {
+                                    firebase.auth().signInWithRedirect(provider);
+                                    return; // stop further handling; redirect will occur
+                                } catch (e) {
+                                    console.error('Fallback to redirect failed:', e);
+                                }
+                            }
+                            alert('Login dengan Google gagal: ' + error.message);
+                        })
+                        .finally(() => {
+                            isLoggingIn = false; // reset flag setelah selesai
+                        });
+                };
+
+                if (!window.grecaptcha || !window.grecaptcha.execute) {
+                    isLoggingIn = false;
+                    alert('Memuat reCAPTCHA... silakan coba lagi.');
+                    return;
+                }
+                window.grecaptcha.ready(function() {
+                    if (!recaptchaSiteKey) {
+                        isLoggingIn = false;
+                        alert('Site key reCAPTCHA tidak terbaca. Coba refresh atau hubungi admin.');
+                        return;
+                    }
+                    window.grecaptcha.execute(recaptchaSiteKey, {
+                            action: 'login'
+                        })
+                        .then(function(token) {
+                            startGoogleLogin(token);
+                        })
+                        .catch(function(err) {
+                            console.error('reCAPTCHA execute error:', err);
+                            isLoggingIn = false;
+                            alert('Validasi reCAPTCHA gagal. Coba lagi.');
+                        });
+                });
             });
 
             // Handle Firebase login and integrate with Laravel
-            function handleFirebaseLogin(user) {
+            function handleFirebaseLogin(user, recaptchaResponse) {
                 // Send user data to Laravel backend
                 fetch('/firebase-login', {
                         method: 'POST',
@@ -183,7 +301,8 @@
                         body: JSON.stringify({
                             email: user.email,
                             name: user.displayName,
-                            firebase_uid: user.uid
+                            firebase_uid: user.uid,
+                            'g-recaptcha-response': recaptchaResponse || ''
                         })
                     })
                     .then(response => response.json())
