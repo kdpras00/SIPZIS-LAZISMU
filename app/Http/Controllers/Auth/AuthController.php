@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -215,10 +217,10 @@ class AuthController extends Controller
 
             // Send welcome email to new muzakki
             try {
-                \Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
+                Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
             } catch (\Exception $e) {
                 // Log error but don't stop registration process
-                \Log::error('Failed to send welcome email: ' . $e->getMessage());
+                Log::error('Failed to send welcome email: ' . $e->getMessage());
             }
 
             session(['registered_email' => $request->email]);
@@ -303,11 +305,11 @@ class AuthController extends Controller
             // Send welcome email to new users registered via Firebase
             if ($isNewUser) {
                 try {
-                    \Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
-                    \Log::info('Welcome email sent to Firebase user: ' . $user->email);
+                    Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
+                    Log::info('Welcome email sent to Firebase user: ' . $user->email);
                 } catch (\Exception $e) {
                     // Log error but don't stop login process
-                    \Log::error('Failed to send welcome email to Firebase user: ' . $e->getMessage());
+                    Log::error('Failed to send welcome email to Firebase user: ' . $e->getMessage());
                 }
             }
 
