@@ -203,6 +203,13 @@ class MuzakkiController extends Controller
             }
         }
 
+        // Check if this is admin editing (route has muzakki parameter)
+        if (request()->route()->hasParameter('muzakki')) {
+            // Admin editing - use admin-specific view
+            return view('muzakki.edit-admin', compact('muzakki'));
+        }
+
+        // Muzakki editing their own profile - use profile edit view
         return view('muzakki.edit', compact('muzakki'));
     }
 

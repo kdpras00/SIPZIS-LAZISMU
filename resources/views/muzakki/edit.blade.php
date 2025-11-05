@@ -627,11 +627,41 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize intl-tel-input
             const phoneInput = document.querySelector("#phone");
+
+            // Set phone value in international format before initialization
+            const existingPhone = phoneInput.value.trim();
+            let phoneToSet = existingPhone;
+
+            if (existingPhone) {
+                // If phone doesn't start with +, try to detect country code or default to Indonesia
+                if (!existingPhone.startsWith('+')) {
+                    // Remove leading 0 and non-digits, then add +62 as default (Indonesia)
+                    phoneToSet = '+62' + existingPhone.replace(/^0+/, '').replace(/\D/g, '');
+                } else {
+                    // Already in international format, keep it
+                    phoneToSet = existingPhone;
+                }
+            }
+
             const iti = window.intlTelInput(phoneInput, {
                 initialCountry: "id",
                 separateDialCode: true,
+                nationalMode: false, // Use international format, not national format
+                formatAsYouType: false, // Don't auto-format as user types
                 utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js",
             });
+
+            // After initialization, set the number in international format
+            if (phoneToSet && phoneToSet.startsWith('+')) {
+                // Use setNumber to properly format the number based on country code
+                iti.setNumber(phoneToSet);
+            } else if (existingPhone) {
+                // Fallback: if no + found, treat as Indonesia number
+                const cleanPhone = existingPhone.replace(/^\+62|^62|^0/, '').replace(/\D/g, '');
+                if (cleanPhone) {
+                    iti.setNumber('+62' + cleanPhone);
+                }
+            }
 
             // Set initial width for progress bar
             const completionPercent = <?php echo calculateProfileCompletion($muzakki); ?>;
@@ -657,68 +687,53 @@
                 document.getElementById('ktpPlaceholder').style.display = 'none';
             }
 
-            // Format phone number: remove +62, 62, or 0 prefix
-            function normalizePhoneNumber(phone) {
-                let cleaned = phone.replace(/\D/g, '');
 
-                if (cleaned.startsWith('62')) {
-                    cleaned = cleaned.substring(2);
-                } else if (cleaned.startsWith('0')) {
-                    cleaned = cleaned.substring(1);
-                }
-
-                return cleaned;
-            }
-
-            // Set existing phone number - intlTelInput will handle formatting
-            // We just need to ensure the value is set correctly before initialization
-            const existingPhone = phoneInput.value;
-            if (existingPhone) {
-                // Don't normalize here as intlTelInput will handle it
-                // Just ensure it's a valid number without duplicate prefixes
-                let cleanPhone = existingPhone;
-                // Remove any duplicate +62 prefixes
-                while (cleanPhone.startsWith('+62+62')) {
-                    cleanPhone = cleanPhone.substring(4); // Remove '+62' but keep the second +62
-                }
-                // If it starts with +6262, fix it
-                if (cleanPhone.startsWith('+6262')) {
-                    cleanPhone = '+62' + cleanPhone.substring(5);
-                }
-                // If it starts with 6262, fix it
-                if (cleanPhone.startsWith('6262')) {
-                    cleanPhone = '62' + cleanPhone.substring(4);
-                }
-                // Update the input value if it was changed
-                if (cleanPhone !== existingPhone) {
-                    phoneInput.value = cleanPhone;
-                }
-            }
-
-            // Phone input handler - let intlTelInput handle most of the formatting
+            // Phone input handler - prevent national format (0 prefix) for Indonesia only
+            // Other countries will use their standard format
+            let isUpdating = false; // Flag to prevent infinite loop
             phoneInput.addEventListener('input', function() {
-                // intlTelInput handles the formatting, we just need to prevent duplicate prefixes
-                let value = this.value;
+                if (isUpdating) return; // Prevent infinite loop
 
-                // Remove any duplicate +62 prefixes that might occur
-                while (value.startsWith('+62+62')) {
-                    value = value.substring(4); // Remove the first '+62'
-                }
+                const selectedCountry = iti.getSelectedCountryData();
+                const dialCode = '+' + selectedCountry.dialCode;
 
-                // If it starts with +6262, fix it
-                if (value.startsWith('+6262')) {
-                    value = '+62' + value.substring(5);
+                // Special handling only for Indonesia (which uses 0 prefix in national format)
+                if (selectedCountry.iso2 === 'id') {
+                    // Get the current number from intl-tel-input
+                    const currentNumber = iti.getNumber();
+                    // Check if it has leading 0 after +62 (national format)
+                    if (currentNumber.match(/^\+620/)) {
+                        isUpdating = true;
+                        // Remove the leading 0 and re-set the number
+                        const cleanNumber = currentNumber.replace(/^\+620/, '+62').replace(/\D/g, '')
+                            .replace(/^62/, '');
+                        if (cleanNumber) {
+                            iti.setNumber('+62' + cleanNumber);
+                        }
+                        setTimeout(() => {
+                            isUpdating = false;
+                        }, 100);
+                    }
                 }
+                // For other countries, let intl-tel-input handle the formatting naturally
+            });
 
-                // If it starts with 6262, fix it
-                if (value.startsWith('6262')) {
-                    value = '62' + value.substring(4);
-                }
+            // Handle country change - ensure proper format for each country
+            phoneInput.addEventListener('countrychange', function() {
+                const selectedCountry = iti.getSelectedCountryData();
+                const dialCode = '+' + selectedCountry.dialCode;
 
-                // Update the input value if it was changed
-                if (value !== this.value) {
-                    this.value = value;
+                // Special handling only for Indonesia
+                if (selectedCountry.iso2 === 'id') {
+                    // Get current number without dial code
+                    const currentNumber = iti.getNumber();
+                    const cleanNumber = currentNumber.replace(/^\+62/, '').replace(/^0+/, '');
+                    if (cleanNumber && cleanNumber !== currentNumber.replace(/^\+62/, '')) {
+                        // Re-set the number without leading 0
+                        iti.setNumber('+62' + cleanNumber);
+                    }
                 }
+                // For other countries, intl-tel-input will handle formatting automatically
             });
 
             // Verify phone button handler
@@ -973,7 +988,17 @@
 
                 // Use intl-tel-input to get the full number with international format
                 const fullNumber = iti.getNumber(); // Get the full international format number
-                phoneInput.value = fullNumber;
+
+                // Special handling for Indonesia: remove leading 0 if present
+                const selectedCountry = iti.getSelectedCountryData();
+                if (selectedCountry.iso2 === 'id') {
+                    // Remove 0 after +62 for Indonesia
+                    const cleanNumber = fullNumber.replace(/^\+620/, '+62');
+                    phoneInput.value = cleanNumber;
+                } else {
+                    // For other countries, use the number as-is (already in international format)
+                    phoneInput.value = fullNumber;
+                }
 
                 // Set country_name in a hidden field
                 const countrySelect = document.getElementById('country');

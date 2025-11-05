@@ -318,6 +318,41 @@
                     document.getElementById('phone_error').textContent = '';
                     phoneInput.classList.remove('border-red-300', 'border-emerald-300');
                 });
+
+                // Prevent national format (0 prefix) for Indonesia only
+                let isUpdating = false;
+                phoneInput.addEventListener('input', function() {
+                    if (isUpdating) return;
+
+                    const selectedCountry = iti.getSelectedCountryData();
+                    if (selectedCountry.iso2 === 'id') {
+                        const currentNumber = iti.getNumber();
+                        // Check if it has leading 0 after +62 (national format)
+                        if (currentNumber.match(/^\+620/)) {
+                            isUpdating = true;
+                            const cleanNumber = currentNumber.replace(/^\+620/, '+62').replace(/\D/g, '')
+                                .replace(/^62/, '');
+                            if (cleanNumber) {
+                                iti.setNumber('+62' + cleanNumber);
+                            }
+                            setTimeout(() => {
+                                isUpdating = false;
+                            }, 100);
+                        }
+                    }
+                });
+
+                // Prevent national format when country changes
+                phoneInput.addEventListener('countrychange', function() {
+                    const selectedCountry = iti.getSelectedCountryData();
+                    if (selectedCountry.iso2 === 'id') {
+                        const currentNumber = iti.getNumber();
+                        const cleanNumber = currentNumber.replace(/^\+62/, '').replace(/^0+/, '');
+                        if (cleanNumber && cleanNumber !== currentNumber.replace(/^\+62/, '')) {
+                            iti.setNumber('+62' + cleanNumber);
+                        }
+                    }
+                });
             }
 
             const phoneInputOptional = document.querySelector("#phone_input_optional");
@@ -325,6 +360,39 @@
                 itiOptional = window.intlTelInput(phoneInputOptional, itiConfig);
                 phoneInputOptional.addEventListener('blur', () => {
                     if (phoneInputOptional.value.trim()) validatePhone(itiOptional, phoneInputOptional);
+                });
+
+                // Prevent national format (0 prefix) for Indonesia only
+                let isUpdatingOptional = false;
+                phoneInputOptional.addEventListener('input', function() {
+                    if (isUpdatingOptional) return;
+
+                    const selectedCountry = itiOptional.getSelectedCountryData();
+                    if (selectedCountry.iso2 === 'id') {
+                        const currentNumber = itiOptional.getNumber();
+                        if (currentNumber.match(/^\+620/)) {
+                            isUpdatingOptional = true;
+                            const cleanNumber = currentNumber.replace(/^\+620/, '+62').replace(/\D/g, '')
+                                .replace(/^62/, '');
+                            if (cleanNumber) {
+                                itiOptional.setNumber('+62' + cleanNumber);
+                            }
+                            setTimeout(() => {
+                                isUpdatingOptional = false;
+                            }, 100);
+                        }
+                    }
+                });
+
+                phoneInputOptional.addEventListener('countrychange', function() {
+                    const selectedCountry = itiOptional.getSelectedCountryData();
+                    if (selectedCountry.iso2 === 'id') {
+                        const currentNumber = itiOptional.getNumber();
+                        const cleanNumber = currentNumber.replace(/^\+62/, '').replace(/^0+/, '');
+                        if (cleanNumber && cleanNumber !== currentNumber.replace(/^\+62/, '')) {
+                            itiOptional.setNumber('+62' + cleanNumber);
+                        }
+                    }
                 });
             }
 
@@ -414,7 +482,14 @@
                     });
                     return;
                 }
-                document.getElementById('donor_phone_full').value = iti.getNumber();
+                // Get full number in international format
+                let fullNumber = iti.getNumber();
+                // Special handling for Indonesia: remove leading 0 if present
+                const selectedCountry = iti.getSelectedCountryData();
+                if (selectedCountry.iso2 === 'id') {
+                    fullNumber = fullNumber.replace(/^\+620/, '+62');
+                }
+                document.getElementById('donor_phone_full').value = fullNumber;
             }
 
             const phoneInputOptional = document.querySelector("#phone_input_optional");
@@ -428,7 +503,14 @@
                     });
                     return;
                 }
-                document.getElementById('donor_phone_full').value = itiOptional.getNumber();
+                // Get full number in international format
+                let fullNumber = itiOptional.getNumber();
+                // Special handling for Indonesia: remove leading 0 if present
+                const selectedCountry = itiOptional.getSelectedCountryData();
+                if (selectedCountry.iso2 === 'id') {
+                    fullNumber = fullNumber.replace(/^\+620/, '+62');
+                }
+                document.getElementById('donor_phone_full').value = fullNumber;
             }
 
             submitButton.disabled = true;
