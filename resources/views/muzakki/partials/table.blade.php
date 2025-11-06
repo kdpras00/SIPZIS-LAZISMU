@@ -58,29 +58,25 @@
                             {{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}
                         </td>
                         <td class="px-2 py-3">
-                            <div class="flex items-center gap-0.5 justify-start">
+                            <div class="flex items-center gap-1">
                                 <a href="{{ route('muzakki.show', $item->id) }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 border border-blue-300 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
+                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                     title="Lihat Detail">
-                                    <i class="fas fa-eye text-xs"></i>
+                                    <i class="bi bi-eye"></i>
                                 </a>
                                 <a href="{{ route('muzakki.edit', $item->id) }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 border border-blue-600 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
-                                    title="Edit Muzakki">
-                                    <i class="fas fa-pencil text-xs"></i>
+                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Edit">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
                                 <form action="{{ route('muzakki.toggle-status', $item->id) }}" method="POST"
                                     class="inline">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit"
-                                        class="inline-flex items-center justify-center w-8 h-8 border border-yellow-300 bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 transition-colors"
+                                        class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
                                         title="Toggle Status">
-                                        @if ($item->is_active)
-                                            <i class="fas fa-circle text-xs"></i>
-                                        @else
-                                            <i class="fas fa-check text-xs"></i>
-                                        @endif
+                                        <i class="bi bi-toggle-{{ $item->is_active ? 'on' : 'off' }}"></i>
                                     </button>
                                 </form>
                                 <form action="{{ route('muzakki.destroy', $item->id) }}" method="POST" class="inline"
@@ -88,9 +84,9 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                        class="inline-flex items-center justify-center w-8 h-8 border border-red-300 bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors"
+                                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                         title="Hapus">
-                                        <i class="fas fa-trash text-xs"></i>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </div>

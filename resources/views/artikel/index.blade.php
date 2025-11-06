@@ -7,8 +7,15 @@
 @section('content')
     <div class="artikel-page">
         <div class="artikel-bg">
-            <!-- Animated Background Elements -->
-            <div class="artikel-bg-overlay"></div>
+            <!-- Mosque Background Image Overlay -->
+            <div class="absolute inset-0 opacity-90"
+                style="background-image: url('{{ asset('img/masjid.webp') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; will-change: transform;">
+            </div>
+            <!-- Green Gradient Overlay for blending -->
+            <div class="absolute inset-0 bg-gradient-to-br from-green-900/80 via-green-800/70 to-emerald-700/80"></div>
+            <!-- Additional Dark Overlay for text readability -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+            <!-- Animated Background Elements (removed) -->
             <div class="blob blob-1"></div>
             <div class="blob blob-2"></div>
             <div class="blob blob-3"></div>
@@ -164,18 +171,10 @@
 
         .artikel-bg {
             position: relative;
-            background: linear-gradient(to bottom right, #f0fdf4, #ecfdf5, #f0fdfa);
-            background-size: cover;
-            background-position: center;
+            background: linear-gradient(to bottom right, #064e3b, #065f46, #047857);
             min-height: 100vh;
             overflow: hidden;
             will-change: transform;
-        }
-
-        .artikel-bg-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom right, rgba(22, 163, 74, 0.4), rgba(5, 150, 105, 0.3), rgba(13, 148, 136, 0.4));
         }
 
         /* Removed heavy blob animations for better performance */
@@ -609,13 +608,4 @@
         }
     </style>
 
-    <script>
-        // Add background image dynamically to avoid CSS linting issues
-        document.addEventListener('DOMContentLoaded', function() {
-            const artikelBg = document.querySelector('.artikel-bg');
-            if (artikelBg) {
-                artikelBg.style.backgroundImage = "url('{{ asset('img/masjid.webp') }}')";
-            }
-        });
-    </script>
 @endsection

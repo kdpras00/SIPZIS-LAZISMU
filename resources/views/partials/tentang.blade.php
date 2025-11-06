@@ -1,13 +1,14 @@
-<div class="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 min-h-screen overflow-hidden"
+<div class="relative bg-gradient-to-br from-green-900 via-green-800 to-emerald-700 min-h-screen overflow-hidden"
     id="tentang">
-    <!-- Lazy loaded background image -->
-    <div class="absolute inset-0 bg-cover bg-center"
-        style="background-image: url('{{ asset('img/masjid.webp') }}'); will-change: transform;" loading="lazy"></div>
-
-    <!-- Simplified Background Elements (removed heavy animations) -->
-    <div class="absolute inset-0">
-        <div class="absolute inset-0 bg-gradient-to-br from-green-600/40 via-emerald-600/30 to-teal-600/40"></div>
+    <!-- Mosque Background Image Overlay -->
+    <div class="absolute inset-0 opacity-90"
+        style="background-image: url('{{ asset('img/masjid.webp') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; will-change: transform;">
     </div>
+    <!-- Green Gradient Overlay for blending -->
+    <div class="absolute inset-0 bg-gradient-to-br from-green-900/80 via-green-800/70 to-emerald-700/80"></div>
+
+    <!-- Additional Dark Overlay for text readability -->
+    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
 
     <div class="relative z-10 py-20">
         <div class="container mx-auto px-4 py-16">

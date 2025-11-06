@@ -15,7 +15,7 @@
                 </div>
 
                 <!-- Register Form -->
-                <form method="POST" action="{{ route('register') }}" class="space-y-4">
+                <form method="POST" action="{{ route('register') }}" class="space-y-4" id="registerForm">
                     @csrf
 
                     <!-- Nama Lengkap -->
@@ -140,13 +140,33 @@
         </div>
     </div>
 
+    <!-- Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Get reCAPTCHA site key
+            const recaptchaSiteKey = (function() {
+                const fromBlade = '{{ config('services.recaptcha.site_key') }}';
+                if (fromBlade && fromBlade.trim().length > 0 && fromBlade.indexOf('config(') === -1) {
+                    return fromBlade.trim();
+                }
+                try {
+                    const cfg = window.___grecaptcha_cfg || {};
+                    const renderArr = cfg.render || [];
+                    if (Array.isArray(renderArr) && renderArr.length > 0 && renderArr[0]) {
+                        return renderArr[0];
+                    }
+                } catch (_) {}
+                return '';
+            })();
+
             // Toggle Password Visibility
             const togglePassword = document.getElementById('togglePassword');
             const password = document.getElementById('password');
             const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
             const passwordConfirm = document.getElementById('password_confirmation');
+            const registerForm = document.getElementById('registerForm');
 
             togglePassword.addEventListener('click', function() {
                 const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -197,6 +217,58 @@
                 } else {
                     numberCheck.classList.remove('bg-green-500', 'border-green-500');
                     numberCheck.classList.add('border-gray-300');
+                }
+            });
+
+            // Generate reCAPTCHA v3 token before form submission
+            registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitForm = () => registerForm.submit();
+                try {
+                    if (!window.grecaptcha || !window.grecaptcha.execute) {
+                        alert('Memuat reCAPTCHA... silakan coba lagi.');
+                        return false;
+                    }
+                    if (!recaptchaSiteKey) {
+                        alert('Site key reCAPTCHA tidak terbaca. Coba refresh atau hubungi admin.');
+                        return false;
+                    }
+                    window.grecaptcha.ready(function() {
+                        window.grecaptcha.execute(recaptchaSiteKey, {
+                                action: 'register'
+                            })
+                            .then(function(token) {
+                                let tokenInput = registerForm.querySelector(
+                                    'input[name="g-recaptcha-response"]');
+                                if (!tokenInput) {
+                                    tokenInput = document.createElement('input');
+                                    tokenInput.type = 'hidden';
+                                    tokenInput.name = 'g-recaptcha-response';
+                                    registerForm.appendChild(tokenInput);
+                                }
+                                tokenInput.value = token;
+
+                                let actionInput = registerForm.querySelector(
+                                    'input[name="g-recaptcha-action"]');
+                                if (!actionInput) {
+                                    actionInput = document.createElement('input');
+                                    actionInput.type = 'hidden';
+                                    actionInput.name = 'g-recaptcha-action';
+                                    registerForm.appendChild(actionInput);
+                                }
+                                actionInput.value = 'register';
+
+                                submitForm();
+                            })
+                            .catch(function(err) {
+                                console.error('reCAPTCHA execute error:', err);
+                                alert('Validasi reCAPTCHA gagal. Coba lagi.');
+                            });
+                    });
+                } catch (err) {
+                    console.error('reCAPTCHA setup failed:', err);
+                    alert('Validasi reCAPTCHA gagal. Coba lagi.');
+                    return false;
                 }
             });
         });
@@ -295,7 +367,7 @@
             if (phoneInput && window.intlTelInput) {
                 iti = window.intlTelInput(phoneInput, {
                     ...itiConfig,
-                    customPlaceholder: (p) => "e.g. " + p
+                    customPlaceholder: (p) => "" + p
                 });
 
                 // Update hidden country code on country change

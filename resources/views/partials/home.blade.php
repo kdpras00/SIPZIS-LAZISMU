@@ -2,7 +2,7 @@
     id="beranda">
     <!-- Mosque Background Image Overlay -->
     <div class="absolute inset-0 opacity-90"
-        style="background-image: url('{{ asset('img/masjid.webp') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+        style="background-image: url('{{ asset('img/masjid.webp') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; will-change: transform;">
     </div>
     <!-- Green Gradient Overlay for blending -->
     <div class="absolute inset-0 bg-gradient-to-br from-green-900/80 via-green-800/70 to-emerald-700/80"></div>
@@ -204,7 +204,7 @@
 
         <div class="text-center mt-10">
             <a href="{{ route('campaigns.index', 'all') }}"
-                class="inline-flex items-center gap-2 bg-white border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-green-500 font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 text-sm group">
+                class="inline-flex items-center gap-2 bg-white border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 text-sm group">
                 Lihat Semua Campaign
                 <svg class="w-4 h-4 animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -317,7 +317,7 @@
 
             <div class="text-center mt-10">
                 <a href="{{ route('news.all') }}"
-                    class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 text-sm group">
+                    class="inline-flex items-center gap-2 bg-white border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 text-sm group">
                     Lihat Semua Berita
                     <svg class="w-4 h-4 animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
@@ -433,7 +433,7 @@
 
             <div class="text-center mt-10">
                 <a href="{{ route('artikel.all') }}"
-                    class="inline-flex items-center gap-2 bg-white border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-green-500 font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 text-sm group">
+                    class="inline-flex items-center gap-2 bg-white border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 text-sm group">
                     Lihat Semua Artikel
                     <svg class="w-4 h-4 animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
@@ -471,7 +471,7 @@
             💬
         </button>
     </div>
-    
+
     <!-- Intercept Puter API errors BEFORE loading Puter.js -->
     <script>
         (function() {
@@ -479,20 +479,20 @@
             // Override console methods to filter out Puter 401 errors
             const originalConsoleError = console.error;
             const originalConsoleWarn = console.warn;
-            
+
             console.error = function(...args) {
                 const message = args.join(' ');
-                if ((message.includes('api.puter.com') || message.includes('puter.com')) && 
+                if ((message.includes('api.puter.com') || message.includes('puter.com')) &&
                     (message.includes('401') || message.includes('Unauthorized') || message.includes('whoami'))) {
                     // Silently ignore Puter whoami 401 errors
                     return;
                 }
                 originalConsoleError.apply(console, args);
             };
-            
+
             console.warn = function(...args) {
                 const message = args.join(' ');
-                if ((message.includes('api.puter.com') || message.includes('puter.com')) && 
+                if ((message.includes('api.puter.com') || message.includes('puter.com')) &&
                     (message.includes('401') || message.includes('Unauthorized') || message.includes('whoami'))) {
                     // Silently ignore Puter whoami 401 warnings
                     return;
@@ -505,7 +505,7 @@
             window.XMLHttpRequest = function() {
                 const xhr = new OriginalXHR();
                 const originalOpen = xhr.open;
-                
+
                 xhr.open = function(method, url, ...rest) {
                     if (typeof url === 'string' && url.includes('api.puter.com/whoami')) {
                         // Intercept whoami calls - mark this request
@@ -514,21 +514,21 @@
                     }
                     return originalOpen.apply(this, [method, url, ...rest]);
                 };
-                
+
                 const originalSend = xhr.send;
                 xhr.send = function(...args) {
                     if (xhr._isPuterWhoami) {
                         // Suppress all error handlers for whoami endpoint
                         const originalOnError = xhr.onerror;
                         const originalOnLoad = xhr.onload;
-                        
+
                         xhr.onerror = function(e) {
                             // Silently suppress errors
                             e.preventDefault && e.preventDefault();
                             e.stopPropagation && e.stopPropagation();
                             return false;
                         };
-                        
+
                         xhr.onload = function() {
                             if (xhr.status === 401 || xhr.status === 0) {
                                 // Silently handle 401 or failed requests
@@ -538,7 +538,7 @@
                                 originalOnLoad.call(this);
                             }
                         };
-                        
+
                         // Override status to prevent 401 from being visible
                         Object.defineProperty(xhr, 'status', {
                             get: function() {
@@ -554,7 +554,7 @@
                     }
                     return originalSend.apply(this, args);
                 };
-                
+
                 return xhr;
             };
 
@@ -581,9 +581,9 @@
 
             // Suppress network errors from Puter whoami endpoint
             window.addEventListener('error', function(e) {
-                if (e.message && (e.message.includes('401') || e.message.includes('Unauthorized')) && 
-                    (e.filename && (e.filename.includes('api.puter.com') || e.filename.includes('puter.com')) || 
-                     e.target && e.target.src && e.target.src.includes('api.puter.com'))) {
+                if (e.message && (e.message.includes('401') || e.message.includes('Unauthorized')) &&
+                    (e.filename && (e.filename.includes('api.puter.com') || e.filename.includes('puter.com')) ||
+                        e.target && e.target.src && e.target.src.includes('api.puter.com'))) {
                     e.preventDefault();
                     e.stopPropagation();
                     return false;
@@ -591,13 +591,31 @@
             }, true);
         })();
     </script>
-    
+
     <!-- Puter.js API untuk Claude AI -->
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <!-- Custom CSS for Animations -->
     <style>
+        /* Prevent FOUC (Flash of Unstyled Content) */
+        body:not(.page-loaded) .animate-fadeInUp,
+        body:not(.page-loaded) .animate-fadeInDown {
+            opacity: 0;
+        }
+
+        .animate-fadeInUp,
+        .animate-fadeInDown {
+            animation-fill-mode: both;
+        }
+
+        /* Only animate when page is loaded */
+        body.page-loaded .animate-fadeInUp,
+        body.page-loaded .animate-fadeInDown {
+            animation-play-state: running;
+            visibility: visible;
+        }
+
         @keyframes fadeInDown {
             0% {
                 opacity: 0;
@@ -633,10 +651,42 @@
 
         .animate-fadeInDown {
             animation: fadeInDown 0.3s ease-out forwards;
+            animation-play-state: paused;
         }
 
         .animate-fadeInUp {
             animation: fadeInUp 0.3s ease-out forwards;
+            animation-play-state: paused;
+        }
+
+        /* Delay classes with animation-fill-mode */
+        .delay-500 {
+            animation-delay: 0.5s;
+        }
+
+        .delay-700 {
+            animation-delay: 0.7s;
+        }
+
+        .delay-1000 {
+            animation-delay: 1s;
+        }
+
+        /* Optimize animations */
+        .animate-fadeInUp,
+        .animate-fadeInDown {
+            will-change: opacity, transform;
+        }
+
+        /* Respect user's motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+
+            .animate-fadeInUp,
+            .animate-fadeInDown {
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
         }
 
         /* Gradient text effect */
@@ -1104,6 +1154,22 @@
                 initializeChatbot();
             });
         });
+
+        // Prevent blinking on page load
+        (function() {
+            // Mark page as loaded to trigger animations
+            function markPageLoaded() {
+                document.body.classList.add('page-loaded');
+            }
+
+            // Check if DOM is already loaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', markPageLoaded);
+            } else {
+                // DOM already loaded, mark immediately
+                markPageLoaded();
+            }
+        })();
 
         // Slider functionality
         document.addEventListener('DOMContentLoaded', function() {

@@ -3,28 +3,31 @@
 @section('page-title', 'Manajemen Mustahik')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="flex justify-between items-center mb-6">
         <div>
-            <h2 class="mb-1">Manajemen Mustahik</h2>
-            <p class="text-muted">Kelola data mustahik (penerima zakat) dalam sistem</p>
+            <h2 class="text-2xl font-semibold mb-1 text-gray-900">Manajemen Mustahik</h2>
+            <p class="text-gray-500">Kelola data mustahik (penerima zakat) </p>
         </div>
         <div>
-            <a href="{{ route('mustahik.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Tambah Mustahik
+            <a href="{{ route('mustahik.create') }}"
+                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                <i class="bi bi-plus-circle mr-2"></i> Tambah Mustahik
             </a>
         </div>
     </div>
 
     <!-- Filter Section -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <input type="text" id="search-input" class="form-control" placeholder="Cari nama, NIK, telepon..."
-                        value="{{ request('search') }}">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div class="p-4">
+            <div class="flex flex-wrap gap-3">
+                <div class="flex-1 min-w-[200px]">
+                    <input type="text" id="search-input"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        placeholder="Cari nama, NIK, telepon..." value="{{ request('search') }}">
                 </div>
-                <div class="col-md-2">
-                    <select id="category-filter" class="form-select">
+                <div class="w-[180px]">
+                    <select id="category-filter"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
                         <option value="">Semua Kategori</option>
                         @foreach (\App\Models\Mustahik::CATEGORIES as $key => $label)
                             <option value="{{ $key }}" {{ request('category') == $key ? 'selected' : '' }}>
@@ -33,12 +36,14 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <input type="text" id="city-filter" class="form-control" placeholder="Kota"
-                        value="{{ request('city') }}">
+                <div class="w-[150px]">
+                    <input type="text" id="city-filter"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        placeholder="Kota" value="{{ request('city') }}">
                 </div>
-                <div class="col-md-2">
-                    <select id="status-filter" class="form-select">
+                <div class="w-[180px]">
+                    <select id="status-filter"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
                         <option value="">Semua Status</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu Verifikasi
                         </option>
@@ -47,16 +52,13 @@
                         <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <div class="d-flex gap-2">
-                        <button type="button" id="reset-filters" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-clockwise"></i> Reset
-                        </button>
-                        <div id="search-loading" class="d-none">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="reset-filters"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium rounded-lg transition-colors duration-200 text-sm">
+                        <i class="bi bi-arrow-clockwise mr-2"></i> Reset
+                    </button>
+                    <div id="search-loading" class="hidden">
+                        <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                     </div>
                 </div>
             </div>
@@ -64,54 +66,47 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-person-hearts display-4 text-primary mb-2"></i>
-                    <h4 class="mb-0" id="total-count">{{ $mustahik->total() }}</h4>
-                    <small class="text-muted">Total Mustahik</small>
-                </div>
+    <div class="grid grid-cols-4 gap-4 mb-6"
+        style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 text-center">
+                <i class="bi bi-person-hearts text-5xl text-blue-600 mb-3"></i>
+                <h4 class="text-2xl font-bold mb-0 text-gray-900" id="total-count">{{ $mustahik->total() }}</h4>
+                <small class="text-gray-500 text-sm">Total Mustahik</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-check-circle display-4 text-success mb-2"></i>
-                    <h4 class="mb-0" id="verified-count">
-                        {{ $mustahik->where('verification_status', 'verified')->count() }}</h4>
-                    <small class="text-muted">Terverifikasi</small>
-                </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 text-center">
+                <i class="bi bi-check-circle text-5xl text-green-600 mb-3"></i>
+                <h4 class="text-2xl font-bold mb-0 text-gray-900" id="verified-count">
+                    {{ $mustahik->where('verification_status', 'verified')->count() }}</h4>
+                <small class="text-gray-500 text-sm">Terverifikasi</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-clock display-4 text-warning mb-2"></i>
-                    <h4 class="mb-0" id="pending-count">{{ $mustahik->where('verification_status', 'pending')->count() }}
-                    </h4>
-                    <small class="text-muted">Menunggu Verifikasi</small>
-                </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 text-center">
+                <i class="bi bi-clock text-5xl text-yellow-600 mb-3"></i>
+                <h4 class="text-2xl font-bold mb-0 text-gray-900" id="pending-count">
+                    {{ $mustahik->where('verification_status', 'pending')->count() }}</h4>
+                <small class="text-gray-500 text-sm">Menunggu Verifikasi</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-person-plus display-4 text-info mb-2"></i>
-                    <h4 class="mb-0" id="thismonth-count">
-                        {{ $mustahik->where('created_at', '>=', now()->startOfMonth())->count() }}</h4>
-                    <small class="text-muted">Baru Bulan Ini</small>
-                </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 text-center">
+                <i class="bi bi-person-plus text-5xl text-blue-400 mb-3"></i>
+                <h4 class="text-2xl font-bold mb-0 text-gray-900" id="thismonth-count">
+                    {{ $mustahik->where('created_at', '>=', now()->startOfMonth())->count() }}</h4>
+                <small class="text-gray-500 text-sm">Baru Bulan Ini</small>
             </div>
         </div>
     </div>
 
     <!-- Mustahik Table -->
-    <div class="card">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Daftar Mustahik</h5>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 bg-white">
+            <h5 class="text-lg font-semibold text-gray-900 mb-0">Daftar Mustahik</h5>
         </div>
-        <div class="card-body p-0" id="mustahik-table-container">
+        <div class="p-0" id="mustahik-table-container">
             @include('mustahik.partials.table')
         </div>
     </div>
@@ -137,7 +132,7 @@
                 };
 
                 // Show loading indicator
-                document.getElementById('search-loading').classList.remove('d-none');
+                document.getElementById('search-loading').classList.remove('hidden');
 
                 // Create query string
                 const params = new URLSearchParams(searchData);
@@ -165,7 +160,7 @@
                     })
                     .finally(() => {
                         // Hide loading indicator
-                        document.getElementById('search-loading').classList.add('d-none');
+                        document.getElementById('search-loading').classList.add('hidden');
                     });
             }
 
@@ -175,17 +170,17 @@
 
                 if (mustahik.length > 0) {
                     tableHtml = `
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="bg-light">
+                <div>
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th>Nama</th>
-                                <th>Kategori</th>
-                                <th>Telepon</th>
-                                <th>Kota</th>
-                                <th>Status Verifikasi</th>
-                                <th>Terdaftar</th>
-                                <th>Aksi</th>
+                                <th scope="col" class="px-6 py-3">Nama</th>
+                                <th scope="col" class="px-6 py-3">Kategori</th>
+                                <th scope="col" class="px-6 py-3">Telepon</th>
+                                <th scope="col" class="px-6 py-3">Kota</th>
+                                <th scope="col" class="px-6 py-3">Status Verifikasi</th>
+                                <th scope="col" class="px-6 py-3">Terdaftar</th>
+                                <th scope="col" class="px-6 py-3">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -212,65 +207,65 @@
 
                         // Status badge classes
                         const statusClasses = {
-                            'pending': 'bg-warning',
-                            'verified': 'bg-success',
-                            'rejected': 'bg-danger'
+                            'pending': 'bg-yellow-100 text-yellow-800',
+                            'verified': 'bg-green-100 text-green-800',
+                            'rejected': 'bg-red-100 text-red-800'
                         };
 
                         const statusTexts = {
-                            'pending': 'Menunggu',
+                            'pending': 'Menunggu Verifikasi',
                             'verified': 'Terverifikasi',
                             'rejected': 'Ditolak'
                         };
 
                         tableHtml += `
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="bg-success bg-opacity-10 rounded-circle p-2 me-2">
-                                    <i class="bi bi-person-heart text-success"></i>
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="bg-green-100 rounded-full p-2 mr-3">
+                                    <i class="bi bi-person-heart text-green-600"></i>
                                 </div>
                                 <div>
-                                    <div class="fw-semibold">${item.name}</div>
-                                    ${item.nik ? '<small class="text-muted">NIK: ' + item.nik + '</small>' : ''}
+                                    <div class="font-semibold text-gray-900">${item.name}</div>
+                                    ${item.nik ? '<small class="text-gray-500">NIK: ' + item.nik + '</small>' : ''}
                                 </div>
                             </div>
                         </td>
-                        <td>
-                            <span class="badge bg-info">${categoryMap[item.category] || item.category}</span>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${categoryMap[item.category] || item.category}</span>
                         </td>
-                        <td>${item.phone || '-'}</td>
-                        <td>${item.city || '-'}</td>
-                        <td>
-                            <span class="badge ${statusClasses[item.verification_status]}">
+                        <td class="px-6 py-4">${item.phone || '-'}</td>
+                        <td class="px-6 py-4">${item.city || '-'}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full ${statusClasses[item.verification_status]}">
                                 ${statusTexts[item.verification_status]}
                             </span>
                         </td>
-                        <td>${createdAt}</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="/mustahik/${item.id}" class="btn btn-outline-info btn-sm" title="Lihat Detail">
+                        <td class="px-6 py-4">${createdAt}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-1">
+                                <a href="/mustahik/${item.id}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Lihat Detail">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="/mustahik/${item.id}/edit" class="btn btn-outline-primary btn-sm" title="Edit">
+                                <a href="/mustahik/${item.id}/edit" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 ${item.verification_status === 'pending' ? `
-                                    <button type="button" class="btn btn-outline-success btn-sm" title="Verifikasi" onclick="showVerifyModal(${item.id}, '${item.name}')">
-                                        <i class="bi bi-check-circle"></i>
-                                    </button>
-                                    ` : ''}
-                                <form action="/mustahik/${item.id}/toggle-status" method="POST" class="d-inline">
+                                                                                                            <button type="button" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Verifikasi" onclick="showVerifyModal(${item.id}, '${item.name}')">
+                                                                                                                <i class="bi bi-check-circle"></i>
+                                                                                                            </button>
+                                                                                                            ` : ''}
+                                <form action="/mustahik/${item.id}/toggle-status" method="POST" class="inline">
                                     <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="_method" value="PATCH">
-                                    <button type="submit" class="btn btn-outline-warning btn-sm" title="Toggle Status">
+                                    <button type="submit" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Toggle Status">
                                         <i class="bi bi-toggle-${item.is_active ? 'on' : 'off'}"></i>
                                     </button>
                                 </form>
-                                <form action="/mustahik/${item.id}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                <form action="/mustahik/${item.id}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                     <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">
+                                    <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -289,30 +284,33 @@
                     // Add pagination if needed
                     if (pagination.last_page > 1) {
                         tableHtml += `
-                    <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="text-muted">
+                    <div class="px-6 py-4 bg-white border-t border-gray-200">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div class="text-sm text-gray-500">
                                 Menampilkan ${pagination.from} sampai ${pagination.to} dari ${pagination.total} data
                             </div>
                             <nav>
-                                <ul class="pagination pagination-sm mb-0">
+                                <ul class="inline-flex items-center -space-x-px">
                 `;
 
                         if (pagination.current_page > 1) {
                             tableHtml +=
-                                '<li class="page-item"><a class="page-link pagination-link" href="#" data-page="' +
+                                '<li><a href="#" class="pagination-link px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700" data-page="' +
                                 (pagination.current_page - 1) + '">‹</a></li>';
                         }
 
                         for (let i = 1; i <= pagination.last_page; i++) {
-                            tableHtml += '<li class="page-item ' + (pagination.current_page == i ? 'active' : '') +
-                                '"><a class="page-link pagination-link" href="#" data-page="' + i + '">' + i +
-                                '</a></li>';
+                            const isActive = pagination.current_page == i;
+                            tableHtml += '<li><a href="#" class="pagination-link px-3 py-2 leading-tight ' + (
+                                isActive ?
+                                'text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700' :
+                                'text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700'
+                            ) + '" data-page="' + i + '">' + i + '</a></li>';
                         }
 
                         if (pagination.current_page < pagination.last_page) {
                             tableHtml +=
-                                '<li class="page-item"><a class="page-link pagination-link" href="#" data-page="' +
+                                '<li><a href="#" class="pagination-link px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700" data-page="' +
                                 (pagination.current_page + 1) + '">›</a></li>';
                         }
 
@@ -325,12 +323,12 @@
                     }
                 } else {
                     tableHtml = `
-                <div class="text-center py-4">
-                    <i class="bi bi-inbox display-4 text-muted mb-3 d-block"></i>
-                    <h5 class="text-muted">Tidak ada data mustahik</h5>
-                    <p class="text-muted">Tidak ada mustahik yang sesuai dengan kriteria pencarian</p>
-                    <button type="button" id="clear-search" class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-clockwise"></i> Reset Pencarian
+                <div class="text-center py-12">
+                    <i class="bi bi-inbox text-6xl text-gray-400 mb-4 block"></i>
+                    <h5 class="text-lg font-medium text-gray-500 mb-2">Tidak ada data mustahik</h5>
+                    <p class="text-sm text-gray-400 mb-4">Tidak ada mustahik yang sesuai dengan kriteria pencarian</p>
+                    <button type="button" id="clear-search" class="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 font-medium rounded-lg transition-colors">
+                        <i class="bi bi-arrow-clockwise mr-2"></i> Reset Pencarian
                     </button>
                 </div>
             `;

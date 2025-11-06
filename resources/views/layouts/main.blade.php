@@ -12,6 +12,10 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('img/lazismu-icon.ico') }}">
 
     <title>{{ isset($title) && $title ? $title . ' - SIPZIS' : 'SIPZIS' }}</title>
+    <!-- Preload critical resources -->
+    @if(Route::currentRouteName() === 'home')
+    <link rel="preload" href="{{ asset('img/masjid.webp') }}" as="image" fetchpriority="high">
+    @endif
     <!-- Fonts - Optimized -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +30,11 @@
     <style>
         body{font-family:'Poppins',sans-serif}
         *{-webkit-tap-highlight-color:transparent}
+        /* Prevent FOUC - hide animated elements until page loads */
+        body:not(.page-loaded) [class*="animate-fadeIn"] {
+            opacity: 0 !important;
+            visibility: hidden;
+        }
     </style>
 </head>
 

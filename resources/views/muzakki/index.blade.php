@@ -11,7 +11,7 @@
         <div>
             <a href="{{ route('muzakki.create') }}"
                 class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
-                <i class="fas fa-plus-circle mr-2"></i> Tambah Muzakki
+                <i class="bi bi-plus-circle mr-2"></i> Tambah Muzakki
             </a>
         </div>
     </div>
@@ -19,15 +19,15 @@
     <!-- Filter Section -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
         <div class="p-4">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-3">
+            <div class="flex flex-wrap gap-3">
+                <div class="flex-1 min-w-[200px]">
                     <input type="text" id="search-input"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                         placeholder="Cari nama, email, NIK..." value="{{ request('search') }}">
                 </div>
-                <div class="md:col-span-2">
+                <div class="w-[180px]">
                     <select id="occupation-filter"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
                         <option value="">Semua Pekerjaan</option>
                         @foreach ($occupations as $occupation)
                             <option value="{{ $occupation }}"
@@ -37,38 +37,27 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="md:col-span-2">
+                <div class="w-[150px]">
                     <input type="text" id="city-filter"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                         placeholder="Kota" value="{{ request('city') }}">
                 </div>
-                <div class="md:col-span-2">
+                <div class="w-[180px]">
                     <select id="status-filter"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
                         <option value="">Semua Status</option>
                         <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
                         <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif
                         </option>
                     </select>
                 </div>
-                <div class="md:col-span-3">
-                    <div class="flex gap-2">
-                        <button type="button" id="reset-filters"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                            <i class="fas fa-redo mr-2"></i> Reset
-                        </button>
-                        <div id="search-loading" class="hidden">
-                            <div class="flex items-center justify-center px-4 py-2">
-                                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                            </div>
-                        </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="reset-filters"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium rounded-lg transition-colors duration-200 text-sm">
+                        <i class="bi bi-arrow-clockwise mr-2"></i> Reset
+                    </button>
+                    <div id="search-loading" class="hidden">
+                        <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                     </div>
                 </div>
             </div>
@@ -238,25 +227,25 @@
                         </td>
                         <td class="px-2 py-3 text-gray-900 text-sm whitespace-nowrap">${createdAt}</td>
                         <td class="px-2 py-3">
-                            <div class="flex items-center gap-0.5 justify-start">
-                                <a href="/muzakki/${item.id}" class="inline-flex items-center justify-center w-8 h-8 border border-blue-300 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors" title="Lihat Detail">
-                                    <i class="fas fa-eye text-xs"></i>
+                            <div class="flex items-center gap-1">
+                                <a href="/muzakki/${item.id}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Lihat Detail">
+                                    <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="/muzakki/${item.id}/edit" class="inline-flex items-center justify-center w-8 h-8 border border-blue-600 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors" title="Edit">
-                                    <i class="fas fa-pencil text-xs"></i>
+                                <a href="/muzakki/${item.id}/edit" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
                                 <form action="/muzakki/${item.id}/toggle-status" method="POST" class="inline">
                                     <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="_method" value="PATCH">
-                                    <button type="submit" class="inline-flex items-center justify-center w-8 h-8 border border-yellow-300 bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 transition-colors" title="Toggle Status">
-                                        <i class="fas ${item.is_active ? 'fa-circle' : 'fa-check'} text-xs"></i>
+                                    <button type="submit" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Toggle Status">
+                                        <i class="bi bi-toggle-${item.is_active ? 'on' : 'off'}"></i>
                                     </button>
                                 </form>
                                 <form action="/muzakki/${item.id}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                     <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit" class="inline-flex items-center justify-center w-8 h-8 border border-red-300 bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors" title="Hapus">
-                                        <i class="fas fa-trash text-xs"></i>
+                                    <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </div>

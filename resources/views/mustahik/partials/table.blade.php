@@ -1,78 +1,78 @@
 @if($mustahik->count() > 0)
-<div class="table-responsive">
-    <table class="table table-hover mb-0">
-        <thead class="bg-light">
+<div>
+    <table class="w-full text-sm text-left text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
-                <th>Nama</th>
-                <th>Kategori</th>
-                <th>Telepon</th>
-                <th>Kota</th>
-                <th>Status Verifikasi</th>
-                <th>Terdaftar</th>
-                <th>Aksi</th>
+                <th scope="col" class="px-6 py-3">Nama</th>
+                <th scope="col" class="px-6 py-3">Kategori</th>
+                <th scope="col" class="px-6 py-3">Telepon</th>
+                <th scope="col" class="px-6 py-3">Kota</th>
+                <th scope="col" class="px-6 py-3">Status Verifikasi</th>
+                <th scope="col" class="px-6 py-3">Terdaftar</th>
+                <th scope="col" class="px-6 py-3">Aksi</th>
             </tr>
         </thead>
         <tbody>
             @foreach($mustahik as $item)
-            <tr>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <div class="bg-success bg-opacity-10 rounded-circle p-2 me-2">
-                            <i class="bi bi-person-heart text-success"></i>
+            <tr class="bg-white border-b hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 rounded-full p-2 mr-3">
+                            <i class="bi bi-person-heart text-green-600"></i>
                         </div>
                         <div>
-                            <div class="fw-semibold">{{ $item->name }}</div>
+                            <div class="font-semibold text-gray-900">{{ $item->name }}</div>
                             @if($item->nik)
-                            <small class="text-muted">NIK: {{ $item->nik }}</small>
+                            <small class="text-gray-500">NIK: {{ $item->nik }}</small>
                             @endif
                         </div>
                     </div>
                 </td>
-                <td>
-                    <span class="badge bg-info">{{ ucfirst(str_replace('_', ' ', $item->category)) }}</span>
+                <td class="px-6 py-4">
+                    <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">{{ ucfirst(str_replace('_', ' ', $item->category)) }}</span>
                 </td>
-                <td>{{ $item->phone ?: '-' }}</td>
-                <td>{{ $item->city ?: '-' }}</td>
-                <td>
+                <td class="px-6 py-4">{{ $item->phone ?: '-' }}</td>
+                <td class="px-6 py-4">{{ $item->city ?: '-' }}</td>
+                <td class="px-6 py-4">
                     @switch($item->verification_status)
                         @case('pending')
-                            <span class="badge bg-warning">Menunggu</span>
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Menunggu Verifikasi</span>
                             @break
                         @case('verified')
-                            <span class="badge bg-success">Terverifikasi</span>
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">Terverifikasi</span>
                             @break
                         @case('rejected')
-                            <span class="badge bg-danger">Ditolak</span>
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-800">Ditolak</span>
                             @break
                         @default
-                            <span class="badge bg-secondary">{{ $item->verification_status }}</span>
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{{ $item->verification_status }}</span>
                     @endswitch
                 </td>
-                <td>{{ $item->created_at->format('d M Y') }}</td>
-                <td>
-                    <div class="btn-group btn-group-sm">
-                        <a href="{{ route('mustahik.show', $item) }}" class="btn btn-outline-info btn-sm" title="Lihat Detail">
+                <td class="px-6 py-4">{{ $item->created_at->format('d M Y') }}</td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-1">
+                        <a href="{{ route('mustahik.show', $item) }}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Lihat Detail">
                             <i class="bi bi-eye"></i>
                         </a>
-                        <a href="{{ route('mustahik.edit', $item) }}" class="btn btn-outline-primary btn-sm" title="Edit">
+                        <a href="{{ route('mustahik.edit', $item) }}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </a>
                         @if($item->verification_status === 'pending')
-                        <button type="button" class="btn btn-outline-success btn-sm" title="Verifikasi" onclick="showVerifyModal({{ $item->id }}, '{{ $item->name }}')">
+                        <button type="button" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Verifikasi" onclick="showVerifyModal({{ $item->id }}, '{{ $item->name }}')">
                             <i class="bi bi-check-circle"></i>
                         </button>
                         @endif
-                        <form action="{{ route('mustahik.toggle-status', $item) }}" method="POST" class="d-inline">
+                        <form action="{{ route('mustahik.toggle-status', $item) }}" method="POST" class="inline">
                             @csrf
                             @method('PATCH')
-                            <button type="submit" class="btn btn-outline-warning btn-sm" title="Toggle Status">
+                            <button type="submit" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Toggle Status">
                                 <i class="bi bi-toggle-{{ $item->is_active ? 'on' : 'off' }}"></i>
                             </button>
                         </form>
-                        <form action="{{ route('mustahik.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                        <form action="{{ route('mustahik.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">
+                            <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
@@ -85,29 +85,29 @@
 </div>
 
 @if(isset($pagination))
-<div class="card-footer bg-white">
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="text-muted">
+<div class="px-6 py-4 bg-white border-t border-gray-200">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-gray-500">
             Menampilkan {{ $pagination['from'] ?? 1 }} sampai {{ $pagination['to'] ?? count($mustahik) }} dari {{ $pagination['total'] ?? count($mustahik) }} data
         </div>
         @if($pagination['last_page'] > 1)
         <nav>
-            <ul class="pagination pagination-sm mb-0">
+            <ul class="inline-flex items-center -space-x-px">
                 @if($pagination['current_page'] > 1)
-                    <li class="page-item">
-                        <a class="page-link" href="#" data-page="{{ $pagination['current_page'] - 1 }}">‹</a>
+                    <li>
+                        <a href="#" class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700" data-page="{{ $pagination['current_page'] - 1 }}">‹</a>
                     </li>
                 @endif
                 
                 @for($i = 1; $i <= $pagination['last_page']; $i++)
-                    <li class="page-item {{ $pagination['current_page'] == $i ? 'active' : '' }}">
-                        <a class="page-link" href="#" data-page="{{ $i }}">{{ $i }}</a>
+                    <li>
+                        <a href="#" class="px-3 py-2 leading-tight {{ $pagination['current_page'] == $i ? 'text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700' : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700' }}" data-page="{{ $i }}">{{ $i }}</a>
                     </li>
                 @endfor
                 
                 @if($pagination['current_page'] < $pagination['last_page'])
-                    <li class="page-item">
-                        <a class="page-link" href="#" data-page="{{ $pagination['current_page'] + 1 }}">›</a>
+                    <li>
+                        <a href="#" class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700" data-page="{{ $pagination['current_page'] + 1 }}">›</a>
                     </li>
                 @endif
             </ul>
@@ -116,18 +116,18 @@
     </div>
 </div>
 @elseif($mustahik->hasPages())
-<div class="card-footer bg-white">
+<div class="px-6 py-4 bg-white border-t border-gray-200">
     {{ $mustahik->withQueryString()->links() }}
 </div>
 @endif
 
 @else
-<div class="text-center py-4">
-    <i class="bi bi-inbox display-4 text-muted mb-3 d-block"></i>
-    <h5 class="text-muted">Tidak ada data mustahik</h5>
-    <p class="text-muted">Belum ada mustahik yang terdaftar dalam sistem atau sesuai kriteria pencarian</p>
-    <a href="{{ route('mustahik.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Tambah Mustahik Pertama
+<div class="text-center py-12">
+    <i class="bi bi-inbox text-6xl text-gray-400 mb-4 block"></i>
+    <h5 class="text-lg font-medium text-gray-500 mb-2">Tidak ada data mustahik</h5>
+    <p class="text-sm text-gray-400 mb-4">Belum ada mustahik yang terdaftar dalam sistem atau sesuai kriteria pencarian</p>
+    <a href="{{ route('mustahik.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+        <i class="bi bi-plus-circle mr-2"></i> Tambah Mustahik Pertama
     </a>
 </div>
 @endif

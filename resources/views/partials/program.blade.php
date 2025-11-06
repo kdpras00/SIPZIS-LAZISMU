@@ -4,10 +4,11 @@
     <div id="laravel-active-tab" data-tab="{{ $activeTab }}" style="display: none;"></div>
     @endif
     <!-- Mosque Background Image Overlay -->
-
-    <div class="absolute inset-0 opacity-90" id="masjid-bg" style="background-image: url('{{ asset("img/masjid.webp") }}'); background-size: cover; background-position: center; background-repeat: no-repeat;"></div>
+    <div class="absolute inset-0 opacity-90"
+        style="background-image: url('{{ asset('img/masjid.webp') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; will-change: transform;">
+    </div>
     <!-- Green Gradient Overlay for blending -->
-    <div class=" absolute inset-0 bg-gradient-to-br from-green-900/80 via-green-800/70 to-emerald-700/80"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-green-900/80 via-green-800/70 to-emerald-700/80"></div>
 
     <!-- Additional Dark Overlay for text readability -->
     <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
