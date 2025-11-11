@@ -56,6 +56,16 @@
             transition: all 0.3s ease;
         }
 
+        /* Remove underline from all links by default */
+        a {
+            text-decoration: none !important;
+        }
+
+        a:hover,
+        a:focus {
+            text-decoration: none !important;
+        }
+
         /* Body styling */
         body {
             font-family: 'Figtree', sans-serif;

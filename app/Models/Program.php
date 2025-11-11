@@ -36,11 +36,15 @@ class Program extends Model
         return $this->hasMany(Campaign::class);
     }
 
-    // Relationship to get zakat payments directly associated with this program
+    // Note: program_id column doesn't exist in zakat_payments table
+    // Payments are linked via campaigns, not directly to programs
+    // This method returns a query builder that always returns empty results
+    // Use campaigns relationship instead to get payments
     public function zakatPayments()
     {
-        return $this->hasMany(ZakatPayment::class, 'program_id', 'id')
-            ->where('status', 'completed');
+        // Return query builder with condition that's always false
+        // This prevents "Column not found" SQL errors when accessing the relationship
+        return ZakatPayment::where('id', '<', 0); // Always returns empty result
     }
 
     // Relationship to get zakat distributions related to this program
@@ -64,8 +68,12 @@ class Program extends Model
      */
     public function getImageUrlAttribute()
     {
-        // Use image_url if available, otherwise fallback to photo
-        $imagePath = $this->image_url ?? $this->photo;
+        // Get image_url or photo from attributes directly to avoid infinite loop
+        $imageUrl = isset($this->attributes['image_url']) ? $this->attributes['image_url'] : null;
+        $photo = isset($this->attributes['photo']) ? $this->attributes['photo'] : null;
+        
+        // Use image_url if available (for CDN/external URLs), otherwise fallback to photo
+        $imagePath = $imageUrl ?: $photo;
 
         // If image path is empty, return a default image
         if (empty($imagePath)) {
@@ -77,29 +85,16 @@ class Program extends Model
             return $imagePath;
         }
 
-        // For local storage paths, ensure they start with 'programs/' directory
-        if (strpos($imagePath, 'programs/') === 0) {
-            // Use Storage::url() for proper URL generation
-            return Storage::url($imagePath);
-        }
-
-        // For other relative paths, prepend storage directory
-        if (strpos($imagePath, '/') !== 0) {
-            $imagePath = 'programs/' . $imagePath;
-        }
-
-        // Use Storage::url() for proper URL generation
-        return Storage::url(ltrim($imagePath, '/'));
+        // For local storage paths, use Storage::url() for proper URL generation
+        // Storage::url() automatically handles the 'storage/' prefix
+        return Storage::url($imagePath);
     }
 
     // Total dana terkumpul dari semua campaign yang published
     public function getTotalCollectedAttribute()
     {
-        // First check for direct program-based donations
-        $directPayments = $this->zakatPayments()
-            ->sum('paid_amount');
-
-        // Then check for campaign-based donations
+        // Note: program_id doesn't exist in zakat_payments table
+        // Only get payments from campaigns associated with this program
         $campaignPayments = $this->campaigns()
             ->published()
             ->with('zakatPayments')
@@ -108,7 +103,7 @@ class Program extends Model
                 return $campaign->zakatPayments()->sum('paid_amount');
             });
 
-        return $directPayments + $campaignPayments;
+        return $campaignPayments;
     }
 
     // Total dana yang telah didistribusikan

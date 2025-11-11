@@ -319,7 +319,7 @@
                                 </h4>
                             </div>
                             <a href="{{ route('payments.index') }}"
-                                class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg text-sm">
+                                class="no-underline px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg text-sm">
                                 Lihat Semua
                             </a>
                         </div>
@@ -369,7 +369,7 @@
                                 </h4>
                             </div>
                             <a href="{{ route('distributions.index') }}"
-                                class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg text-sm">
+                                class="no-underline px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg text-sm">
                                 Lihat Semua
                             </a>
                         </div>

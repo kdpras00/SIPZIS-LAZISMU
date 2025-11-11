@@ -14,7 +14,7 @@ class ZakatPayment extends Model
         'midtrans_order_id',
         'snap_token',
         'muzakki_id',
-        'program_id', // ✅ tambahkan ini
+        // 'program_id', // REMOVED: Column doesn't exist in database
         'program_category',
         'program_type_id',
         'zakat_type_id',
@@ -185,10 +185,11 @@ class ZakatPayment extends Model
         return $query->where('status', 'pending');
     }
 
-    public function program()
-    {
-        return $this->belongsTo(Program::class, 'program_id', 'id');
-    }
+    // Note: program_id column doesn't exist in zakat_payments table
+    // Program relationship is through campaigns or program_type_id
+    // This relationship is disabled to prevent SQL errors
+    // Use programType() relationship instead if needed
+    // If you need to access program, use campaigns relationship
 
 
     // Event handling for notifications

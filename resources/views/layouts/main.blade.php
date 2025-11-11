@@ -21,6 +21,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <!-- Tailwind via Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -63,6 +71,20 @@
     
     {{-- Additional Scripts from Pages --}}
     @stack('scripts')
+
+    <script>
+        // Add page-loaded class to body after page loads to show animated elements
+        (function() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add('page-loaded');
+                });
+            } else {
+                // DOMContentLoaded already fired, add class immediately
+                document.body.classList.add('page-loaded');
+            }
+        })();
+    </script>
 </body>
 
 </html>

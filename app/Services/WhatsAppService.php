@@ -350,7 +350,7 @@ class WhatsAppService
     {
         $amount = number_format($payment->paid_amount, 0, ',', '.');
         $retryUrl = route('guest.payment.create', [
-            'program_id' => $payment->program_id,
+            // 'program_id' => $payment->program_id, // REMOVED: Column doesn't exist
             'category' => $payment->program_category,
             'amount' => $payment->paid_amount
         ]);
@@ -376,7 +376,7 @@ class WhatsAppService
     {
         $amount = number_format($payment->paid_amount, 0, ',', '.');
         $retryUrl = route('guest.payment.create', [
-            'program_id' => $payment->program_id,
+            // 'program_id' => $payment->program_id, // REMOVED: Column doesn't exist
             'category' => $payment->program_category
         ]);
 
@@ -423,10 +423,8 @@ class WhatsAppService
      */
     protected function getProgramName(ZakatPayment $payment)
     {
-        if ($payment->program) {
-            return $payment->program->name;
-        }
-
+        // Note: program_id doesn't exist, so $payment->program relationship is disabled
+        // Check campaign first, then program_category
         if ($payment->campaign) {
             return $payment->campaign->title;
         }

@@ -3,27 +3,27 @@
 @section('page-title', 'Manajemen Distribusi Zakat')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="flex justify-between items-center mb-6">
     <div>
-        <h2 class="mb-1">Manajemen Distribusi Zakat</h2>
-        <p class="text-muted">Kelola dan pantau distribusi zakat kepada mustahik</p>
+        <h2 class="text-2xl font-bold mb-1">Manajemen Distribusi Zakat</h2>
+        <p class="text-gray-600">Kelola dan pantau distribusi zakat kepada mustahik</p>
     </div>
     <div>
-        <a href="{{ route('distributions.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Tambah Distribusi
+        <a href="{{ route('distributions.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="bi bi-plus-circle mr-2"></i> Tambah Distribusi
         </a>
     </div>
 </div>
 
 <!-- Filter Section -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <input type="text" id="search-input" class="form-control" placeholder="Cari kode distribusi, program, nama mustahik..." value="{{ request('search') }}">
+<div class="bg-white rounded-lg shadow-sm mb-6 border border-gray-200">
+    <div class="p-6">
+        <div class="grid grid-cols-12 gap-3">
+            <div class="col-span-12 md:col-span-3">
+                <input type="text" id="search-input" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari kode distribusi, program, nama mustahik..." value="{{ request('search') }}">
             </div>
-            <div class="col-md-2">
-                <select id="category-filter" class="form-select">
+            <div class="col-span-12 md:col-span-2">
+                <select id="category-filter" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat pr-8">
                     <option value="">Semua Kategori</option>
                     @foreach($categories as $category)
                     <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
@@ -32,8 +32,8 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
-                <select id="distribution-type-filter" class="form-select">
+            <div class="col-span-12 md:col-span-2">
+                <select id="distribution-type-filter" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat pr-8">
                     <option value="">Semua Jenis</option>
                     <option value="cash" {{ request('distribution_type') == 'cash' ? 'selected' : '' }}>Tunai</option>
                     <option value="goods" {{ request('distribution_type') == 'goods' ? 'selected' : '' }}>Barang</option>
@@ -41,35 +41,34 @@
                     <option value="service" {{ request('distribution_type') == 'service' ? 'selected' : '' }}>Layanan</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <input type="text" id="program-filter" class="form-control" placeholder="Program" value="{{ request('program') }}">
+            <div class="col-span-12 md:col-span-2">
+                <input type="text" id="program-filter" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Program" value="{{ request('program') }}">
             </div>
-            <div class="col-md-2">
-                <select id="received-status-filter" class="form-select">
+            <div class="col-span-12 md:col-span-2">
+                <select id="received-status-filter" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat pr-8">
                     <option value="">Semua Status</option>
                     <option value="received" {{ request('received_status') == 'received' ? 'selected' : '' }}>Sudah Diterima</option>
                     <option value="pending" {{ request('received_status') == 'pending' ? 'selected' : '' }}>Belum Diterima</option>
                 </select>
             </div>
-            <div class="col-md-1">
-                <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-arrow-clockwise"></i>
+            <div class="col-span-12 md:col-span-1">
+                <button type="button" id="reset-filters" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500 flex items-center justify-center">
+                    <i class="bi bi-arrow-clockwise mr-1"></i>
+                    Reset
                 </button>
             </div>
         </div>
-        <div class="row mt-3">
-            <div class="col-md-3">
-                <input type="date" id="date-from" class="form-control" placeholder="Dari Tanggal" value="{{ request('date_from') }}">
+        <div class="grid grid-cols-12 gap-3 mt-3">
+            <div class="col-span-12 md:col-span-3">
+                <input type="date" id="date-from" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" value="{{ request('date_from') }}">
             </div>
-            <div class="col-md-3">
-                <input type="date" id="date-to" class="form-control" placeholder="Sampai Tanggal" value="{{ request('date_to') }}">
+            <div class="col-span-12 md:col-span-3">
+                <input type="date" id="date-to" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" value="{{ request('date_to') }}">
             </div>
-            <div class="col-md-6">
-                <div id="search-loading" class="d-none">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <span class="ms-2">Mencari...</span>
+            <div class="col-span-12 md:col-span-6 flex items-center">
+                <div id="search-loading" class="hidden flex items-center">
+                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                    <span class="ml-2 text-sm text-gray-600">Mencari...</span>
                 </div>
             </div>
         </div>
@@ -77,60 +76,50 @@
 </div>
 
 <!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-2">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-cash-stack display-4 text-primary mb-2"></i>
-                <h5 class="mb-0" id="total-amount">Rp {{ number_format($stats['total_amount'], 0, ',', '.') }}</h5>
-                <small class="text-muted">Total Distribusi</small>
-            </div>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border-0">
+        <div class="p-6 text-center">
+            <i class="bi bi-cash-stack text-4xl text-blue-600 mb-2"></i>
+            <h5 class="text-lg font-semibold mb-0" id="total-amount">Rp {{ number_format($stats['total_amount'], 0, ',', '.') }}</h5>
+            <small class="text-gray-600">Total Distribusi</small>
         </div>
     </div>
-    <div class="col-md-2">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-people display-4 text-success mb-2"></i>
-                <h5 class="mb-0" id="total-count">{{ number_format($stats['total_count']) }}</h5>
-                <small class="text-muted">Total Penerima</small>
-            </div>
+    <div class="bg-white rounded-lg shadow-sm border-0">
+        <div class="p-6 text-center">
+            <i class="bi bi-people text-4xl text-green-600 mb-2"></i>
+            <h5 class="text-lg font-semibold mb-0" id="total-count">{{ number_format($stats['total_count']) }}</h5>
+            <small class="text-gray-600">Total Penerima</small>
         </div>
     </div>
-    <div class="col-md-2">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-calendar-month display-4 text-info mb-2"></i>
-                <h5 class="mb-0" id="thismonth-amount">Rp {{ number_format($stats['this_month'], 0, ',', '.') }}</h5>
-                <small class="text-muted">Bulan Ini</small>
-            </div>
+    <div class="bg-white rounded-lg shadow-sm border-0">
+        <div class="p-6 text-center">
+            <i class="bi bi-calendar-month text-4xl text-cyan-600 mb-2"></i>
+            <h5 class="text-lg font-semibold mb-0" id="thismonth-amount">Rp {{ number_format($stats['this_month'], 0, ',', '.') }}</h5>
+            <small class="text-gray-600">Bulan Ini</small>
         </div>
     </div>
-    <div class="col-md-2">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-clock display-4 text-warning mb-2"></i>
-                <h5 class="mb-0" id="pending-count">{{ $stats['pending_receipt'] }}</h5>
-                <small class="text-muted">Belum Diterima</small>
-            </div>
+    <div class="bg-white rounded-lg shadow-sm border-0">
+        <div class="p-6 text-center">
+            <i class="bi bi-clock text-4xl text-yellow-600 mb-2"></i>
+            <h5 class="text-lg font-semibold mb-0" id="pending-count">{{ $stats['pending_receipt'] }}</h5>
+            <small class="text-gray-600">Belum Diterima</small>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-wallet2 display-4 text-{{ $stats['available_balance'] > 0 ? 'success' : 'danger' }} mb-2"></i>
-                <h5 class="mb-0" id="available-balance">Rp {{ number_format($stats['available_balance'], 0, ',', '.') }}</h5>
-                <small class="text-muted">Saldo Tersedia</small>
-            </div>
+    <div class="bg-white rounded-lg shadow-sm border-0 col-span-2 md:col-span-1">
+        <div class="p-6 text-center">
+            <i class="bi bi-wallet2 text-4xl {{ $stats['available_balance'] > 0 ? 'text-green-600' : 'text-red-600' }} mb-2"></i>
+            <h5 class="text-lg font-semibold mb-0" id="available-balance">Rp {{ number_format($stats['available_balance'], 0, ',', '.') }}</h5>
+            <small class="text-gray-600">Saldo Tersedia</small>
         </div>
     </div>
 </div>
 
 <!-- Distributions Table -->
-<div class="card">
-    <div class="card-header bg-white">
-        <h5 class="mb-0">Daftar Distribusi Zakat</h5>
+<div class="bg-white rounded-lg shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-200 bg-white">
+        <h5 class="text-lg font-semibold mb-0">Daftar Distribusi Zakat</h5>
     </div>
-    <div class="card-body p-0" id="distributions-table-container">
+    <div class="p-0" id="distributions-table-container">
         @include('distributions.partials.table')
     </div>
 </div>
@@ -165,7 +154,7 @@
             };
 
             // Show loading indicator
-            document.getElementById('search-loading').classList.remove('d-none');
+            document.getElementById('search-loading').classList.remove('hidden');
 
             // Create query string
             const params = new URLSearchParams(searchData);
@@ -195,7 +184,7 @@
                 })
                 .finally(() => {
                     // Hide loading indicator
-                    document.getElementById('search-loading').classList.add('d-none');
+                    document.getElementById('search-loading').classList.add('hidden');
                 });
         }
 
@@ -205,21 +194,21 @@
 
             if (distributions.length > 0) {
                 tableHtml = `
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="bg-light">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <th>Kode Distribusi</th>
-                                <th>Mustahik</th>
-                                <th>Program</th>
-                                <th>Jenis</th>
-                                <th>Jumlah</th>
-                                <th>Status</th>
-                                <th>Tanggal</th>
-                                <th>Aksi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Distribusi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mustahik</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="bg-white divide-y divide-gray-200">
             `;
 
                 distributions.forEach(function(distribution) {
@@ -239,10 +228,10 @@
 
                     // Distribution type colors
                     const typeColors = {
-                        'cash': 'success',
-                        'goods': 'info',
-                        'voucher': 'warning',
-                        'service': 'primary'
+                        'cash': 'bg-green-100 text-green-800',
+                        'goods': 'bg-cyan-100 text-cyan-800',
+                        'voucher': 'bg-yellow-100 text-yellow-800',
+                        'service': 'bg-blue-100 text-blue-800'
                     };
 
                     // Category display names
@@ -258,51 +247,51 @@
                     };
 
                     tableHtml += `
-                    <tr>
-                        <td>
-                            <div class="fw-semibold">${distribution.distribution_code}</div>
-                            ${distribution.location ? '<small class="text-muted">' + distribution.location + '</small>' : ''}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-semibold">${distribution.distribution_code}</div>
+                            ${distribution.location ? '<small class="text-gray-500">' + distribution.location + '</small>' : ''}
                         </td>
-                        <td>
-                            <div class="fw-semibold">${distribution.mustahik.name}</div>
-                            <small class="text-muted">${categoryMap[distribution.mustahik.category] || distribution.mustahik.category}</small>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-semibold">${distribution.mustahik.name}</div>
+                            <small class="text-gray-500">${categoryMap[distribution.mustahik.category] || distribution.mustahik.category}</small>
                         </td>
-                        <td>
-                            ${distribution.program_name ? '<span class="badge bg-info">' + distribution.program_name + '</span>' : '<span class="text-muted">-</span>'}
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${distribution.program_name ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-cyan-100 text-cyan-800">' + distribution.program_name + '</span>' : '<span class="text-gray-500">-</span>'}
                         </td>
-                        <td>
-                            <span class="badge bg-${typeColors[distribution.distribution_type]}">${distributionTypes[distribution.distribution_type]}</span>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${typeColors[distribution.distribution_type]}">${distributionTypes[distribution.distribution_type]}</span>
                         </td>
-                        <td>
-                            <div class="fw-bold">Rp ${parseInt(distribution.amount).toLocaleString('id-ID')}</div>
-                            ${distribution.goods_description ? '<small class="text-muted">' + distribution.goods_description + '</small>' : ''}
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-bold">Rp ${parseInt(distribution.amount).toLocaleString('id-ID')}</div>
+                            ${distribution.goods_description ? '<small class="text-gray-500">' + distribution.goods_description + '</small>' : ''}
                         </td>
-                        <td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                             ${distribution.is_received ? 
-                                '<span class="badge bg-success">Sudah Diterima</span>' : 
-                                '<span class="badge bg-warning">Belum Diterima</span>'
+                                '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Sudah Diterima</span>' : 
+                                '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Belum Diterima</span>'
                             }
                         </td>
-                        <td>${distributionDate}</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="/distributions/${distribution.id}" class="btn btn-outline-info btn-sm" title="Lihat Detail">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${distributionDate}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="/distributions/${distribution.id}" class="inline-flex items-center px-2 py-1 border border-cyan-300 rounded text-cyan-700 hover:bg-cyan-50" title="Lihat Detail">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="/distributions/${distribution.id}/receipt" class="btn btn-outline-success btn-sm" title="Kwitansi" target="_blank">
+                                <a href="/distributions/${distribution.id}/receipt" class="inline-flex items-center px-2 py-1 border border-green-300 rounded text-green-700 hover:bg-green-50" title="Kwitansi" target="_blank">
                                     <i class="bi bi-receipt"></i>
                                 </a>
-                                <a href="/distributions/${distribution.id}/edit" class="btn btn-outline-primary btn-sm" title="Edit">
+                                <a href="/distributions/${distribution.id}/edit" class="inline-flex items-center px-2 py-1 border border-blue-300 rounded text-blue-700 hover:bg-blue-50" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 ${!distribution.is_received ? `
-                                <button type="button" class="btn btn-outline-warning btn-sm" title="Tandai Diterima" onclick="markAsReceived(${distribution.id}, '${distribution.mustahik.name}')">
+                                <button type="button" class="inline-flex items-center px-2 py-1 border border-yellow-300 rounded text-yellow-700 hover:bg-yellow-50" title="Tandai Diterima" onclick="markAsReceived(${distribution.id}, '${distribution.mustahik.name}')">
                                     <i class="bi bi-check-circle"></i>
                                 </button>
-                                <form action="/distributions/${distribution.id}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus distribusi ini?')">
+                                <form action="/distributions/${distribution.id}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus distribusi ini?')">
                                     <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 border border-red-300 rounded text-red-700 hover:bg-red-50" title="Hapus">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -322,25 +311,26 @@
                 // Add pagination if needed
                 if (pagination.last_page > 1) {
                     tableHtml += `
-                    <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="text-muted">
+                    <div class="px-6 py-4 bg-white border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <div class="text-gray-600 text-sm">
                                 Menampilkan ${pagination.from} sampai ${pagination.to} dari ${pagination.total} data
                             </div>
                             <nav>
-                                <ul class="pagination pagination-sm mb-0">
+                                <ul class="flex space-x-2">
                 `;
 
                     if (pagination.current_page > 1) {
-                        tableHtml += '<li class="page-item"><a class="page-link pagination-link" href="#" data-page="' + (pagination.current_page - 1) + '">‹</a></li>';
+                        tableHtml += '<li><a class="px-3 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 pagination-link" href="#" data-page="' + (pagination.current_page - 1) + '">‹</a></li>';
                     }
 
                     for (let i = 1; i <= pagination.last_page; i++) {
-                        tableHtml += '<li class="page-item ' + (pagination.current_page == i ? 'active' : '') + '"><a class="page-link pagination-link" href="#" data-page="' + i + '">' + i + '</a></li>';
+                        const activeClass = pagination.current_page == i ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-50';
+                        tableHtml += '<li><a class="px-3 py-2 text-sm border rounded pagination-link ' + activeClass + '" href="#" data-page="' + i + '">' + i + '</a></li>';
                     }
 
                     if (pagination.current_page < pagination.last_page) {
-                        tableHtml += '<li class="page-item"><a class="page-link pagination-link" href="#" data-page="' + (pagination.current_page + 1) + '">›</a></li>';
+                        tableHtml += '<li><a class="px-3 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 pagination-link" href="#" data-page="' + (pagination.current_page + 1) + '">›</a></li>';
                     }
 
                     tableHtml += `
@@ -352,12 +342,12 @@
                 }
             } else {
                 tableHtml = `
-                <div class="text-center py-4">
-                    <i class="bi bi-inbox display-4 text-muted mb-3 d-block"></i>
-                    <h5 class="text-muted">Tidak ada data distribusi</h5>
-                    <p class="text-muted">Tidak ada distribusi yang sesuai dengan kriteria pencarian</p>
-                    <button type="button" id="clear-search" class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-clockwise"></i> Reset Pencarian
+                <div class="text-center py-12">
+                    <i class="bi bi-inbox text-6xl text-gray-400 mb-3 block"></i>
+                    <h5 class="text-gray-600 text-lg font-semibold mb-2">Tidak ada data distribusi</h5>
+                    <p class="text-gray-500 mb-4">Tidak ada distribusi yang sesuai dengan kriteria pencarian</p>
+                    <button type="button" id="clear-search" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50">
+                        <i class="bi bi-arrow-clockwise mr-2"></i> Reset Pencarian
                     </button>
                 </div>
             `;
@@ -375,11 +365,11 @@
             document.getElementById('available-balance').textContent = 'Rp ' + parseInt(stats.available_balance).toLocaleString('id-ID');
 
             // Update available balance color
-            const balanceElement = document.getElementById('available-balance').previousElementSibling;
+            const balanceIcon = document.getElementById('available-balance').previousElementSibling;
             if (stats.available_balance > 0) {
-                balanceElement.className = balanceElement.className.replace('text-danger', 'text-success');
+                balanceIcon.className = balanceIcon.className.replace('text-red-600', 'text-green-600');
             } else {
-                balanceElement.className = balanceElement.className.replace('text-success', 'text-danger');
+                balanceIcon.className = balanceIcon.className.replace('text-green-600', 'text-red-600');
             }
         }
 
@@ -473,3 +463,4 @@
     }
 </script>
 @endpush
+    

@@ -180,22 +180,27 @@
     document.addEventListener('DOMContentLoaded', function() {
         const togglePassword = document.getElementById('togglePassword');
         const password = document.getElementById('password');
-        const icon = togglePassword.querySelector('i');
+        
+        if (togglePassword && password) {
+            const icon = togglePassword.querySelector('i');
+            
+            if (icon) {
+                togglePassword.addEventListener('click', function() {
+                    // Toggle the type attribute
+                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                    password.setAttribute('type', type);
 
-        togglePassword.addEventListener('click', function() {
-            // Toggle the type attribute
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-
-            // Toggle the eye icon
-            if (type === 'password') {
-                icon.classList.remove('bi-eye-slash');
-                icon.classList.add('bi-eye');
-            } else {
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
+                    // Toggle the eye icon
+                    if (type === 'password') {
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    } else {
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    }
+                });
             }
-        });
+        }
     });
 </script>
 @endsection

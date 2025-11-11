@@ -3,38 +3,38 @@
 @section('page-title', 'Tambah Distribusi Zakat')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="flex justify-between items-center mb-6">
     <div>
-        <h2 class="mb-1">Tambah Distribusi Zakat</h2>
-        <p class="text-muted">Catat distribusi zakat kepada mustahik yang berhak</p>
+        <h2 class="text-2xl font-bold mb-1">Tambah Distribusi Zakat</h2>
+        <p class="text-gray-600">Catat distribusi zakat kepada mustahik yang berhak</p>
     </div>
     <div>
-        <a href="{{ route('distributions.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Kembali
+        <a href="{{ route('distributions.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <i class="bi bi-arrow-left mr-2"></i> Kembali
         </a>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Form Distribusi Zakat</h5>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="px-6 py-4 border-b border-gray-200 bg-white">
+                <h5 class="text-lg font-semibold mb-0"><i class="bi bi-hand-thumbs-up mr-2"></i> Form Distribusi Zakat</h5>
             </div>
-            <div class="card-body">
+            <div class="p-6">
                 <form action="{{ route('distributions.store') }}" method="POST" id="distributionForm">
                     @csrf
 
                     <!-- Mustahik Selection Section -->
-                    <div class="mb-4">
-                        <h6 class="text-primary mb-3">
-                            <i class="bi bi-person-heart"></i> Informasi Mustahik
+                    <div class="mb-6">
+                        <h6 class="text-blue-600 font-semibold mb-3">
+                            <i class="bi bi-person-heart mr-2"></i> Informasi Mustahik
                         </h6>
 
-                        <div class="row">
-                            <div class="col-md-8 mb-3">
-                                <label for="mustahik_id" class="form-label">Pilih Mustahik <span class="text-danger">*</span></label>
-                                <select class="form-select @error('mustahik_id') is-invalid @enderror"
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                            <div class="md:col-span-8 mb-4">
+                                <label for="mustahik_id" class="block text-sm font-medium text-gray-700 mb-1">Pilih Mustahik <span class="text-red-500">*</span></label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('mustahik_id') border-red-500 @enderror"
                                     id="mustahik_id"
                                     name="mustahik_id"
                                     required>
@@ -50,13 +50,13 @@
                                     @endforeach
                                 </select>
                                 @error('mustahik_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-4 mb-3">
-                                <label for="category_filter" class="form-label">Filter Kategori</label>
-                                <select class="form-select" id="category_filter">
+                            <div class="md:col-span-4 mb-4">
+                                <label for="category_filter" class="block text-sm font-medium text-gray-700 mb-1">Filter Kategori</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="category_filter">
                                     <option value="">Semua Kategori</option>
                                     @foreach($categories as $category)
                                     <option value="{{ $category }}">{{ ucfirst(str_replace('_', ' ', $category)) }}</option>
@@ -66,21 +66,21 @@
                         </div>
 
                         <!-- Mustahik Details Display -->
-                        <div id="mustahik-details" class="d-none">
-                            <div class="alert alert-info">
-                                <h6 class="mb-2"><i class="bi bi-info-circle"></i> Detail Mustahik</h6>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <small class="text-muted">Kategori:</small>
-                                        <div id="mustahik-category" class="fw-semibold"></div>
+                        <div id="mustahik-details" class="hidden">
+                            <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+                                <h6 class="mb-2 font-semibold text-cyan-800"><i class="bi bi-info-circle mr-2"></i> Detail Mustahik</h6>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <small class="text-gray-600">Kategori:</small>
+                                        <div id="mustahik-category" class="font-semibold text-gray-800"></div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted">Telepon:</small>
-                                        <div id="mustahik-phone" class="fw-semibold"></div>
+                                    <div>
+                                        <small class="text-gray-600">Telepon:</small>
+                                        <div id="mustahik-phone" class="font-semibold text-gray-800"></div>
                                     </div>
-                                    <div class="col-12 mt-2">
-                                        <small class="text-muted">Alamat:</small>
-                                        <div id="mustahik-address" class="fw-semibold"></div>
+                                    <div class="md:col-span-2">
+                                        <small class="text-gray-600">Alamat:</small>
+                                        <div id="mustahik-address" class="font-semibold text-gray-800"></div>
                                     </div>
                                 </div>
                             </div>
@@ -88,15 +88,15 @@
                     </div>
 
                     <!-- Distribution Details Section -->
-                    <div class="mb-4">
-                        <h6 class="text-primary mb-3">
-                            <i class="bi bi-gift"></i> Detail Distribusi
+                    <div class="mb-6">
+                        <h6 class="text-blue-600 font-semibold mb-3">
+                            <i class="bi bi-gift mr-2"></i> Detail Distribusi
                         </h6>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="distribution_type" class="form-label">Jenis Distribusi <span class="text-danger">*</span></label>
-                                <select class="form-select @error('distribution_type') is-invalid @enderror"
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="distribution_type" class="block text-sm font-medium text-gray-700 mb-1">Jenis Distribusi <span class="text-red-500">*</span></label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('distribution_type') border-red-500 @enderror"
                                     id="distribution_type"
                                     name="distribution_type"
                                     required>
@@ -107,16 +107,16 @@
                                     <option value="service" {{ old('distribution_type') == 'service' ? 'selected' : '' }}>Layanan</option>
                                 </select>
                                 @error('distribution_type')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="amount" class="form-label">Jumlah <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
+                            <div class="mb-4">
+                                <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah <span class="text-red-500">*</span></label>
+                                <div class="flex">
+                                    <span class="inline-flex items-center px-3 border border-r-0 border-gray-300 rounded-l-lg bg-gray-50 text-gray-500">Rp</span>
                                     <input type="number"
-                                        class="form-control @error('amount') is-invalid @enderror"
+                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('amount') border-red-500 @enderror"
                                         id="amount"
                                         name="amount"
                                         value="{{ old('amount') }}"
@@ -125,11 +125,11 @@
                                         required>
                                 </div>
                                 @error('amount')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                 @enderror
-                                <div id="amount-warning" class="d-none">
-                                    <small class="text-danger">
-                                        <i class="bi bi-exclamation-triangle"></i>
+                                <div id="amount-warning" class="hidden mt-1">
+                                    <small class="text-red-600">
+                                        <i class="bi bi-exclamation-triangle mr-1"></i>
                                         Jumlah melebihi saldo tersedia!
                                     </small>
                                 </div>
@@ -137,88 +137,88 @@
                         </div>
 
                         <!-- Goods Description (conditional) -->
-                        <div class="mb-3 d-none" id="goods-description-field">
-                            <label for="goods_description" class="form-label">Deskripsi Barang/Layanan</label>
-                            <textarea class="form-control @error('goods_description') is-invalid @enderror"
+                        <div class="mb-4 hidden" id="goods-description-field">
+                            <label for="goods_description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Barang/Layanan</label>
+                            <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('goods_description') border-red-500 @enderror"
                                 id="goods_description"
                                 name="goods_description"
                                 rows="3"
                                 placeholder="Contoh: Beras 10kg, Minyak goreng 2L, dll.">{{ old('goods_description') }}</textarea>
                             @error('goods_description')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="distribution_date" class="form-label">Tanggal Distribusi <span class="text-danger">*</span></label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="distribution_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Distribusi <span class="text-red-500">*</span></label>
                                 <input type="date"
-                                    class="form-control @error('distribution_date') is-invalid @enderror"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('distribution_date') border-red-500 @enderror"
                                     id="distribution_date"
                                     name="distribution_date"
                                     value="{{ old('distribution_date', date('Y-m-d')) }}"
                                     max="{{ date('Y-m-d') }}"
                                     required>
                                 @error('distribution_date')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="location" class="form-label">Lokasi Distribusi</label>
+                            <div class="mb-4">
+                                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Lokasi Distribusi</label>
                                 <input type="text"
-                                    class="form-control @error('location') is-invalid @enderror"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('location') border-red-500 @enderror"
                                     id="location"
                                     name="location"
                                     value="{{ old('location') }}"
                                     placeholder="Contoh: Masjid Al-Ikhlas, Kantor Amil, dll.">
                                 @error('location')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                     </div>
 
                     <!-- Program Information Section -->
-                    <div class="mb-4">
-                        <h6 class="text-primary mb-3">
-                            <i class="bi bi-bookmark"></i> Program & Catatan
+                    <div class="mb-6">
+                        <h6 class="text-blue-600 font-semibold mb-3">
+                            <i class="bi bi-bookmark mr-2"></i> Program & Catatan
                         </h6>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="program_name" class="form-label">Nama Program</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="program_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Program</label>
                                 <input type="text"
-                                    class="form-control @error('program_name') is-invalid @enderror"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('program_name') border-red-500 @enderror"
                                     id="program_name"
                                     name="program_name"
                                     value="{{ old('program_name') }}"
                                     placeholder="Contoh: Bantuan Ramadan, Program Pendidikan, dll.">
                                 @error('program_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Catatan</label>
-                            <textarea class="form-control @error('notes') is-invalid @enderror"
+                        <div class="mb-4">
+                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                            <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('notes') border-red-500 @enderror"
                                 id="notes"
                                 name="notes"
                                 rows="3"
                                 placeholder="Catatan tambahan mengenai distribusi ini...">{{ old('notes') }}</textarea>
                             @error('notes')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('distributions.index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Batal
+                    <div class="flex justify-between pt-4 border-t">
+                        <a href="{{ route('distributions.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                            <i class="bi bi-arrow-left mr-2"></i> Batal
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Simpan Distribusi
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="bi bi-check-circle mr-2"></i> Simpan Distribusi
                         </button>
                     </div>
                 </form>
@@ -226,38 +226,38 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
+    <div class="lg:col-span-1">
         <!-- Available Balance Card -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-{{ $availableBalance > 0 ? 'success' : 'danger' }} text-white">
-                <h6 class="mb-0"><i class="bi bi-wallet2"></i> Saldo Tersedia</h6>
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="px-6 py-4 {{ $availableBalance > 0 ? 'bg-green-600' : 'bg-red-600' }} text-white rounded-t-lg">
+                <h6 class="font-semibold mb-0"><i class="bi bi-wallet2 mr-2"></i> Saldo Tersedia</h6>
             </div>
-            <div class="card-body text-center">
-                <h3 class="text-{{ $availableBalance > 0 ? 'success' : 'danger' }}" id="available-balance">
+            <div class="p-6 text-center">
+                <h3 class="text-2xl font-bold {{ $availableBalance > 0 ? 'text-green-600' : 'text-red-600' }}" id="available-balance">
                     Rp {{ number_format($availableBalance, 0, ',', '.') }}
                 </h3>
-                <small class="text-muted">
+                <small class="text-gray-600">
                     {{ $availableBalance > 0 ? 'Dapat didistribusikan' : 'Saldo tidak mencukupi' }}
                 </small>
             </div>
         </div>
 
         <!-- Guidelines Card -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Panduan Distribusi</h6>
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="px-6 py-4 bg-blue-600 text-white rounded-t-lg">
+                <h6 class="font-semibold mb-0"><i class="bi bi-info-circle mr-2"></i> Panduan Distribusi</h6>
             </div>
-            <div class="card-body">
-                <h6>Jenis Distribusi:</h6>
-                <ul class="list-unstyled small">
-                    <li><i class="bi bi-cash text-success"></i> <strong>Tunai:</strong> Bantuan dalam bentuk uang</li>
-                    <li><i class="bi bi-box text-info"></i> <strong>Barang:</strong> Sembako, pakaian, dll.</li>
-                    <li><i class="bi bi-card-text text-warning"></i> <strong>Voucher:</strong> Kupon belanja/layanan</li>
-                    <li><i class="bi bi-gear text-primary"></i> <strong>Layanan:</strong> Beasiswa, pengobatan, dll.</li>
+            <div class="p-6">
+                <h6 class="font-semibold mb-2">Jenis Distribusi:</h6>
+                <ul class="list-none space-y-2 text-sm">
+                    <li><i class="bi bi-cash text-green-600 mr-2"></i> <strong>Tunai:</strong> Bantuan dalam bentuk uang</li>
+                    <li><i class="bi bi-box text-cyan-600 mr-2"></i> <strong>Barang:</strong> Sembako, pakaian, dll.</li>
+                    <li><i class="bi bi-card-text text-yellow-600 mr-2"></i> <strong>Voucher:</strong> Kupon belanja/layanan</li>
+                    <li><i class="bi bi-gear text-blue-600 mr-2"></i> <strong>Layanan:</strong> Beasiswa, pengobatan, dll.</li>
                 </ul>
 
-                <h6 class="mt-3">Kategori Mustahik (8 Asnaf):</h6>
-                <ul class="small text-muted">
+                <h6 class="font-semibold mt-4 mb-2">Kategori Mustahik (8 Asnaf):</h6>
+                <ul class="text-sm text-gray-600 space-y-1">
                     <li><strong>Fakir:</strong> Tidak memiliki harta dan pekerjaan</li>
                     <li><strong>Miskin:</strong> Memiliki harta/pekerjaan tapi tidak mencukupi</li>
                     <li><strong>Amil:</strong> Petugas pengumpul zakat</li>
@@ -268,8 +268,8 @@
                     <li><strong>Ibnu Sabil:</strong> Musafir kehabisan bekal</li>
                 </ul>
 
-                <div class="alert alert-warning small mt-3">
-                    <i class="bi bi-exclamation-triangle"></i>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4 text-sm">
+                    <i class="bi bi-exclamation-triangle text-yellow-600 mr-2"></i>
                     Pastikan mustahik sudah terverifikasi sebelum distribusi.
                 </div>
             </div>
@@ -305,9 +305,9 @@
             document.getElementById('mustahik-category').textContent = category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
             document.getElementById('mustahik-address').textContent = address;
             document.getElementById('mustahik-phone').textContent = phone;
-            mustahikDetails.classList.remove('d-none');
+            mustahikDetails.classList.remove('hidden');
         } else {
-            mustahikDetails.classList.add('d-none');
+            mustahikDetails.classList.add('hidden');
         }
     }
 
@@ -326,7 +326,7 @@
         });
 
         mustahikSelect.value = '';
-        mustahikDetails.classList.add('d-none');
+        mustahikDetails.classList.add('hidden');
     });
 
     // ===== DISTRIBUTION TYPE TOGGLE GOODS FIELD =====
@@ -334,10 +334,10 @@
         const typeValue = distributionType.value;
         
         if (typeValue === 'goods' || typeValue === 'service') {
-            goodsDescriptionField.classList.remove('d-none');
+            goodsDescriptionField.classList.remove('hidden');
             goodsDescField.setAttribute('required', 'required');
         } else {
-            goodsDescriptionField.classList.add('d-none');
+            goodsDescriptionField.classList.add('hidden');
             goodsDescField.removeAttribute('required');
             goodsDescField.value = '';
         }
@@ -357,11 +357,11 @@
     function validateAmount() {
         const amount = parseFloat(amountInput.value) || 0;
         if (distributionType.value === 'cash' && amount > availableBalance) {
-            amountWarning.classList.remove('d-none');
-            amountInput.classList.add('is-invalid');
+            amountWarning.classList.remove('hidden');
+            amountInput.classList.add('border-red-500');
         } else {
-            amountWarning.classList.add('d-none');
-            amountInput.classList.remove('is-invalid');
+            amountWarning.classList.add('hidden');
+            amountInput.classList.remove('border-red-500');
         }
     }
 

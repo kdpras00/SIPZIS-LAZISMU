@@ -1044,10 +1044,9 @@ class ZakatPaymentController extends Controller
                 'receipt_number'   => ZakatPayment::generateReceiptNumber(), // Use the existing method
             ];
 
-            // If program_id is provided, set it in the payment data
+            // Note: program_id column doesn't exist in zakat_payments table
+            // If program_id is provided in request, use it to get program category
             if ($request->filled('program_id')) {
-                $paymentData['program_id'] = $request->program_id;
-                // Also set the program_category from the program
                 $program = Program::find($request->program_id);
                 if ($program) {
                     $paymentData['program_category'] = $program->category;

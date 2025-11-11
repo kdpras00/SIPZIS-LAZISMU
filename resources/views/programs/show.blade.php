@@ -106,11 +106,13 @@
             <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Donatur Terbaru</h2>
 
             @php
-            $recentDonations = \App\Models\ZakatPayment::where('program_id', $program->id)
-            ->where('status', 'completed')
-            ->latest('payment_date')
-            ->limit(10)
-            ->get();
+            // Note: program_id doesn't exist in zakat_payments table
+            // Get payments by program_category matching program category
+            $recentDonations = \App\Models\ZakatPayment::where('status', 'completed')
+                ->where('program_category', $program->category)
+                ->latest('payment_date')
+                ->limit(10)
+                ->get();
             @endphp
 
             @if($recentDonations->count() > 0)

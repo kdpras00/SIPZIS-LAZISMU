@@ -195,11 +195,6 @@
                 class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg focus:outline-none">
                 <i class="bi bi-plus-circle mr-2"></i> Bayar Zakat Sekarang
             </a>
-        @else
-            <a href="{{ route('payments.create') }}"
-                class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg focus:outline-none">
-                <i class="bi bi-plus-circle mr-2"></i> Tambah Pembayaran
-            </a>
         @endif
     </div>
 @endif
