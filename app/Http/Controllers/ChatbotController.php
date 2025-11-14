@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\Http;
 
 class ChatbotController extends Controller
 {
+    private $geminiModel = 'gemini-2.5-flash';
+    
+    private function getGeminiApiKey()
+    {
+        return config('services.gemini.api_key');
+    }
+
     public function ask(Request $request)
     {
         $userMessage = $request->input('message');
@@ -17,23 +24,61 @@ class ChatbotController extends Controller
 
         try {
             // Prompt sistem agar chatbot hanya fokus pada ZIS
-            $context = "Kamu adalah asisten digital ahli dalam sistem pengelolaan zakat, infak, dan sedekah (SIPZIS). 
+            $systemInstruction = "Kamu adalah asisten digital ahli dalam sistem pengelolaan zakat, infak, dan sedekah (SIPZIS). 
             Jawablah pertanyaan pengguna hanya seputar zakat, infak, sedekah, lembaga amil, mustahik, muzakki, sistem informasi zakat, pembayaran digital zakat, dan hal yang relevan.
             Jika pertanyaan di luar konteks, tolong jawab dengan sopan bahwa kamu hanya bisa membantu seputar pengelolaan zakat, infak, dan sedekah.";
 
-            // API PUTER (Claude Sonnet)
+            // Gemini API
+            $apiKey = $this->getGeminiApiKey();
+            
+            if (!$apiKey) {
+                return response()->json(['error' => 'GEMINI_API_KEY tidak dikonfigurasi'], 500);
+            }
+            
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer free',
-            ])->post('https://api.puter.com/v1/chat/completions', [
-                'model' => 'claude-sonnet-4',
-                'messages' => [
-                    ['role' => 'system', 'content' => $context],
-                    ['role' => 'user', 'content' => $userMessage],
+            ])->post("https://generativelanguage.googleapis.com/v1beta/models/{$this->geminiModel}:generateContent?key={$apiKey}", [
+                'contents' => [
+                    [
+                        'parts' => [
+                            [
+                                'text' => $systemInstruction . "\n\nPertanyaan pengguna: " . $userMessage
+                            ]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'temperature' => 0.7,
+                    'topK' => 40,
+                    'topP' => 0.95,
+                    'maxOutputTokens' => 2048,
                 ],
             ]);
 
-            return response()->json($response->json());
+            if ($response->successful()) {
+                $responseData = $response->json();
+                
+                // Extract text from Gemini response
+                $text = '';
+                if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+                    $text = $responseData['candidates'][0]['content']['parts'][0]['text'];
+                }
+
+                return response()->json([
+                    'choices' => [
+                        [
+                            'message' => [
+                                'content' => $text,
+                                'role' => 'assistant'
+                            ]
+                        ]
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'error' => 'Gagal mendapatkan respons dari Gemini API: ' . $response->body()
+                ], $response->status());
+            }
         } catch (\Exception $e) {
             return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }

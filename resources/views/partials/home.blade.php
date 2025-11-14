@@ -472,128 +472,7 @@
         </button>
     </div>
 
-    <!-- Intercept Puter API errors BEFORE loading Puter.js -->
-    <script>
-        (function() {
-            // Suppress 401 errors from Puter whoami endpoint (not critical)
-            // Override console methods to filter out Puter 401 errors
-            const originalConsoleError = console.error;
-            const originalConsoleWarn = console.warn;
-
-            console.error = function(...args) {
-                const message = args.join(' ');
-                if ((message.includes('api.puter.com') || message.includes('puter.com')) &&
-                    (message.includes('401') || message.includes('Unauthorized') || message.includes('whoami'))) {
-                    // Silently ignore Puter whoami 401 errors
-                    return;
-                }
-                originalConsoleError.apply(console, args);
-            };
-
-            console.warn = function(...args) {
-                const message = args.join(' ');
-                if ((message.includes('api.puter.com') || message.includes('puter.com')) &&
-                    (message.includes('401') || message.includes('Unauthorized') || message.includes('whoami'))) {
-                    // Silently ignore Puter whoami 401 warnings
-                    return;
-                }
-                originalConsoleWarn.apply(console, args);
-            };
-
-            // Override XMLHttpRequest to intercept Puter API calls
-            const OriginalXHR = window.XMLHttpRequest;
-            window.XMLHttpRequest = function() {
-                const xhr = new OriginalXHR();
-                const originalOpen = xhr.open;
-
-                xhr.open = function(method, url, ...rest) {
-                    if (typeof url === 'string' && url.includes('api.puter.com/whoami')) {
-                        // Intercept whoami calls - mark this request
-                        xhr._isPuterWhoami = true;
-                        xhr._originalUrl = url;
-                    }
-                    return originalOpen.apply(this, [method, url, ...rest]);
-                };
-
-                const originalSend = xhr.send;
-                xhr.send = function(...args) {
-                    if (xhr._isPuterWhoami) {
-                        // Suppress all error handlers for whoami endpoint
-                        const originalOnError = xhr.onerror;
-                        const originalOnLoad = xhr.onload;
-
-                        xhr.onerror = function(e) {
-                            // Silently suppress errors
-                            e.preventDefault && e.preventDefault();
-                            e.stopPropagation && e.stopPropagation();
-                            return false;
-                        };
-
-                        xhr.onload = function() {
-                            if (xhr.status === 401 || xhr.status === 0) {
-                                // Silently handle 401 or failed requests
-                                return;
-                            }
-                            if (originalOnLoad) {
-                                originalOnLoad.call(this);
-                            }
-                        };
-
-                        // Override status to prevent 401 from being visible
-                        Object.defineProperty(xhr, 'status', {
-                            get: function() {
-                                if (this._isPuterWhoami && this._actualStatus === 401) {
-                                    return 200; // Return fake success status
-                                }
-                                return this._actualStatus || 200;
-                            },
-                            set: function(value) {
-                                this._actualStatus = value;
-                            }
-                        });
-                    }
-                    return originalSend.apply(this, args);
-                };
-
-                return xhr;
-            };
-
-            // Also suppress fetch errors for Puter whoami (handled by fetch API)
-            const originalFetch = window.fetch;
-            window.fetch = function(...args) {
-                const url = args[0];
-                // Check if this is a Puter whoami request
-                if (typeof url === 'string' && url.includes('api.puter.com/whoami')) {
-                    // Intercept the request completely - return a successful response immediately
-                    // This prevents the actual network request and the 401 error
-                    return Promise.resolve(new Response(JSON.stringify({}), {
-                        status: 200,
-                        statusText: 'OK',
-                        ok: true,
-                        headers: new Headers({
-                            'Content-Type': 'application/json'
-                        })
-                    }));
-                }
-                // For all other requests, use the original fetch
-                return originalFetch.apply(this, args);
-            };
-
-            // Suppress network errors from Puter whoami endpoint
-            window.addEventListener('error', function(e) {
-                if (e.message && (e.message.includes('401') || e.message.includes('Unauthorized')) &&
-                    (e.filename && (e.filename.includes('api.puter.com') || e.filename.includes('puter.com')) ||
-                        e.target && e.target.src && e.target.src.includes('api.puter.com'))) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-            }, true);
-        })();
-    </script>
-
-    <!-- Puter.js API untuk Claude AI -->
-    <script src="https://js.puter.com/v2/"></script>
+    <!-- Marked.js untuk format markdown di chatbot -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <!-- Custom CSS for Animations -->
@@ -828,27 +707,7 @@
     <script>
         // Chatbot functionality
         document.addEventListener("DOMContentLoaded", () => {
-            // Wait for Puter.js to load
-            function waitForPuter(callback, maxAttempts = 50) {
-                let attempts = 0;
-                const checkPuter = () => {
-                    attempts++;
-                    if (typeof puter !== 'undefined' && puter.ai) {
-                        console.log('Puter.js loaded successfully');
-                        callback();
-                    } else if (attempts < maxAttempts) {
-                        setTimeout(checkPuter, 100);
-                    } else {
-                        console.warn('Puter.js not loaded after maximum attempts');
-                        // Initialize anyway, fallback will handle it
-                        callback();
-                    }
-                };
-                checkPuter();
-            }
-
-
-            // Check if puter is available, if not, wait for it
+            // Initialize chatbot directly (no need to wait for Puter.js)
             function initializeChatbot() {
                 const sendBtn = document.getElementById("send-btn");
                 const input = document.getElementById("chat-input");
@@ -1033,74 +892,49 @@
                             </ul>
                         `;
                         } else {
-                            // For other questions, use the AI API if puter is available
-                            if (typeof puter !== 'undefined' && puter.ai) {
-                                try {
-                                    // Tambahkan konteks sistem untuk fokus pada zakat
-                                    const systemContext =
-                                        "Kamu adalah asisten digital ahli dalam sistem pengelolaan zakat, infak, dan sedekah (ZIS). " +
-                                        "Platform ini adalah SIPZIS (Sistem Informasi Pengelolaan Zakat). " +
-                                        "Jawablah pertanyaan pengguna dengan sopan, informatif, dan sesuai syariat Islam. " +
-                                        "Jika pertanyaan tidak terkait zakat/infak/sedekah, arahkan kembali ke topik zakat dengan sopan.\n\n" +
-                                        "Pertanyaan pengguna: " + userText;
+                            // For other questions, use Gemini API via backend
+                            try {
+                                const response = await fetch('{{ route('chatbot.ask') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'Accept': 'application/json'
+                                    },
+                                    credentials: 'same-origin',
+                                    body: JSON.stringify({
+                                        message: userText
+                                    })
+                                });
 
-                                    const response = await puter.ai.chat(systemContext, {
-                                        model: "claude-opus-4-1"
-                                    });
-
-                                    // Validasi dan ekstraksi response dengan aman
-                                    let responseText = '';
-
-                                    if (response && response.message) {
-                                        if (response.message.content && Array.isArray(response.message
-                                                .content) && response.message.content.length > 0) {
-                                            // Format standar: response.message.content[0].text
-                                            if (response.message.content[0].text) {
-                                                responseText = response.message.content[0].text;
-                                            } else if (typeof response.message.content[0] === 'string') {
-                                                // Jika content[0] langsung string
-                                                responseText = response.message.content[0];
-                                            }
-                                        } else if (response.message.content && typeof response.message
-                                            .content === 'string') {
-                                            // Jika content langsung string
-                                            responseText = response.message.content;
-                                        } else if (typeof response.message === 'string') {
-                                            // Jika message langsung string
-                                            responseText = response.message;
-                                        }
-                                    } else if (typeof response === 'string') {
-                                        // Jika response langsung string
-                                        responseText = response;
-                                    }
-
-                                    if (responseText) {
-                                        appendMessage(formatResponseToHtml(responseText), "bot");
-                                    } else {
-                                        console.error('Unexpected response format from Puter API:', response);
-                                        appendMessage(
-                                            '<p>⚠️ Format respon dari AI tidak dikenali. Silakan coba lagi.</p>',
-                                            "bot");
-                                    }
-
-                                } catch (apiError) {
-                                    console.error('Puter API Error:', apiError);
-                                    console.error('Error details:', {
-                                        message: apiError.message,
-                                        stack: apiError.stack,
-                                        name: apiError.name
-                                    });
-                                    replyHtml =
-                                        '<p>⚠️ Terjadi kesalahan saat menghubungi AI. Silakan coba lagi nanti.</p>';
-                                    appendMessage(replyHtml, "bot");
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
                                 }
 
-                            } else {
-                                // Fallback response if puter is not available
-                                replyHtml =
-                                    '<p>Maaf, saat ini saya tidak dapat mengakses AI. Harap tunggu sebentar atau refresh halaman.</p>';
-                                appendMessage(replyHtml, "bot");
+                                const data = await response.json();
 
+                                // Extract response text from Gemini API response
+                                let responseText = '';
+                                
+                                if (data.choices && data.choices[0] && data.choices[0].message) {
+                                    responseText = data.choices[0].message.content || '';
+                                } else if (data.error) {
+                                    responseText = 'Maaf, terjadi kesalahan: ' + data.error;
+                                }
+
+                                if (responseText) {
+                                    appendMessage(formatResponseToHtml(responseText), "bot");
+                                } else {
+                                    appendMessage(
+                                        '<p>⚠️ Format respon dari AI tidak dikenali. Silakan coba lagi.</p>',
+                                        "bot");
+                                }
+
+                            } catch (apiError) {
+                                console.error('Gemini API Error:', apiError);
+                                appendMessage(
+                                    '<p>⚠️ Terjadi kesalahan saat menghubungi AI. Silakan coba lagi nanti.</p>',
+                                    "bot");
                             }
                         }
 
@@ -1149,10 +983,8 @@
                 });
             }
 
-            // Wait for Puter.js to load, then initialize chatbot
-            waitForPuter(() => {
-                initializeChatbot();
-            });
+            // Initialize chatbot directly
+            initializeChatbot();
         });
 
         // Prevent blinking on page load

@@ -468,8 +468,21 @@
 
         // Load notifications via AJAX
         function loadNotifications() {
-            fetch('{{ route('notifications.ajax') }}')
-                .then(response => response.json())
+            fetch('{{ route('notifications.ajax') }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         notificationContent.innerHTML = data.html;
@@ -543,8 +556,21 @@
 
         // Load notifications via AJAX
         function loadNotifications() {
-            fetch('{{ route('notifications.ajax') }}')
-                .then(response => response.json())
+            fetch('{{ route('notifications.ajax') }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         notificationContent.innerHTML = data.html;
