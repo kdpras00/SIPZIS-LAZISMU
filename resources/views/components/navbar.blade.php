@@ -122,7 +122,7 @@
                         </li>
                         <li>
                             <a class="dropdown-item text-center"
-                                href="{{ $user->role === 'muzakki' ? route('muzakki.notifications.index') : '#' }}">Lihat
+                                href="{{ $user->role === 'muzakki' ? route('notifications.index') : '#' }}">Lihat
                                 semua notifikasi</a>
                         </li>
                     @else

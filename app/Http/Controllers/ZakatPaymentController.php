@@ -696,7 +696,7 @@ class ZakatPaymentController extends Controller
 
             DB::commit();
 
-            $redirectRoute = Auth::check() && Auth::user()->role === 'muzakki' ? 'muzakki.dashboard' : 'payments.index';
+            $redirectRoute = Auth::check() && Auth::user()->role === 'muzakki' ? 'dashboard' : 'payments.index';
             return redirect()->route($redirectRoute)->with('success', 'Pembayaran zakat berhasil diproses.');
         } catch (\Exception $e) {
             DB::rollback();

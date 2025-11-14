@@ -3,7 +3,7 @@
 @if($notifications->count() > 0)
 <div class="space-y-3">
     {{-- Mark all as read button --}}
-    <form action="{{ route('muzakki.notifications.markAsRead') }}" method="POST" class="text-right mb-4">
+    <form action="{{ route('notifications.markAsRead') }}" method="POST" class="text-right mb-4">
         @csrf
         <button type="submit" class="text-sm text-green-600 hover:text-green-700 font-medium transition-colors duration-200">
             Tandai semua sebagai dibaca
@@ -74,7 +74,7 @@
 
     {{-- View All Link --}}
     <div class="pt-3 border-t border-gray-200">
-        <a href="{{ route('muzakki.notifications.index') }}" class="text-base font-medium text-green-600 hover:text-green-700 flex items-center justify-center transition-colors duration-200">
+        <a href="{{ route('notifications.index') }}" class="text-base font-medium text-green-600 hover:text-green-700 flex items-center justify-center transition-colors duration-200">
             Lihat semua notifikasi
             <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

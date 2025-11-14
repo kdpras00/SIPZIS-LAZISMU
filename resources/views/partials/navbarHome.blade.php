@@ -117,7 +117,7 @@
                                 </div>
                             @else
                                 <div class="border-t border-green-700 mt-4 pt-4">
-                                    <a href="{{ route('muzakki.dashboard') }}"
+                                    <a href="{{ route('dashboard') }}"
                                         class="block px-4 py-2 text-white hover:bg-green-700 transition duration-300">
                                         Profil
                                     </a>
@@ -241,7 +241,7 @@
                             <div class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 hidden"
                                 role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button"
                                 tabindex="-1" id="user-dropdown">
-                                <a href="{{ route('muzakki.dashboard') }}"
+                                <a href="{{ route('dashboard') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"
                                     tabindex="-1">Profil</a>
                                 <!-- <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Dashboard</a> -->
@@ -468,7 +468,7 @@
 
         // Load notifications via AJAX
         function loadNotifications() {
-            fetch('{{ route('muzakki.notifications.ajax') }}')
+            fetch('{{ route('notifications.ajax') }}')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -543,7 +543,7 @@
 
         // Load notifications via AJAX
         function loadNotifications() {
-            fetch('{{ route('muzakki.notifications.ajax') }}')
+            fetch('{{ route('notifications.ajax') }}')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {

@@ -12,7 +12,7 @@
 <div id="sidebar" class="sidebar flex flex-col h-screen" style="padding: 1rem 0.5rem 1rem 0.75rem;">
     {{-- SIPZIS Logo --}}
     <div class="flex justify-center items-center mb-4 px-2">
-        <a href="{{ $user->role === 'muzakki' ? route('muzakki.dashboard') : route('dashboard') }}"
+        <a href="{{ route('dashboard') }}"
             class="flex items-center text-white no-underline">
             <i class="fas fa-mosque mr-2 text-white text-2xl"></i>
             <span class="font-bold text-xl text-white" style="font-family: 'Poppins', sans-serif;">SIPZIS</span>
@@ -24,8 +24,8 @@
     <ul class="flex flex-col mb-auto list-none p-0" style="padding-left: 0.5rem; padding-right: 0.5rem;">
         {{-- Dashboard --}}
         <li class="nav-item mb-1">
-            <a href="{{ $user->role === 'muzakki' ? route('muzakki.dashboard') : route('dashboard') }}"
-                class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ $currentRoute === 'dashboard' || $currentRoute === 'muzakki.dashboard' ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+            <a href="{{ route('dashboard') }}"
+                class="nav-link flex items-center py-3 rounded-lg transition-all duration-200 whitespace-nowrap w-full {{ $currentRoute === 'dashboard' ? 'bg-white bg-opacity-20 text-white font-medium' : 'text-white text-opacity-85 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
                 style="padding-left: 0.75rem; padding-right: 0.75rem;">
                 <i class="bi bi-speedometer2 mr-3 text-lg min-w-[20px] text-center flex-shrink-0"></i>
                 <span class="flex-grow whitespace-nowrap overflow-hidden text-ellipsis">Dashboard</span>

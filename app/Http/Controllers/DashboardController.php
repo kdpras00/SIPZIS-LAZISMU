@@ -252,7 +252,7 @@ class DashboardController extends Controller
             $muzakki = $user->muzakki;
 
             if (!$muzakki) {
-                return redirect()->route('muzakki.profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+                return redirect()->route('profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
             }
 
             // Get active programs for donation
@@ -277,7 +277,7 @@ class DashboardController extends Controller
             $muzakki = $user->muzakki;
 
             if (!$muzakki) {
-                return redirect()->route('muzakki.profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+                return redirect()->route('profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
             }
 
             // Get campaigns - since campaigns table doesn't have muzakki_id column,
@@ -305,7 +305,7 @@ class DashboardController extends Controller
             $muzakki = $user->muzakki;
 
             if (!$muzakki) {
-                return redirect()->route('muzakki.profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+                return redirect()->route('profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
             }
 
             // Get muzakki's payment history and stats

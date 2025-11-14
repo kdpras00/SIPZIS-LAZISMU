@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center">
-            <a href="{{ route('muzakki.dashboard') }}" class="text-gray-700 mr-3 hover:text-gray-900">
+            <a href="{{ route('dashboard') }}" class="text-gray-700 mr-3 hover:text-gray-900">
                 <i class="bi bi-arrow-left text-xl"></i>
             </a>
             <h5 class="text-xl font-semibold text-gray-900 mb-0">Akun bank</h5>
@@ -48,15 +48,15 @@
                 <i class="bi bi-house text-xl block mb-1"></i>
                 <small class="text-xs">Home</small>
             </a>
-            <a href="{{ route('muzakki.donation') }}" class="text-gray-700 hover:text-gray-900 no-underline">
-                <i class="bi bi-heart text-xl block mb-1"></i>
-                <small class="text-xs">Donasi</small>
-            </a>
-            <a href="{{ route('muzakki.fundraising') }}" class="text-gray-700 hover:text-gray-900 no-underline">
-                <i class="bi bi-box-seam text-xl block mb-1"></i>
-                <small class="text-xs">Galang Dana</small>
-            </a>
-            <a href="{{ route('muzakki.amalanku') }}" class="text-gray-700 hover:text-gray-900 no-underline">
+        <a href="{{ route('donation') }}" class="text-gray-700 hover:text-gray-900 no-underline">
+        <i class="bi bi-heart text-xl block mb-1"></i>
+        <small class="text-xs">Donasi</small>
+    </a>
+    <a href="{{ route('fundraising') }}" class="text-gray-700 hover:text-gray-900 no-underline">
+        <i class="bi bi-box-seam text-xl block mb-1"></i>
+        <small class="text-xs">Galang Dana</small>
+    </a>
+    <a href="{{ route('amalanku') }}" class="text-gray-700 hover:text-gray-900 no-underline">
                 <i class="bi bi-person text-xl block mb-1"></i>
                 <small class="text-xs">Amalanku</small>
             </a>

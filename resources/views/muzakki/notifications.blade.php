@@ -19,31 +19,31 @@
             <!-- Filter Tabs -->
             <div class="border-b border-gray-200">
                 <nav class="flex -mb-px">
-                    <a href="{{ route('muzakki.notifications.index', ['filter' => 'all']) }}"
+                    <a href="{{ route('notifications.index', ['filter' => 'all']) }}"
                         class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm {{ $filter === 'all' ? 'active text-green-600 border-green-500' : '' }}">
                         Semua
                     </a>
-                    <a href="{{ route('muzakki.notifications.index', ['filter' => 'payment']) }}"
+                    <a href="{{ route('notifications.index', ['filter' => 'payment']) }}"
                         class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm {{ $filter === 'payment' ? 'active text-green-600 border-green-500' : '' }}">
                         Pembayaran {{ isset($notificationTypes['payment']) ? "({$notificationTypes['payment']->count})" : '' }}
                     </a>
-                    <a href="{{ route('muzakki.notifications.index', ['filter' => 'distribution']) }}"
+                    <a href="{{ route('notifications.index', ['filter' => 'distribution']) }}"
                         class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm {{ $filter === 'distribution' ? 'active text-green-600 border-green-500' : '' }}">
                         Penyaluran {{ isset($notificationTypes['distribution']) ? "({$notificationTypes['distribution']->count})" : '' }}
                     </a>
-                    <a href="{{ route('muzakki.notifications.index', ['filter' => 'program']) }}"
+                    <a href="{{ route('notifications.index', ['filter' => 'program']) }}"
                         class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm {{ $filter === 'program' ? 'active text-green-600 border-green-500' : '' }}">
                         Program {{ isset($notificationTypes['program']) ? "({$notificationTypes['program']->count})" : '' }}
                     </a>
-                    <a href="{{ route('muzakki.notifications.index', ['filter' => 'account']) }}"
+                    <a href="{{ route('notifications.index', ['filter' => 'account']) }}"
                         class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm {{ $filter === 'account' ? 'active text-green-600 border-green-500' : '' }}">
                         Akun {{ isset($notificationTypes['account']) ? "({$notificationTypes['account']->count})" : '' }}
                     </a>
-                    <a href="{{ route('muzakki.notifications.index', ['filter' => 'reminder']) }}"
+                    <a href="{{ route('notifications.index', ['filter' => 'reminder']) }}"
                         class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm {{ $filter === 'reminder' ? 'active text-green-600 border-green-500' : '' }}">
                         Pengingat {{ isset($notificationTypes['reminder']) ? "({$notificationTypes['reminder']->count})" : '' }}
                     </a>
-                    <a href="{{ route('muzakki.notifications.index', ['filter' => 'message']) }}"
+                    <a href="{{ route('notifications.index', ['filter' => 'message']) }}"
                         class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm {{ $filter === 'message' ? 'active text-green-600 border-green-500' : '' }}">
                         Pesan {{ isset($notificationTypes['message']) ? "({$notificationTypes['message']->count})" : '' }}
                     </a>

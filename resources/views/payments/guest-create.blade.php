@@ -237,27 +237,6 @@
                                 <input type="hidden" name="donor_email" value="{{ $loggedInMuzakki->email }}"
                                     autocomplete="off">
                             @else
-                                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 mb-4">
-                                    <div class="flex items-start gap-3">
-                                        <svg class="w-6 h-6 text-emerald-600 flex-shrink-0 mt-0.5" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <div class="flex-1">
-                                            <h4 class="font-semibold text-emerald-800 mb-1">Donasi sebagai:
-                                                {{ $loggedInMuzakki->name }}</h4>
-                                            <p class="text-sm text-emerald-700">
-                                                ✉️ Email: {{ $loggedInMuzakki->email }}<br>
-                                                📱 WhatsApp: {{ $loggedInMuzakki->phone }}
-                                            </p>
-                                            <p class="text-xs text-emerald-600 mt-2">
-                                                ✅ Notifikasi akan dikirim via WhatsApp & Email
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <input type="hidden" name="donor_name" value="{{ $loggedInMuzakki->name }}"
                                     autocomplete="off">
                                 <input type="hidden" id="donor_phone_hidden" value="{{ $loggedInMuzakki->phone }}"

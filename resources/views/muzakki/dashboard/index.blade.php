@@ -77,25 +77,25 @@
 
 <!-- Quick Navigation Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <a href="{{ route('muzakki.dashboard.transactions') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
+    <a href="{{ route('dashboard.transactions') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
         <i class="bi bi-credit-card text-5xl text-blue-500 mb-3 block"></i>
         <h5 class="text-lg font-semibold text-gray-900 mb-2">Transaksi Saya</h5>
         <p class="text-gray-600 text-sm">Lihat riwayat pembayaran zakat Anda</p>
     </a>
 
-    <a href="{{ route('muzakki.dashboard.recurring') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
+    <a href="{{ route('dashboard.recurring') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
         <i class="bi bi-arrow-repeat text-5xl text-green-500 mb-3 block"></i>
         <h5 class="text-lg font-semibold text-gray-900 mb-2">Donasi Rutin</h5>
         <p class="text-gray-600 text-sm">Atur donasi otomatis setiap bulan</p>
     </a>
 
-    <a href="{{ route('muzakki.dashboard.bank-accounts') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
+    <a href="{{ route('dashboard.bank-accounts') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
         <i class="bi bi-bank text-5xl text-cyan-500 mb-3 block"></i>
         <h5 class="text-lg font-semibold text-gray-900 mb-2">Akun Bank</h5>
         <p class="text-gray-600 text-sm">Kelola rekening bank Anda</p>
     </a>
 
-    <a href="{{ route('muzakki.dashboard.management') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
+    <a href="{{ route('dashboard.management') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
         <i class="bi bi-person-gear text-5xl text-amber-500 mb-3 block"></i>
         <h5 class="text-lg font-semibold text-gray-900 mb-2">Manajemen Akun</h5>
         <p class="text-gray-600 text-sm">Kelola profil dan pengaturan akun</p>

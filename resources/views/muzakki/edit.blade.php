@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center">
-            <a href="{{ request()->route()->hasParameter('muzakki') ? route('muzakki.index') : route('muzakki.dashboard') }}"
+            <a href="{{ request()->route()->hasParameter('muzakki') ? route('muzakki.index') : route('dashboard') }}"
                 class="text-decoration-none text-dark me-3">
                 <i class="bi bi-arrow-left"></i>
             </a>
