@@ -280,12 +280,15 @@ class DashboardController extends Controller
                 return redirect()->route('muzakki.profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
             }
 
-            // Get campaigns created by this muzakki
-            $campaigns = \App\Models\Campaign::where('muzakki_id', $muzakki->id)->latest()->get();
+            // Get campaigns - since campaigns table doesn't have muzakki_id column,
+            // we'll return empty collection for now (campaigns are not directly linked to muzakki)
+            // TODO: Add muzakki_id column to campaigns table or implement alternative relationship
+            $campaigns = collect([]);
 
             return view('muzakki.fundraising', compact('muzakki', 'campaigns'));
         } catch (\Exception $e) {
             \Log::error('Error in fundraising method: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             abort(500, 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

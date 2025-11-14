@@ -18,7 +18,7 @@
     </div>
 
     <!-- Campaigns List -->
-    @if($campaigns->count() > 0)
+    @if(isset($campaigns) && $campaigns->count() > 0)
     <div class="bg-white rounded-xl shadow-md mb-6">
         <div class="p-6">
             <h6 class="font-semibold text-gray-900 mb-4">Campaign Saya</h6>
@@ -26,23 +26,23 @@
             <div class="p-4 mb-4 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200 hover:translate-x-1 last:mb-0">
                 <div class="flex justify-between items-start">
                     <div class="flex-grow">
-                        <h6 class="font-semibold text-gray-900 mb-1">{{ $campaign->title }}</h6>
-                        <p class="text-gray-600 text-sm mb-2">{{ Str::limit($campaign->description, 100) }}</p>
+                        <h6 class="font-semibold text-gray-900 mb-1">{{ $campaign->title ?? 'Untitled Campaign' }}</h6>
+                        <p class="text-gray-600 text-sm mb-2">{{ \Illuminate\Support\Str::limit($campaign->description ?? '', 100) }}</p>
                         <div class="flex items-center gap-4 mb-2">
                             <small class="text-green-600 font-semibold">
-                                Terkumpul: Rp {{ number_format($campaign->total_collected ?? 0, 0, ',', '.') }}
+                                Terkumpul: Rp {{ number_format($campaign->collected_amount ?? $campaign->net_collected_amount ?? 0, 0, ',', '.') }}
                             </small>
                             <small class="text-gray-500">
                                 Target: Rp {{ number_format($campaign->target_amount ?? 0, 0, ',', '.') }}
                             </small>
                         </div>
                         <div class="mt-2">
-                            @if($campaign->status === 'published')
+                            @if(isset($campaign->status) && $campaign->status === 'published')
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Aktif</span>
-                            @elseif($campaign->status === 'draft')
+                            @elseif(isset($campaign->status) && $campaign->status === 'draft')
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Draft</span>
                             @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">{{ ucfirst($campaign->status) }}</span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">{{ ucfirst($campaign->status ?? 'unknown') }}</span>
                             @endif
                         </div>
                     </div>
