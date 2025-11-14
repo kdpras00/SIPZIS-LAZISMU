@@ -27,8 +27,27 @@ class RoleMiddleware
         }
 
         // Check if user has any of the required roles
-        if (!empty($roles) && !in_array($user->role, $roles)) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        if (!empty($roles)) {
+            // Normalize role comparison (case-insensitive and handle typos)
+            $userRole = strtolower(trim($user->role ?? ''));
+            $allowedRoles = array_map(function($role) {
+                return strtolower(trim($role));
+            }, $roles);
+            
+            // Also check for common typos
+            if ($userRole === 'muzzaki' && in_array('muzakki', $allowedRoles)) {
+                $userRole = 'muzakki';
+            }
+            
+            if (!in_array($userRole, $allowedRoles)) {
+                \Log::warning('Role mismatch', [
+                    'user_id' => $user->id,
+                    'user_role' => $user->role,
+                    'required_roles' => $roles,
+                    'path' => $request->path()
+                ]);
+                abort(403, 'Anda tidak memiliki akses ke halaman ini. Role Anda: ' . $user->role);
+            }
         }
 
         return $next($request);

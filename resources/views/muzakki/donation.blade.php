@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('page-title', 'Donasi Rutin Saya - Dashboard Muzakki')
+@section('page-title', 'Donasi - Dashboard Muzakki')
 
 @section('content')
 <div class="container-fluid py-4" style="padding-top: 1rem !important;">
@@ -11,28 +11,53 @@
                 <a href="{{ route('muzakki.dashboard') }}" class="text-dark me-3">
                     <i class="bi bi-arrow-left fs-5"></i>
                 </a>
-                <h5 class="fw-semibold mb-0">Donasi rutin saya</h5>
+                <h5 class="fw-semibold mb-0">Donasi</h5>
             </div>
 
-            <!-- Info Card -->
+            <!-- Programs List -->
+            @if($programs->count() > 0)
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
-                    <div class="alert alert-info border-0 mb-0">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Fitur donasi rutin akan segera tersedia. Anda dapat mengatur donasi otomatis setiap bulan.
-                    </div>
+                    <h6 class="fw-semibold mb-3">Program Donasi</h6>
+                    @foreach($programs as $program)
+                    <a href="{{ route('program.show', $program->slug) }}" class="text-decoration-none">
+                        <div class="program-item p-3 mb-3 rounded-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-semibold text-dark mb-1">{{ $program->name }}</h6>
+                                    <p class="text-muted small mb-2">{{ Str::limit($program->description, 100) }}</p>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <small class="text-success fw-semibold">
+                                            Terkumpul: Rp {{ number_format($program->net_total_collected ?? 0, 0, ',', '.') }}
+                                        </small>
+                                        <small class="text-muted">
+                                            Target: Rp {{ number_format($program->total_target ?? 0, 0, ',', '.') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted ms-2"></i>
+                            </div>
+                        </div>
+                    </a>
+                    @endforeach
                 </div>
             </div>
-
-            <!-- Empty State -->
+            @else
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body text-center py-5">
-                    <i class="bi bi-calendar-check display-4 text-muted mb-3"></i>
-                    <h4>Donasi Rutin</h4>
-                    <p class="text-muted">Fitur ini memungkinkan Anda untuk membuat donasi otomatis setiap bulan.</p>
-                    <button class="btn btn-success rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createRecurringModal">
-                        <i class="bi bi-plus-circle me-2"></i>Buat Donasi Rutin
-                    </button>
+                    <i class="bi bi-heart display-4 text-muted mb-3"></i>
+                    <h4>Belum Ada Program</h4>
+                    <p class="text-muted">Tidak ada program donasi yang tersedia saat ini.</p>
+                </div>
+            </div>
+            @endif
+
+            <!-- Quick Donate Button -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center py-4">
+                    <a href="{{ route('program') }}" class="btn btn-success rounded-pill px-5">
+                        <i class="bi bi-plus-circle me-2"></i>Donasi Sekarang
+                    </a>
                 </div>
             </div>
 
@@ -46,7 +71,7 @@
                         </a>
                     </div>
                     <div>
-                        <a href="{{ route('muzakki.donation') }}" class="text-decoration-none text-dark">
+                        <a href="{{ route('muzakki.donation') }}" class="text-decoration-none text-success">
                             <i class="bi bi-heart fs-5 d-block"></i>
                             <small>Donasi</small>
                         </a>
@@ -69,34 +94,6 @@
     </div>
 </div>
 
-<!-- Create Recurring Donation Modal -->
-<div class="modal fade" id="createRecurringModal" tabindex="-1" aria-labelledby="createRecurringModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createRecurringModalLabel">Buat Donasi Rutin</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning border-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Fitur ini sedang dalam pengembangan.
-                </div>
-                <p>Fitur donasi rutin akan memungkinkan Anda untuk:</p>
-                <ul>
-                    <li>Mengatur donasi otomatis setiap bulan</li>
-                    <li>Memilih program zakat yang akan didonasikan</li>
-                    <li>Mengatur jumlah donasi tetap atau variabel</li>
-                    <li>Mengelola jadwal donasi</li>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
     body {
         padding-bottom: 80px !important;
@@ -107,6 +104,17 @@
     .container-fluid {
         max-width: 100%;
         margin-top: -20px;
+    }
+
+    .program-item {
+        transition: all 0.2s ease;
+        border: 1px solid #f1f1f1;
+    }
+
+    .program-item:hover {
+        background-color: #f0f9ff !important;
+        border-color: #bae6fd;
+        transform: translateX(4px);
     }
 
     .fixed-bottom-nav {
@@ -124,3 +132,4 @@
     }
 </style>
 @endsection
+

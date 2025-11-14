@@ -3,6 +3,17 @@
 @section('page-title', 'Manajemen Akun - Dashboard Muzakki')
 
 @section('content')
+<div class="container-fluid py-4" style="padding-top: 1rem !important;">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ route('muzakki.dashboard') }}" class="text-dark me-3">
+                    <i class="bi bi-arrow-left fs-5"></i>
+                </a>
+                <h5 class="fw-semibold mb-0">Manajemen akun</h5>
+            </div>
+
 <style>
     .account-menu-item {
         transition: all 0.3s ease;
@@ -182,22 +193,35 @@
             font-size: 0.8125rem;
         }
     }
+
+    body {
+        padding-bottom: 80px !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+
+    .container-fluid {
+        max-width: 100%;
+        margin-top: -20px;
+    }
+
+    .fixed-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 2rem);
+        max-width: 800px;
+        z-index: 1030;
+        margin: 0 auto;
+        border-radius: 0 !important;
+        filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
+        border-top: 1px solid #e0e0e0;
+    }
 </style>
 
-<div class="row justify-content-center">
-    <div class="col-12" style="max-width: 800px;">
-        <!-- Header -->
-        <div class="page-header d-flex align-items-center gap-3">
-            <a href="{{ url()->previous() }}" class="back-button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-            </a>
-            <h1 class="page-title">Manajemen Akun</h1>
-        </div>
-
         <!-- Account Settings Menu -->
-        <div class="card border-0 card-container">
+        <div class="card border-0 shadow-sm mb-4">
             <div class="list-group list-group-flush">
                 <!-- Change Password -->
                 <a href="#" class="list-group-item account-menu-item d-flex align-items-center gap-3"
@@ -629,4 +653,37 @@
     });
 </script>
 @endpush
+
+        <!-- Bottom Navigation -->
+        <div class="card border-0 shadow-sm mt-4 fixed-bottom-nav">
+            <div class="card-body d-flex justify-content-around text-center">
+                <div>
+                    <a href="{{ route('home') }}" class="text-decoration-none text-dark">
+                        <i class="bi bi-house fs-5 d-block"></i>
+                        <small>Home</small>
+                    </a>
+                </div>
+                <div>
+                    <a href="{{ route('muzakki.donation') }}" class="text-decoration-none text-dark">
+                        <i class="bi bi-heart fs-5 d-block"></i>
+                        <small>Donasi</small>
+                    </a>
+                </div>
+                <div>
+                    <a href="{{ route('muzakki.fundraising') }}" class="text-decoration-none text-dark">
+                        <i class="bi bi-box-seam fs-5 d-block"></i>
+                        <small>Galang Dana</small>
+                    </a>
+                </div>
+                <div>
+                    <a href="{{ route('muzakki.amalanku') }}" class="text-decoration-none text-dark">
+                        <i class="bi bi-person fs-5 d-block"></i>
+                        <small>Amalanku</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
 @endsection

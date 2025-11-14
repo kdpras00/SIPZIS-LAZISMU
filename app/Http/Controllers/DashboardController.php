@@ -239,4 +239,90 @@ class DashboardController extends Controller
 
         return view('muzakki.dashboard.account-management', compact('muzakki'));
     }
+
+    public function donation()
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                abort(401, 'Unauthorized');
+            }
+
+            $muzakki = $user->muzakki;
+
+            if (!$muzakki) {
+                return redirect()->route('muzakki.profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+            }
+
+            // Get active programs for donation
+            $programs = \App\Models\Program::active()->latest()->get();
+
+            return view('muzakki.donation', compact('muzakki', 'programs'));
+        } catch (\Exception $e) {
+            \Log::error('Error in donation method: ' . $e->getMessage());
+            abort(500, 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function fundraising()
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                abort(401, 'Unauthorized');
+            }
+
+            $muzakki = $user->muzakki;
+
+            if (!$muzakki) {
+                return redirect()->route('muzakki.profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+            }
+
+            // Get campaigns created by this muzakki
+            $campaigns = \App\Models\Campaign::where('muzakki_id', $muzakki->id)->latest()->get();
+
+            return view('muzakki.fundraising', compact('muzakki', 'campaigns'));
+        } catch (\Exception $e) {
+            \Log::error('Error in fundraising method: ' . $e->getMessage());
+            abort(500, 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function amalanku()
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                abort(401, 'Unauthorized');
+            }
+
+            $muzakki = $user->muzakki;
+
+            if (!$muzakki) {
+                return redirect()->route('muzakki.profile.edit')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+            }
+
+            // Get muzakki's payment history and stats
+            $payments = $muzakki->zakatPayments()
+                ->with('programType')
+                ->completed()
+                ->latest('payment_date')
+                ->take(10)
+                ->get();
+
+            $stats = [
+                'total_donated' => $muzakki->zakatPayments()->completed()->sum('paid_amount'),
+                'total_count' => $muzakki->zakatPayments()->completed()->count(),
+                'this_year' => $muzakki->zakatPayments()->completed()->byYear(date('Y'))->sum('paid_amount'),
+            ];
+
+            return view('muzakki.amalanku', compact('muzakki', 'payments', 'stats'));
+        } catch (\Exception $e) {
+            \Log::error('Error in amalanku method: ' . $e->getMessage());
+            abort(500, 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

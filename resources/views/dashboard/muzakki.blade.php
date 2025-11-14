@@ -40,10 +40,17 @@
                         <!-- Informasi Akun -->
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="d-flex align-items-center">
+                                @if($muzakki->profile_photo)
+                                <img src="{{ asset('storage/' . $muzakki->profile_photo) }}" 
+                                     alt="Profile Photo" 
+                                     class="rounded-circle me-3"
+                                     style="width:60px; height:60px; object-fit: cover; border: 2px solid #e9ecef;">
+                                @else
                                 <div class="rounded-circle bg-light border me-3"
                                     style="width:60px; height:60px; display:flex; align-items:center; justify-content:center;">
                                     <i class="bi bi-person-circle fs-1 text-secondary"></i>
                                 </div>
+                                @endif
                                 <div>
                                     <h6 class="mb-0 fw-semibold">{{ $muzakki->name }}</h6>
                                     <p class="text-muted small mb-0">{{ $muzakki->email }}</p>
@@ -109,19 +116,19 @@
                             </a>
                         </div>
                         <div>
-                            <a href="#" class="text-decoration-none text-dark">
+                            <a href="{{ route('muzakki.donation') }}" class="text-decoration-none text-dark">
                                 <i class="bi bi-heart fs-5 d-block"></i>
                                 <small>Donasi</small>
                             </a>
                         </div>
                         <div>
-                            <a href="#" class="text-decoration-none text-dark">
+                            <a href="{{ route('muzakki.fundraising') }}" class="text-decoration-none text-dark">
                                 <i class="bi bi-box-seam fs-5 d-block"></i>
                                 <small>Galang Dana</small>
                             </a>
                         </div>
                         <div>
-                            <a href="#" class="text-decoration-none text-dark">
+                            <a href="{{ route('muzakki.amalanku') }}" class="text-decoration-none text-dark">
                                 <i class="bi bi-person fs-5 d-block"></i>
                                 <small>Amalanku</small>
                             </a>

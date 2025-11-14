@@ -302,11 +302,19 @@ class MuzakkiController extends Controller
 
         // Handle file uploads
         if ($request->hasFile('profile_photo')) {
+            // Delete old profile photo if exists
+            if ($muzakki->profile_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($muzakki->profile_photo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($muzakki->profile_photo);
+            }
             $profilePhotoPath = $request->file('profile_photo')->store('profile_photos', 'public');
             $updateData['profile_photo'] = $profilePhotoPath;
         }
 
         if ($request->hasFile('ktp_photo')) {
+            // Delete old KTP photo if exists
+            if ($muzakki->ktp_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($muzakki->ktp_photo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($muzakki->ktp_photo);
+            }
             $ktpPhotoPath = $request->file('ktp_photo')->store('ktp_photos', 'public');
             $updateData['ktp_photo'] = $ktpPhotoPath;
         }

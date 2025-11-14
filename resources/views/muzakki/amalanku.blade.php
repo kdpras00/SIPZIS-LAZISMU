@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('page-title', 'Transaksi Saya - Dashboard Muzakki')
+@section('page-title', 'Amalanku - Dashboard Muzakki')
 
 @section('content')
 <div class="container-fluid py-4" style="padding-top: 1rem !important;">
@@ -11,59 +11,76 @@
                 <a href="{{ route('muzakki.dashboard') }}" class="text-dark me-3">
                     <i class="bi bi-arrow-left fs-5"></i>
                 </a>
-                <h5 class="fw-semibold mb-0">Transaksi saya</h5>
+                <h5 class="fw-semibold mb-0">Amalanku</h5>
             </div>
 
+            <!-- Stats Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="fw-semibold mb-3">Ringkasan Amal</h6>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <h4 class="fw-bold text-success mb-1">{{ $stats['total_count'] }}</h4>
+                                <small class="text-muted">Total Donasi</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <h4 class="fw-bold text-success mb-1">Rp {{ number_format($stats['total_donated'], 0, ',', '.') }}</h4>
+                                <small class="text-muted">Total Nominal</small>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="text-center p-3 bg-success text-white rounded-3">
+                                <h5 class="fw-bold mb-1">Rp {{ number_format($stats['this_year'], 0, ',', '.') }}</h5>
+                                <small>Tahun Ini</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Donations -->
             @if($payments->count() > 0)
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
-                    <!-- Bulan -->
-                    <h6 class="fw-semibold text-purple mb-3">
-                        {{ now()->translatedFormat('F Y') }}
-                    </h6>
-
-                    <!-- Daftar Transaksi -->
+                    <h6 class="fw-semibold mb-3">Donasi Terakhir</h6>
                     @foreach($payments as $payment)
-                    <div class="transaction-item p-3 mb-2 rounded-3 {{ $loop->odd ? 'bg-light' : 'bg-white' }}">
+                    <div class="donation-item p-3 mb-2 rounded-3 bg-light">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <small class="text-muted d-block">
-                                    Donasi • {{ $payment->payment_date->translatedFormat('d F Y') }}
-                                </small>
-                                <p class="fw-semibold text-dark mb-1 mt-1" style="font-size: 15px;">
+                                <h6 class="fw-semibold text-dark mb-1">
                                     {{ $payment->programType ? $payment->programType->name : 'Donasi Umum' }}
-                                </p>
+                                </h6>
+                                <small class="text-muted">
+                                    {{ $payment->payment_date->translatedFormat('d F Y') }}
+                                </small>
                             </div>
                             <div class="text-end">
-                                @if($payment->status === 'completed')
-                                <span class="badge rounded-pill status-success">Selesai</span>
-                                @elseif($payment->status === 'pending')
-                                <span class="badge rounded-pill status-pending">Menunggu Pembayaran</span>
-                                @else
-                                <span class="badge rounded-pill status-secondary">{{ ucfirst($payment->status) }}</span>
-                                @endif
-                                <p class="fw-semibold mt-2 mb-0" style="font-size: 15px;">
+                                <p class="fw-bold text-success mb-0">
                                     Rp {{ number_format($payment->paid_amount, 0, ',', '.') }}
                                 </p>
+                                <span class="badge bg-success">Selesai</span>
                             </div>
                         </div>
                     </div>
                     @endforeach
-
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $payments->links() }}
+                    <div class="text-center mt-3">
+                        <a href="{{ route('muzakki.dashboard.transactions') }}" class="btn btn-outline-success btn-sm rounded-pill">
+                            Lihat Semua Transaksi
+                        </a>
                     </div>
                 </div>
             </div>
             @else
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body text-center py-5">
-                    <i class="bi bi-credit-card display-4 text-muted mb-3"></i>
-                    <h4>Belum Ada Transaksi</h4>
-                    <p class="text-muted">Anda belum melakukan pembayaran zakat.</p>
-                    <a href="{{ route('program') }}" class="btn btn-success rounded-pill px-4">
-                        <i class="bi bi-plus-circle"></i> Bayar Zakat Sekarang
+                    <i class="bi bi-heart display-4 text-muted mb-3"></i>
+                    <h4>Belum Ada Donasi</h4>
+                    <p class="text-muted">Mulai berdonasi untuk melihat ringkasan amal Anda.</p>
+                    <a href="{{ route('muzakki.donation') }}" class="btn btn-success rounded-pill px-4">
+                        <i class="bi bi-plus-circle me-2"></i>Mulai Donasi
                     </a>
                 </div>
             </div>
@@ -91,7 +108,7 @@
                         </a>
                     </div>
                     <div>
-                        <a href="{{ route('muzakki.amalanku') }}" class="text-decoration-none text-dark">
+                        <a href="{{ route('muzakki.amalanku') }}" class="text-decoration-none text-success">
                             <i class="bi bi-person fs-5 d-block"></i>
                             <small>Amalanku</small>
                         </a>
@@ -114,42 +131,14 @@
         margin-top: -20px;
     }
 
-    .text-purple {
-        color: #7b3fa1 !important;
-    }
-
-    .transaction-item {
-        border: 1px solid #f1f1f1;
+    .donation-item {
         transition: all 0.2s ease;
+        border: 1px solid #f1f1f1;
     }
 
-    .transaction-item:hover {
-        background-color: #faf6ff;
-        border-color: #d0b3ff;
-    }
-
-    .status-pending {
-        background-color: #fff3e0;
-        color: #f59e0b;
-        font-weight: 600;
-        padding: 4px 10px;
-        font-size: 12px;
-    }
-
-    .status-success {
-        background-color: #e7f9ed;
-        color: #22c55e;
-        font-weight: 600;
-        padding: 4px 10px;
-        font-size: 12px;
-    }
-
-    .status-secondary {
-        background-color: #e5e7eb;
-        color: #6b7280;
-        font-weight: 600;
-        padding: 4px 10px;
-        font-size: 12px;
+    .donation-item:hover {
+        background-color: #f0f9ff !important;
+        border-color: #bae6fd;
     }
 
     .fixed-bottom-nav {
@@ -167,3 +156,4 @@
     }
 </style>
 @endsection
+

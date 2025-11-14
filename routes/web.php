@@ -184,12 +184,42 @@ Route::middleware('auth')->group(function () {
         Route::get('/management', [DashboardController::class, 'accountManagement'])->name('management');
     });
 
+    // Muzakki-specific routes (put these BEFORE admin routes to avoid conflicts)
+    // IMPORTANT: These routes must be defined BEFORE Route::resource('muzakki') to avoid conflicts
+    Route::middleware('role:muzakki')->prefix('muzakki')->name('muzakki.')->group(function () {
+        // Muzakki pages (put these first to avoid route conflicts)
+        Route::get('/donation', [DashboardController::class, 'donation'])->name('donation');
+        Route::get('/fundraising', [DashboardController::class, 'fundraising'])->name('fundraising');
+        Route::get('/amalanku', [DashboardController::class, 'amalanku'])->name('amalanku');
+
+        // Muzakki payments
+        Route::get('/payments', [ZakatPaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/create', [ZakatPaymentController::class, 'create'])->name('payments.create');
+        Route::post('/payments', [ZakatPaymentController::class, 'store'])->name('payments.store');
+        Route::get('/payments/{payment}', [ZakatPaymentController::class, 'show'])->name('payments.show');
+        Route::get('/payments/{payment}/receipt', [ZakatPaymentController::class, 'receipt'])->name('payments.receipt');
+
+        // Muzakki notifications
+        Route::get('/notifications', [ZakatPaymentController::class, 'notifications'])->name('notifications.index');
+        Route::get('/notifications/ajax', [ZakatPaymentController::class, 'ajaxNotifications'])->name('notifications.ajax');
+        Route::post('/notifications/mark-as-read', [ZakatPaymentController::class, 'markNotificationsAsRead'])
+            ->name('notifications.markAsRead');
+
+        // Muzakki profile management
+        Route::get('/profile/edit', [MuzakkiController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [MuzakkiController::class, 'update'])->name('profile.update');
+
+        // Muzakki calculator (same as public calculator but with muzakki context)
+        Route::get('/calculator', [ZakatCalculatorController::class, 'index'])->name('calculator');
+    });
+
     // Admin only routes
     Route::middleware('role:admin')->group(function () {
 
-        // Muzakki management
-        Route::resource('muzakki', MuzakkiController::class);
-        Route::patch('/muzakki/{muzakki}/toggle-status', [MuzakkiController::class, 'toggleStatus'])->name('muzakki.toggle-status');
+        // Muzakki management (exclude routes that conflict with muzakki-specific routes)
+        Route::resource('muzakki', MuzakkiController::class)->except(['show']);
+        Route::get('/muzakki/{muzakki}', [MuzakkiController::class, 'show'])->name('muzakki.show')->where('muzakki', '[0-9]+');
+        Route::patch('/muzakki/{muzakki}/toggle-status', [MuzakkiController::class, 'toggleStatus'])->name('muzakki.toggle-status')->where('muzakki', '[0-9]+');
         Route::get('/api/muzakki/search', [MuzakkiController::class, 'search'])->name('api.muzakki.search');
 
         // Mustahik management
@@ -250,30 +280,6 @@ Route::middleware('auth')->group(function () {
             Route::put('/campaigns/{campaign}', [CampaignController::class, 'adminUpdate'])->name('campaigns.update');
             Route::delete('/campaigns/{campaign}', [CampaignController::class, 'adminDestroy'])->name('campaigns.destroy');
         });
-    });
-
-    // Muzakki-specific routes (for muzakki role users)
-    Route::middleware('role:muzakki')->prefix('muzakki')->name('muzakki.')->group(function () {
-        // Muzakki payments
-        Route::get('/payments', [ZakatPaymentController::class, 'index'])->name('payments.index');
-        Route::get('/payments/create', [ZakatPaymentController::class, 'create'])->name('payments.create');
-        Route::post('/payments', [ZakatPaymentController::class, 'store'])->name('payments.store');
-        Route::get('/payments/{payment}', [ZakatPaymentController::class, 'show'])->name('payments.show');
-        Route::get('/payments/{payment}/receipt', [ZakatPaymentController::class, 'receipt'])->name('payments.receipt');
-
-        // Muzakki notifications
-        Route::get('/notifications', [ZakatPaymentController::class, 'notifications'])->name('notifications.index');
-        Route::get('/notifications/ajax', [ZakatPaymentController::class, 'ajaxNotifications'])->name('notifications.ajax');
-        Route::post('/notifications/mark-as-read', [ZakatPaymentController::class, 'markNotificationsAsRead'])
-            ->name('notifications.markAsRead');
-
-
-        // Muzakki profile management
-        Route::get('/profile/edit', [MuzakkiController::class, 'edit'])->name('profile.edit');
-        Route::put('/profile', [MuzakkiController::class, 'update'])->name('profile.update');
-
-        // Muzakki calculator (same as public calculator but with muzakki context)
-        Route::get('/calculator', [ZakatCalculatorController::class, 'index'])->name('calculator');
     });
 
     // Routes accessible by all authenticated users (including muzakki)

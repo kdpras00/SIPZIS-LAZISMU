@@ -54,10 +54,10 @@
                             id="profilePhotoPreview">
                     </div>
                 </div>
-                <p class="text-muted mb-3">Belum ada foto profil</p>
+                <p class="text-muted mb-3" id="profilePhotoText">{{ $muzakki->profile_photo ? '' : 'Belum ada foto profil' }}</p>
                 <button type="button" class="btn btn-success rounded-pill px-4"
                     onclick="document.getElementById('profilePhotoInput').click()">
-                    Ganti foto profil
+                    {{ $muzakki->profile_photo ? 'Ganti foto profil' : 'Ganti foto profil' }}
                 </button>
                 <input type="file" id="profilePhotoInput" name="profile_photo" class="d-none" accept="image/*">
             </div>
@@ -991,6 +991,11 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('profilePhotoPreview').src = e.target.result;
+                    // Hide "Belum ada foto profil" text
+                    const profilePhotoText = document.getElementById('profilePhotoText');
+                    if (profilePhotoText) {
+                        profilePhotoText.textContent = '';
+                    }
                     // Update progress bar
                     calculateCompletion();
                 };
@@ -1984,27 +1989,70 @@
         let total = fields.length;
 
         fields.forEach(field => {
-            const element = document.getElementById(field) || document.querySelector(`[name="${field}"]`);
+            // Special handling for date_of_birth - check all three fields
+            if (field === 'date_of_birth') {
+                const birthDay = document.querySelector('[name="birth_day"]');
+                const birthMonth = document.querySelector('[name="birth_month"]');
+                const birthYear = document.querySelector('[name="birth_year"]');
+                
+                if (birthDay && birthMonth && birthYear &&
+                    birthDay.value && birthDay.value.trim() !== '' &&
+                    birthMonth.value && birthMonth.value.trim() !== '' &&
+                    birthYear.value && birthYear.value.trim() !== '') {
+                    filled++;
+                }
+            }
+            // Special handling for profile_photo - check if file is selected or preview exists
+            else if (field === 'profile_photo') {
+                const profilePhotoInput = document.getElementById('profilePhotoInput');
+                const profilePhotoPreview = document.getElementById('profilePhotoPreview');
+                
+                // Check if file is selected or preview image exists (not default placeholder)
+                if (profilePhotoInput && profilePhotoInput.files && profilePhotoInput.files.length > 0) {
+                    filled++;
+                } else if (profilePhotoPreview && profilePhotoPreview.src) {
+                    // Check if preview is not the default placeholder image
+                    const defaultImage = profilePhotoPreview.src.includes('profile-default.jpg');
+                    if (!defaultImage) {
+                        filled++;
+                    }
+                }
+            }
+            // Special handling for ktp_photo - check if file is selected or preview exists
+            else if (field === 'ktp_photo') {
+                const ktpInput = document.getElementById('ktpInput');
+                const ktpPreview = document.getElementById('ktpPreview');
+                
+                // Check if file is selected or preview image exists
+                if (ktpInput && ktpInput.files && ktpInput.files.length > 0) {
+                    filled++;
+                } else if (ktpPreview && ktpPreview.src && ktpPreview.style.display !== 'none') {
+                    filled++;
+                }
+            }
+            else {
+                const element = document.getElementById(field) || document.querySelector(`[name="${field}"]`);
 
-            // Special handling for select fields - check if a valid option is selected
-            if (element) {
-                if (element.tagName === 'SELECT') {
-                    // For village select, make sure a valid option is selected (not the placeholder)
-                    if (field === 'village') {
-                        if (element.value && element.value.trim() !== '' && element.selectedIndex > 0 && element
-                            .value !== 'Pilih Kelurahan') {
-                            filled++;
+                // Special handling for select fields - check if a valid option is selected
+                if (element) {
+                    if (element.tagName === 'SELECT') {
+                        // For village select, make sure a valid option is selected (not the placeholder)
+                        if (field === 'village') {
+                            if (element.value && element.value.trim() !== '' && element.selectedIndex > 0 && element
+                                .value !== 'Pilih Kelurahan') {
+                                filled++;
+                            }
+                        } else {
+                            // For other select fields, make sure a valid option is selected (not the placeholder)
+                            if (element.value && element.value.trim() !== '' && element.selectedIndex > 0) {
+                                filled++;
+                            }
                         }
                     } else {
-                        // For other select fields, make sure a valid option is selected (not the placeholder)
-                        if (element.value && element.value.trim() !== '' && element.selectedIndex > 0) {
+                        // For text fields, check if they have a value
+                        if (element.value && element.value.trim() !== '') {
                             filled++;
                         }
-                    }
-                } else {
-                    // For text fields, check if they have a value
-                    if (element.value && element.value.trim() !== '') {
-                        filled++;
                     }
                 }
             }
