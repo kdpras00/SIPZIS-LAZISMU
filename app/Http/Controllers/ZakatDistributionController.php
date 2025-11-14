@@ -120,6 +120,15 @@ class ZakatDistributionController extends Controller
             'location' => 'nullable|string|max:255',
         ]);
 
+        // Get amount and ensure it's numeric (remove any formatting)
+        $amount = $request->input('amount');
+        if ($amount && $amount !== '') {
+            $amount = str_replace(['.', ','], '', $amount);
+            $amount = is_numeric($amount) ? (float)$amount : 0;
+        } else {
+            $amount = 0;
+        }
+
         $mustahik = Mustahik::verified()->active()->findOrFail($request->mustahik_id);
 
         return DB::transaction(function () use ($request, $mustahik) {
@@ -131,7 +140,7 @@ class ZakatDistributionController extends Controller
                 ->sum('amount');
             $available = max(0, $paid - $distributed);
 
-            if ($request->distribution_type === 'cash' && $request->amount > $available) {
+            if ($request->distribution_type === 'cash' && $amount > $available) {
                 return back()->withInput()->with('error', 'Saldo zakat tidak mencukupi.');
             }
 
@@ -140,7 +149,7 @@ class ZakatDistributionController extends Controller
             ZakatDistribution::create([
                 'distribution_code' => $distributionCode,
                 'mustahik_id' => $mustahik->id,
-                'amount' => $request->amount,
+                'amount' => $amount,
                 'distribution_type' => $request->distribution_type,
                 'goods_description' => $request->goods_description,
                 'distribution_date' => $request->distribution_date,
@@ -153,6 +162,18 @@ class ZakatDistributionController extends Controller
 
             return redirect()->route('distributions.index')->with('success', 'Distribusi zakat berhasil dicatat.');
         });
+    }
+
+    /**
+     * Form edit distribusi zakat.
+     */
+    public function edit(ZakatDistribution $distribution)
+    {
+        $allMustahik = Mustahik::verified()->active()->orderBy('name')->get();
+        $categories = array_keys(Mustahik::CATEGORIES);
+        $availableBalance = self::availableBalance();
+
+        return view('distributions.edit', compact('distribution', 'allMustahik', 'categories', 'availableBalance'));
     }
 
     /**
@@ -171,7 +192,16 @@ class ZakatDistributionController extends Controller
             'location' => 'nullable|string|max:255',
         ]);
 
-        return DB::transaction(function () use ($request, $distribution) {
+        // Get amount and ensure it's numeric (remove any formatting)
+        $amount = $request->input('amount');
+        if ($amount && $amount !== '') {
+            $amount = str_replace(['.', ','], '', $amount);
+            $amount = is_numeric($amount) ? (float)$amount : 0;
+        } else {
+            $amount = 0;
+        }
+
+        return DB::transaction(function () use ($request, $distribution, $amount) {
 
             // Hitung ulang saldo tanpa menghitung distribusi yang sedang diubah
             $paid = ZakatPayment::completed()->lockForUpdate()->sum('paid_amount');
@@ -182,11 +212,13 @@ class ZakatDistributionController extends Controller
 
             $available = max(0, $paid - $distributed);
 
-            if ($request->distribution_type === 'cash' && $request->amount > $available) {
+            if ($request->distribution_type === 'cash' && $amount > $available) {
                 return back()->withInput()->with('error', 'Saldo zakat tidak mencukupi.');
             }
 
-            $distribution->update($request->all());
+            $data = $request->all();
+            $data['amount'] = $amount;
+            $distribution->update($data);
             return redirect()->route('distributions.index')->with('success', 'Distribusi zakat berhasil diperbarui.');
         });
     }
@@ -203,5 +235,105 @@ class ZakatDistributionController extends Controller
 
         $distribution->delete();
         return redirect()->route('distributions.index')->with('success', 'Data distribusi berhasil dihapus.');
+    }
+
+    /**
+     * Search API untuk distribusi zakat dengan filter dan statistik.
+     */
+    public function search(Request $request)
+    {
+        $query = ZakatDistribution::with(['mustahik', 'distributedBy']);
+
+        // Filter pencarian umum
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('distribution_code', 'like', "%{$search}%")
+                    ->orWhere('program_name', 'like', "%{$search}%")
+                    ->orWhereHas('mustahik', fn($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        // Filter kategori mustahik
+        if ($category = $request->get('category')) {
+            $query->whereHas('mustahik', fn($q) => $q->where('category', $category));
+        }
+
+        // Filter jenis distribusi
+        if ($type = $request->get('distribution_type')) {
+            $query->where('distribution_type', $type);
+        }
+
+        // Filter program zakat
+        if ($program = $request->get('program')) {
+            $query->where('program_name', 'like', "%{$program}%");
+        }
+
+        // Filter status penerimaan
+        if ($request->has('received_status') && $request->received_status !== '') {
+            $query->where('is_received', $request->received_status === 'received');
+        }
+
+        // Filter tanggal distribusi
+        if ($from = $request->get('date_from')) {
+            $query->whereDate('distribution_date', '>=', $from);
+        }
+        if ($to = $request->get('date_to')) {
+            $query->whereDate('distribution_date', '<=', $to);
+        }
+
+        $distributions = $query->latest('distribution_date')->paginate(15);
+
+        // Statistik berdasarkan filter yang sama
+        $statsQuery = ZakatDistribution::query();
+        
+        // Apply same filters for statistics
+        if ($search = $request->get('search')) {
+            $statsQuery->where(function ($q) use ($search) {
+                $q->where('distribution_code', 'like', "%{$search}%")
+                    ->orWhere('program_name', 'like', "%{$search}%")
+                    ->orWhereHas('mustahik', fn($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+        if ($category = $request->get('category')) {
+            $statsQuery->whereHas('mustahik', fn($q) => $q->where('category', $category));
+        }
+        if ($type = $request->get('distribution_type')) {
+            $statsQuery->where('distribution_type', $type);
+        }
+        if ($program = $request->get('program')) {
+            $statsQuery->where('program_name', 'like', "%{$program}%");
+        }
+        if ($request->has('received_status') && $request->received_status !== '') {
+            $statsQuery->where('is_received', $request->received_status === 'received');
+        }
+        if ($from = $request->get('date_from')) {
+            $statsQuery->whereDate('distribution_date', '>=', $from);
+        }
+        if ($to = $request->get('date_to')) {
+            $statsQuery->whereDate('distribution_date', '<=', $to);
+        }
+
+        $stats = [
+            'total_amount' => $statsQuery->sum('amount'),
+            'total_count' => $statsQuery->count(),
+            'this_month' => $statsQuery->whereMonth('distribution_date', date('m'))->sum('amount'),
+            'pending_receipt' => $statsQuery->where('is_received', false)->count(),
+            'available_balance' => self::availableBalance(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'distributions' => $distributions->items(),
+                'pagination' => [
+                    'current_page' => $distributions->currentPage(),
+                    'last_page' => $distributions->lastPage(),
+                    'from' => $distributions->firstItem(),
+                    'to' => $distributions->lastItem(),
+                    'total' => $distributions->total(),
+                ],
+                'statistics' => $stats,
+            ]
+        ]);
     }
 }

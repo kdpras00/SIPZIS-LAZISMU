@@ -3,381 +3,204 @@
 @section('page-title', 'Kelola Program')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header pb-0 mb-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6>Kelola Program</h6>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <a href="{{ route('admin.programs.bulk-create') }}" class="btn btn-success me-2">
-                                <i class="fas fa-plus-circle me-1"></i> Tambah Massal
+                    <h1 class="text-3xl font-bold text-gray-900">Kelola Program</h1>
+                    <p class="mt-2 text-sm text-gray-600">Daftar semua program yang tersedia di sistem</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('admin.programs.bulk-create') }}" 
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Massal
                             </a>
-                            <a href="{{ route('admin.programs.create') }}" class="btn btn-primary">
-                                <i class="fas fa-plus me-1"></i> Tambah Program
+                    <a href="{{ route('admin.programs.create') }}" 
+                       class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Program
                             </a>
                         </div>
                     </div>
-                    <p class="text-sm text-muted mb-0">Daftar semua program yang tersedia di sistem</p>
                 </div>
 
-                <div class="card-body px-0 pt-0 pb-2">
+        <!-- Success Message -->
                     @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mx-4 mt-3" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center justify-between">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
                     </div>
                     @endif
 
                     <!-- Category Tabs -->
-                    <div class="px-4 mb-3 border-bottom">
-                        <ul class="nav nav-tabs" id="programTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="zakat-tab" data-bs-toggle="tab" data-bs-target="#zakat" type="button" role="tab">Zakat</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="infaq-tab" data-bs-toggle="tab" data-bs-target="#infaq" type="button" role="tab">Infaq</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="shadaqah-tab" data-bs-toggle="tab" data-bs-target="#shadaqah" type="button" role="tab">Shadaqah</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pilar-tab" data-bs-toggle="tab" data-bs-target="#pilar" type="button" role="tab">Program Pilar</button>
-                            </li>
-                        </ul>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px" aria-label="Tabs">
+                    <button onclick="showTab('zakat')" 
+                            id="zakat-tab" 
+                            class="tab-button active px-6 py-4 text-sm font-medium text-center border-b-2 border-emerald-500 text-emerald-600">
+                        Zakat
+                    </button>
+                    <button onclick="showTab('infaq')" 
+                            id="infaq-tab" 
+                            class="tab-button px-6 py-4 text-sm font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Infaq
+                    </button>
+                    <button onclick="showTab('shadaqah')" 
+                            id="shadaqah-tab" 
+                            class="tab-button px-6 py-4 text-sm font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Shadaqah
+                    </button>
+                    <button onclick="showTab('pilar')" 
+                            id="pilar-tab" 
+                            class="tab-button px-6 py-4 text-sm font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Program Pilar
+                    </button>
+                </nav>
                     </div>
 
                     <!-- Tab Contents -->
-                    <div class="tab-content px-4" id="programTabsContent">
+            <div class="p-6">
                         <!-- Zakat Tab -->
-                        <div class="tab-pane fade show active" id="zakat" role="tabpanel">
-                            <div class="table-responsive p-0">
-                                <table class="table align-items-center mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Program</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kategori</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Target</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Terkumpul</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Progress</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                <div id="zakat-content" class="tab-content">
                                         @php
                                         $zakatPrograms = $groupedPrograms->filter(function($programs) {
                                         return $programs->first()->category === 'zakat';
                                         })->flatten();
                                         @endphp
 
-                                        @forelse($zakatPrograms as $program)
-                                        <tr>
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center px-2 py-1">
-                                                    <img src="{{ $program->image_url }}"
-                                                        class="avatar avatar-lg me-3" alt="{{ $program->name }}"
-                                                        onerror="this.src='{{ asset('img/masjid.webp') }}';"
-                                                        style="width:80px; height:80px; object-fit:cover;">
-                                                    <div>
-                                                        <h6 class="mb-0 text-sm">{{ $program->name }}</h6>
-                                                        <p class="text-xs text-secondary mb-0">{{ Str::limit($program->description, 50) }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle">
-                                                <p class="text-xs font-weight-bold mb-0">Zakat</p>
-                                            </td>
-
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_target }}</span>
-                                            </td>
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_collected }}</span>
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                                    <span class="text-xs font-weight-bold">{{ number_format($program->progress_percentage,1) }}%</span>
-                                                    <div class="progress w-100" style="max-width:120px; height:6px;">
-                                                        <div class="progress-bar bg-gradient-success"
-                                                            role="progressbar"
-                                                            style="width: {{ $program->progress_percentage }}%"
-                                                            aria-valuenow="{{ $program->progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle text-center text-sm">
-                                                @if($program->status == 'active')
-                                                <span class="badge bg-success text-white px-3 py-2">Active</span>
-                                                @else
-                                                <span class="badge bg-secondary text-white px-3 py-2">Inactive</span>
-                                                @endif
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex justify-content-center gap-2">
-                                                    <a href="{{ route('admin.programs.edit', $program) }}" class="btn btn-sm btn-outline-secondary">
-                                                        <i class="fas fa-edit me-1"></i> Edit
-                                                    </a>
-                                                    <form action="{{ route('admin.programs.destroy', $program) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                            <i class="fas fa-trash me-1"></i> Hapus
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                    @if($zakatPrograms->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Program</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kategori</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Target</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Terkumpul</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Progress</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                                         </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center py-5">
-                                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                                <p class="text-muted">Belum ada program zakat yang tersedia</p>
-                                            </td>
-                                        </tr>
-                                        @endforelse
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($zakatPrograms as $program)
+                                @include('admin.programs.partials.program-row', ['program' => $program, 'categoryName' => 'Zakat'])
+                                @endforeach
                                     </tbody>
                                 </table>
                             </div>
+                    @else
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <p class="text-gray-500 text-lg font-medium">Belum ada program zakat yang tersedia</p>
+                    </div>
+                    @endif
                         </div>
 
                         <!-- Infaq Tab -->
-                        <div class="tab-pane fade" id="infaq" role="tabpanel">
-                            <div class="table-responsive p-0">
-                                <table class="table align-items-center mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Program</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kategori</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Target</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Terkumpul</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Progress</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                <div id="infaq-content" class="tab-content hidden">
                                         @php
                                         $infaqPrograms = $groupedPrograms->filter(function($programs) {
                                         return $programs->first()->category === 'infaq';
                                         })->flatten();
                                         @endphp
 
-                                        @forelse($infaqPrograms as $program)
-                                        <tr>
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center px-2 py-1">
-                                                    <img src="{{ $program->image_url }}"
-                                                        class="avatar avatar-lg me-3" alt="{{ $program->name }}"
-                                                        onerror="this.src='{{ asset('img/masjid.webp') }}';"
-                                                        style="width:80px; height:80px; object-fit:cover;">
-                                                    <div>
-                                                        <h6 class="mb-0 text-sm">{{ $program->name }}</h6>
-                                                        <p class="text-xs text-secondary mb-0">{{ Str::limit($program->description, 50) }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle">
-                                                <p class="text-xs font-weight-bold mb-0">Infaq</p>
-                                            </td>
-
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_target }}</span>
-                                            </td>
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_collected }}</span>
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                                    <span class="text-xs font-weight-bold">{{ number_format($program->progress_percentage,1) }}%</span>
-                                                    <div class="progress w-100" style="max-width:120px; height:6px;">
-                                                        <div class="progress-bar bg-gradient-success"
-                                                            role="progressbar"
-                                                            style="width: {{ $program->progress_percentage }}%"
-                                                            aria-valuenow="{{ $program->progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle text-center text-sm">
-                                                @if($program->status == 'active')
-                                                <span class="badge bg-success text-white px-3 py-2">Active</span>
-                                                @else
-                                                <span class="badge bg-secondary text-white px-3 py-2">Inactive</span>
-                                                @endif
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex justify-content-center gap-2">
-                                                    <a href="{{ route('admin.programs.edit', $program) }}" class="btn btn-sm btn-outline-secondary">
-                                                        <i class="fas fa-edit me-1"></i> Edit
-                                                    </a>
-                                                    <form action="{{ route('admin.programs.destroy', $program) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                            <i class="fas fa-trash me-1"></i> Hapus
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                    @if($infaqPrograms->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Program</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kategori</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Target</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Terkumpul</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Progress</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                                         </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center py-5">
-                                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                                <p class="text-muted">Belum ada program infaq yang tersedia</p>
-                                            </td>
-                                        </tr>
-                                        @endforelse
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($infaqPrograms as $program)
+                                @include('admin.programs.partials.program-row', ['program' => $program, 'categoryName' => 'Infaq'])
+                                @endforeach
                                     </tbody>
                                 </table>
                             </div>
+                    @else
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <p class="text-gray-500 text-lg font-medium">Belum ada program infaq yang tersedia</p>
+                    </div>
+                    @endif
                         </div>
 
                         <!-- Shadaqah Tab -->
-                        <div class="tab-pane fade" id="shadaqah" role="tabpanel">
-                            <div class="table-responsive p-0">
-                                <table class="table align-items-center mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Program</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kategori</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Target</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Terkumpul</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Progress</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                <div id="shadaqah-content" class="tab-content hidden">
                                         @php
                                         $shadaqahPrograms = $groupedPrograms->filter(function($programs) {
                                         return $programs->first()->category === 'shadaqah';
                                         })->flatten();
                                         @endphp
 
-                                        @forelse($shadaqahPrograms as $program)
-                                        <tr>
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center px-2 py-1">
-                                                    <img src="{{ $program->image_url }}"
-                                                        class="avatar avatar-lg me-3" alt="{{ $program->name }}"
-                                                        onerror="this.src='{{ asset('img/masjid.webp') }}';"
-                                                        style="width:80px; height:80px; object-fit:cover;">
-                                                    <div>
-                                                        <h6 class="mb-0 text-sm">{{ $program->name }}</h6>
-                                                        <p class="text-xs text-secondary mb-0">{{ Str::limit($program->description, 50) }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle">
-                                                <p class="text-xs font-weight-bold mb-0">Shadaqah</p>
-                                            </td>
-
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_target }}</span>
-                                            </td>
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_collected }}</span>
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                                    <span class="text-xs font-weight-bold">{{ number_format($program->progress_percentage,1) }}%</span>
-                                                    <div class="progress w-100" style="max-width:120px; height:6px;">
-                                                        <div class="progress-bar bg-gradient-success"
-                                                            role="progressbar"
-                                                            style="width: {{ $program->progress_percentage }}%"
-                                                            aria-valuenow="{{ $program->progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle text-center text-sm">
-                                                @if($program->status == 'active')
-                                                <span class="badge bg-success text-white px-3 py-2">Active</span>
-                                                @else
-                                                <span class="badge bg-secondary text-white px-3 py-2">Inactive</span>
-                                                @endif
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex justify-content-center gap-2">
-                                                    <a href="{{ route('admin.programs.edit', $program) }}" class="btn btn-sm btn-outline-secondary">
-                                                        <i class="fas fa-edit me-1"></i> Edit
-                                                    </a>
-                                                    <form action="{{ route('admin.programs.destroy', $program) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                            <i class="fas fa-trash me-1"></i> Hapus
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                    @if($shadaqahPrograms->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Program</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kategori</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Target</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Terkumpul</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Progress</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                                         </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center py-5">
-                                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                                <p class="text-muted">Belum ada program shadaqah yang tersedia</p>
-                                            </td>
-                                        </tr>
-                                        @endforelse
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($shadaqahPrograms as $program)
+                                @include('admin.programs.partials.program-row', ['program' => $program, 'categoryName' => 'Shadaqah'])
+                                @endforeach
                                     </tbody>
                                 </table>
                             </div>
+                    @else
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <p class="text-gray-500 text-lg font-medium">Belum ada program shadaqah yang tersedia</p>
+                    </div>
+                    @endif
                         </div>
 
                         <!-- Program Pilar Tab -->
-                        <div class="tab-pane fade" id="pilar" role="tabpanel">
-                            <div class="table-responsive p-0">
-                                <table class="table align-items-center mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Program</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kategori</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Target</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Terkumpul</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Progress</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                <div id="pilar-content" class="tab-content hidden">
                                         @php
                                         $pilarCategories = ['pendidikan', 'kesehatan', 'ekonomi', 'sosial-dakwah', 'kemanusiaan', 'lingkungan'];
                                         $pilarPrograms = $groupedPrograms->filter(function($programs) use ($pilarCategories) {
                                         return in_array($programs->first()->category, $pilarCategories);
                                         })->flatten();
-                                        @endphp
-
-                                        @forelse($pilarPrograms as $program)
-                                        <tr>
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center px-2 py-1">
-                                                    <img src="{{ $program->image_url }}"
-                                                        class="avatar avatar-lg me-3" alt="{{ $program->name }}"
-                                                        onerror="this.src='{{ asset('img/masjid.webp') }}';"
-                                                        style="width:80px; height:80px; object-fit:cover;">
-                                                    <div>
-                                                        <h6 class="mb-0 text-sm">{{ $program->name }}</h6>
-                                                        <p class="text-xs text-secondary mb-0">{{ Str::limit($program->description, 50) }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle">
-                                                @php
                                                 $categoryNames = [
                                                 'pendidikan' => 'Pendidikan',
                                                 'kesehatan' => 'Kesehatan',
@@ -386,86 +209,76 @@
                                                 'kemanusiaan' => 'Kemanusiaan',
                                                 'lingkungan' => 'Lingkungan'
                                                 ];
-                                                $displayName = $categoryNames[$program->category] ?? ucfirst($program->category);
                                                 @endphp
-                                                <p class="text-xs font-weight-bold mb-0">{{ $displayName }}</p>
-                                            </td>
 
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_target }}</span>
-                                            </td>
-                                            <td class="align-middle text-center text-sm">
-                                                <span class="text-secondary text-xs font-weight-bold">{{ $program->formatted_total_collected }}</span>
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                                    <span class="text-xs font-weight-bold">{{ number_format($program->progress_percentage,1) }}%</span>
-                                                    <div class="progress w-100" style="max-width:120px; height:6px;">
-                                                        <div class="progress-bar bg-gradient-success"
-                                                            role="progressbar"
-                                                            style="width: {{ $program->progress_percentage }}%"
-                                                            aria-valuenow="{{ $program->progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td class="align-middle text-center text-sm">
-                                                @if($program->status == 'active')
-                                                <span class="badge bg-success text-white px-3 py-2">Active</span>
-                                                @else
-                                                <span class="badge bg-secondary text-white px-3 py-2">Inactive</span>
-                                                @endif
-                                            </td>
-
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex justify-content-center gap-2">
-                                                    <a href="{{ route('admin.programs.edit', $program) }}" class="btn btn-sm btn-outline-secondary">
-                                                        <i class="fas fa-edit me-1"></i> Edit
-                                                    </a>
-                                                    <form action="{{ route('admin.programs.destroy', $program) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                            <i class="fas fa-trash me-1"></i> Hapus
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                    @if($pilarPrograms->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Program</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kategori</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Target</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Terkumpul</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Progress</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                                         </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center py-5">
-                                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                                <p class="text-muted">Belum ada program pilar yang tersedia</p>
-                                            </td>
-                                        </tr>
-                                        @endforelse
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($pilarPrograms as $program)
+                                @include('admin.programs.partials.program-row', ['program' => $program, 'categoryName' => $categoryNames[$program->category] ?? ucfirst($program->category)])
+                                @endforeach
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                    @else
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <p class="text-gray-500 text-lg font-medium">Belum ada program pilar yang tersedia</p>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
 
 @push('scripts')
 <script>
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active', 'border-emerald-500', 'text-emerald-600');
+            button.classList.add('border-transparent', 'text-gray-500');
+        });
+
+        // Show selected tab content
+        document.getElementById(tabName + '-content').classList.remove('hidden');
+
+        // Add active class to selected tab
+        const activeTab = document.getElementById(tabName + '-tab');
+        activeTab.classList.add('active', 'border-emerald-500', 'text-emerald-600');
+        activeTab.classList.remove('border-transparent', 'text-gray-500');
+    }
+
+    // Handle hash on page load
     document.addEventListener('DOMContentLoaded', function() {
         const hash = window.location.hash;
         if (hash) {
-            const tabTrigger = document.querySelector(`[data-bs-target="${hash}"]`);
-            if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
+            const tabName = hash.substring(1);
+            if (['zakat', 'infaq', 'shadaqah', 'pilar'].includes(tabName)) {
+                showTab(tabName);
+            }
         }
-        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(trigger => {
-            trigger.addEventListener('shown.bs.tab', e => {
-                window.location.hash = e.target.getAttribute('data-bs-target');
-            });
-        });
     });
 </script>
 @endpush
+@endsection

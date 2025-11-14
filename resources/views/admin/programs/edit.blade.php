@@ -89,12 +89,13 @@
                                         <div class="form-group mb-3">
                                             <label for="target_amount" class="form-control-label">Target Dana (Rp)</label>
                                             <input class="form-control @error('target_amount') is-invalid @enderror"
-                                                type="number"
+                                                type="text"
                                                 id="target_amount"
-                                                name="target_amount"
-                                                value="{{ old('target_amount', $program->target_amount) }}"
-                                                min="0"
-                                                step="0.01">
+                                                name="target_amount_display"
+                                                value="{{ old('target_amount', $program->target_amount) ? number_format(old('target_amount', $program->target_amount), 0, ',', '.') : '' }}"
+                                                placeholder="0"
+                                                data-amount-input>
+                                            <input type="hidden" id="target_amount_raw" name="target_amount" value="{{ old('target_amount', $program->target_amount) }}">
                                             @error('target_amount')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -179,6 +180,57 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Format angka dengan koma untuk input amount
+        function formatNumberWithCommas(input) {
+            // Hapus semua karakter selain angka
+            let value = input.value.replace(/[^\d]/g, '');
+            
+            // Format dengan titik sebagai pemisah ribuan (format Indonesia)
+            if (value) {
+                value = parseInt(value).toLocaleString('id-ID');
+            }
+            
+            input.value = value;
+            
+            // Update hidden input dengan nilai tanpa format
+            const hiddenInput = document.getElementById('target_amount_raw');
+            if (hiddenInput) {
+                hiddenInput.value = input.value.replace(/[^\d]/g, '');
+            }
+        }
+
+        // Initialize format untuk input amount
+        const amountInput = document.getElementById('target_amount');
+        if (amountInput) {
+            // Format saat load jika ada value
+            if (amountInput.value) {
+                formatNumberWithCommas(amountInput);
+            }
+            
+            // Format saat user mengetik
+            amountInput.addEventListener('input', function() {
+                formatNumberWithCommas(this);
+            });
+            
+            // Format saat blur (ketika user selesai mengetik)
+            amountInput.addEventListener('blur', function() {
+                formatNumberWithCommas(this);
+            });
+        }
+
+        // Update hidden input sebelum submit form
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const amountInput = document.getElementById('target_amount');
+                const hiddenInput = document.getElementById('target_amount_raw');
+                if (amountInput && hiddenInput) {
+                    const rawValue = amountInput.value.replace(/[^\d]/g, '');
+                    hiddenInput.value = rawValue || '0';
+                }
+            });
+        }
     });
 </script>
 @endpush

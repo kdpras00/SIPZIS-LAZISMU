@@ -1873,44 +1873,126 @@ class ZakatPaymentController extends Controller
 
     public function search(Request $request)
     {
-        $query = ZakatPayment::with(['muzakki', 'zakatType']);
+        try {
+            $query = ZakatPayment::with(['muzakki', 'zakatType']);
 
-        if ($request->search) {
-            $query->where('payment_code', 'like', '%' . $request->search . '%')
-                ->orWhere('receipt_number', 'like', '%' . $request->search . '%')
-                ->orWhereHas('muzakki', function ($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->search . '%');
+            // Filter by user role - muzakki can only see their own payments
+            if (Auth::check() && Auth::user()->role === 'muzakki') {
+                $muzakki = Auth::user()->muzakki;
+                if ($muzakki) {
+                    $query->where('muzakki_id', $muzakki->id);
+                }
+            }
+
+            // Search functionality
+            if ($request->has('search') && $request->search) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('payment_code', 'like', '%' . $request->search . '%')
+                        ->orWhere('receipt_number', 'like', '%' . $request->search . '%')
+                        ->orWhereHas('muzakki', function ($q) use ($request) {
+                            $q->where('name', 'like', '%' . $request->search . '%');
+                        });
                 });
+            }
+
+            // Filter tambahan
+            if ($request->has('zakat_type') && $request->zakat_type) {
+                $query->where('zakat_type_id', $request->zakat_type);
+            }
+            if ($request->has('payment_method') && $request->payment_method) {
+                $query->where('payment_method', $request->payment_method);
+            }
+            if ($request->has('status') && $request->status) {
+                $query->where('status', $request->status);
+            }
+            if ($request->has('date_from') && $request->date_from) {
+                $query->whereDate('payment_date', '>=', $request->date_from);
+            }
+            if ($request->has('date_to') && $request->date_to) {
+                $query->whereDate('payment_date', '<=', $request->date_to);
+            }
+
+            $payments = $query->latest('payment_date')->paginate(15);
+            
+            // Ensure relationships are loaded even if null
+            $payments->getCollection()->transform(function ($payment) {
+                // Ensure muzakki is loaded (can be null)
+                if (!$payment->relationLoaded('muzakki')) {
+                    $payment->load('muzakki');
+                }
+                // Ensure zakatType is loaded (can be null)
+                if (!$payment->relationLoaded('zakatType')) {
+                    $payment->load('zakatType');
+                }
+                return $payment;
+            });
+
+            // Statistik berdasarkan filter yang sama
+            $statsQuery = ZakatPayment::query();
+            
+            // Apply same filters for statistics
+            if (Auth::check() && Auth::user()->role === 'muzakki') {
+                $muzakki = Auth::user()->muzakki;
+                if ($muzakki) {
+                    $statsQuery->where('muzakki_id', $muzakki->id);
+                }
+            }
+            if ($request->has('search') && $request->search) {
+                $statsQuery->where(function ($q) use ($request) {
+                    $q->where('payment_code', 'like', '%' . $request->search . '%')
+                        ->orWhere('receipt_number', 'like', '%' . $request->search . '%')
+                        ->orWhereHas('muzakki', function ($q) use ($request) {
+                            $q->where('name', 'like', '%' . $request->search . '%');
+                        });
+                });
+            }
+            if ($request->has('zakat_type') && $request->zakat_type) {
+                $statsQuery->where('zakat_type_id', $request->zakat_type);
+            }
+            if ($request->has('payment_method') && $request->payment_method) {
+                $statsQuery->where('payment_method', $request->payment_method);
+            }
+            if ($request->has('status') && $request->status) {
+                $statsQuery->where('status', $request->status);
+            }
+            if ($request->has('date_from') && $request->date_from) {
+                $statsQuery->whereDate('payment_date', '>=', $request->date_from);
+            }
+            if ($request->has('date_to') && $request->date_to) {
+                $statsQuery->whereDate('payment_date', '<=', $request->date_to);
+            }
+
+            $stats = [
+                'total_amount' => $statsQuery->sum('paid_amount'),
+                'total_count' => $statsQuery->count(),
+                'this_month' => $statsQuery->whereMonth('payment_date', now()->month)->sum('paid_amount'),
+                'pending' => $statsQuery->where('status', 'pending')->count(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'payments' => $payments->items(),
+                    'pagination' => [
+                        'current_page' => $payments->currentPage(),
+                        'last_page' => $payments->lastPage(),
+                        'from' => $payments->firstItem(),
+                        'to' => $payments->lastItem(),
+                        'total' => $payments->total(),
+                    ],
+                    'statistics' => $stats,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Payment search error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mencari data: ' . $e->getMessage()
+            ], 500);
         }
-
-        // filter tambahan
-        if ($request->zakat_type) $query->where('zakat_type_id', $request->zakat_type);
-        if ($request->payment_method) $query->where('payment_method', $request->payment_method);
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->date_from && $request->date_to) {
-            $query->whereBetween('payment_date', [$request->date_from, $request->date_to]);
-        }
-
-        $payments = $query->paginate(10);
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'payments' => $payments->items(),
-                'pagination' => [
-                    'current_page' => $payments->currentPage(),
-                    'last_page' => $payments->lastPage(),
-                    'from' => $payments->firstItem(),
-                    'to' => $payments->lastItem(),
-                    'total' => $payments->total(),
-                ],
-                'statistics' => [
-                    'total_amount' => ZakatPayment::sum('paid_amount'),
-                    'total_count' => ZakatPayment::count(),
-                    'this_month' => ZakatPayment::whereMonth('payment_date', now()->month)->sum('paid_amount'),
-                    'pending' => ZakatPayment::where('status', 'pending')->count(),
-                ],
-            ]
-        ]);
     }
 }

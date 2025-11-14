@@ -109,7 +109,8 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="programs[${programIndex}][target_amount]" class="form-control-label">Target Dana (Rp)</label>
-                                <input class="form-control" type="number" name="programs[${programIndex}][target_amount]" min="0" step="0.01">
+                                <input class="form-control target-amount-input" type="text" name="programs[${programIndex}][target_amount_display]" placeholder="0" data-amount-input>
+                                <input type="hidden" name="programs[${programIndex}][target_amount]" class="target-amount-raw">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -138,6 +139,32 @@
                 programDiv.remove();
                 updateProgramNumbers();
             });
+
+            // Add format number functionality to the new input
+            const targetAmountInput = programDiv.querySelector('.target-amount-input');
+            const targetAmountRaw = programDiv.querySelector('.target-amount-raw');
+            
+            if (targetAmountInput && targetAmountRaw) {
+                // Format function
+                function formatNumberWithCommas(input) {
+                    let value = input.value.replace(/[^\d]/g, '');
+                    if (value) {
+                        value = parseInt(value).toLocaleString('id-ID');
+                    }
+                    input.value = value;
+                    targetAmountRaw.value = input.value.replace(/[^\d]/g, '');
+                }
+
+                // Format saat user mengetik
+                targetAmountInput.addEventListener('input', function() {
+                    formatNumberWithCommas(this);
+                });
+
+                // Format saat blur
+                targetAmountInput.addEventListener('blur', function() {
+                    formatNumberWithCommas(this);
+                });
+            }
         }
 
         // Function to update program numbers
@@ -154,6 +181,22 @@
 
         // Add event listener for add button
         addButton.addEventListener('click', createProgramForm);
+
+        // Update hidden inputs sebelum submit form
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Update semua hidden input dengan nilai tanpa format
+                const allAmountInputs = document.querySelectorAll('.target-amount-input');
+                allAmountInputs.forEach(function(input) {
+                    const rawValue = input.value.replace(/[^\d]/g, '');
+                    const rawInput = input.parentElement.querySelector('.target-amount-raw');
+                    if (rawInput) {
+                        rawInput.value = rawValue;
+                    }
+                });
+            });
+        }
     });
 </script>
 @endpush

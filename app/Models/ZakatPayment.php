@@ -43,6 +43,11 @@ class ZakatPayment extends Model
         return $this->belongsTo(Muzakki::class);
     }
 
+    public function zakatType()
+    {
+        return $this->belongsTo(ZakatType::class, 'zakat_type_id');
+    }
+
     public function programType()
     {
         return $this->belongsTo(ProgramType::class, 'program_type_id');

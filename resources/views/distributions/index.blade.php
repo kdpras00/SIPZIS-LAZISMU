@@ -154,7 +154,10 @@
             };
 
             // Show loading indicator
-            document.getElementById('search-loading').classList.remove('hidden');
+            const loadingEl = document.getElementById('search-loading');
+            if (loadingEl) {
+                loadingEl.classList.remove('hidden');
+            }
 
             // Create query string
             const params = new URLSearchParams(searchData);
@@ -181,10 +184,14 @@
                 })
                 .catch(error => {
                     console.error('Search error:', error);
+                    alert('Terjadi kesalahan saat mencari data. Silakan coba lagi.');
                 })
                 .finally(() => {
                     // Hide loading indicator
-                    document.getElementById('search-loading').classList.add('hidden');
+                    const loadingEl = document.getElementById('search-loading');
+                    if (loadingEl) {
+                        loadingEl.classList.add('hidden');
+                    }
                 });
         }
 
@@ -273,26 +280,48 @@
                             }
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${distributionDate}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex space-x-2">
-                                <a href="/distributions/${distribution.id}" class="inline-flex items-center px-2 py-1 border border-cyan-300 rounded text-cyan-700 hover:bg-cyan-50" title="Lihat Detail">
-                                    <i class="bi bi-eye"></i>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <a href="/distributions/${distribution.id}" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" 
+                                   title="Lihat Detail">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
                                 </a>
-                                <a href="/distributions/${distribution.id}/receipt" class="inline-flex items-center px-2 py-1 border border-green-300 rounded text-green-700 hover:bg-green-50" title="Kwitansi" target="_blank">
-                                    <i class="bi bi-receipt"></i>
+                                <a href="/distributions/${distribution.id}/receipt" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200" 
+                                   title="Kwitansi" target="_blank">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
                                 </a>
-                                <a href="/distributions/${distribution.id}/edit" class="inline-flex items-center px-2 py-1 border border-blue-300 rounded text-blue-700 hover:bg-blue-50" title="Edit">
-                                    <i class="bi bi-pencil"></i>
+                                <a href="/distributions/${distribution.id}/edit" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200" 
+                                   title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
                                 </a>
                                 ${!distribution.is_received ? `
-                                <button type="button" class="inline-flex items-center px-2 py-1 border border-yellow-300 rounded text-yellow-700 hover:bg-yellow-50" title="Tandai Diterima" onclick="markAsReceived(${distribution.id}, '${distribution.mustahik.name}')">
-                                    <i class="bi bi-check-circle"></i>
+                                <button type="button" 
+                                        class="inline-flex items-center px-3 py-1.5 border border-yellow-300 shadow-sm text-sm font-medium rounded-md text-yellow-700 bg-white hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200" 
+                                        title="Tandai Diterima" 
+                                        onclick="markAsReceived(${distribution.id}, '${distribution.mustahik.name.replace(/'/g, "\\'")}')">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                 </button>
-                                <form action="/distributions/${distribution.id}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus distribusi ini?')">
+                                <form action="/distributions/${distribution.id}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus distribusi ini?')">
                                     <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 border border-red-300 rounded text-red-700 hover:bg-red-50" title="Hapus">
-                                        <i class="bi bi-trash"></i>
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200" 
+                                            title="Hapus">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
                                     </button>
                                 </form>
                                 ` : ''}
@@ -343,11 +372,16 @@
             } else {
                 tableHtml = `
                 <div class="text-center py-12">
-                    <i class="bi bi-inbox text-6xl text-gray-400 mb-3 block"></i>
-                    <h5 class="text-gray-600 text-lg font-semibold mb-2">Tidak ada data distribusi</h5>
-                    <p class="text-gray-500 mb-4">Tidak ada distribusi yang sesuai dengan kriteria pencarian</p>
-                    <button type="button" id="clear-search" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50">
-                        <i class="bi bi-arrow-clockwise mr-2"></i> Reset Pencarian
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <h5 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data distribusi</h5>
+                    <p class="text-gray-600 mb-4">Tidak ada distribusi yang sesuai dengan kriteria pencarian</p>
+                    <button type="button" id="clear-search" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Reset Pencarian
                     </button>
                 </div>
             `;
@@ -373,12 +407,14 @@
             }
         }
 
-        // Search input with debouncing
+        // Search input with debouncing (reduced delay for better responsiveness)
         document.getElementById('search-input').addEventListener('input', function() {
             clearTimeout(searchTimeout);
+            // Show loading immediately
+            document.getElementById('search-loading').classList.remove('hidden');
             searchTimeout = setTimeout(function() {
                 performSearch(1);
-            }, 500); // 500ms delay
+            }, 300); // Reduced to 300ms for better responsiveness
         });
 
         // Filter changes
@@ -392,9 +428,11 @@
 
         document.getElementById('program-filter').addEventListener('input', function() {
             clearTimeout(searchTimeout);
+            // Show loading immediately
+            document.getElementById('search-loading').classList.remove('hidden');
             searchTimeout = setTimeout(function() {
                 performSearch(1);
-            }, 500);
+            }, 300); // Reduced to 300ms for better responsiveness
         });
 
         document.getElementById('received-status-filter').addEventListener('change', function() {

@@ -109,13 +109,14 @@
                                         <div class="form-group mb-3">
                                             <label for="target_amount" class="form-control-label">Target Dana (Rp)</label>
                                             <input class="form-control @error('target_amount') is-invalid @enderror"
-                                                type="number"
+                                                type="text"
                                                 id="target_amount"
-                                                name="target_amount"
-                                                value="{{ old('target_amount') }}"
-                                                min="0"
-                                                step="0.01"
+                                                name="target_amount_display"
+                                                value="{{ old('target_amount') ? number_format(old('target_amount'), 0, ',', '.') : '' }}"
+                                                placeholder="0"
+                                                data-amount-input
                                                 required>
+                                            <input type="hidden" id="target_amount_raw" name="target_amount" value="{{ old('target_amount') }}">
                                             @error('target_amount')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -126,12 +127,11 @@
                                         <div class="form-group mb-3">
                                             <label for="collected_amount" class="form-control-label">Dana Terkumpul (Rp)</label>
                                             <input class="form-control @error('collected_amount') is-invalid @enderror"
-                                                type="number"
+                                                type="text"
                                                 id="collected_amount"
                                                 name="collected_amount"
                                                 value="0"
-                                                min="0"
-                                                step="0.01"
+                                                placeholder="0"
                                                 readonly>
                                             <small class="form-text text-muted">Nilai ini akan bertambah otomatis saat ada donasi.</small>
                                             @error('collected_amount')
@@ -242,14 +242,44 @@
         }
     });
 
+    // Format angka dengan koma untuk input amount
+    function formatNumberWithCommas(input) {
+        // Hapus semua karakter selain angka
+        let value = input.value.replace(/[^\d]/g, '');
+        
+        // Format dengan titik sebagai pemisah ribuan (format Indonesia)
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
+        }
+        
+        input.value = value;
+        
+        // Update hidden input dengan nilai tanpa format
+        const hiddenInput = document.getElementById('target_amount_raw');
+        if (hiddenInput) {
+            hiddenInput.value = input.value.replace(/[^\d]/g, '');
+        }
+        
+        // Trigger progress calculation
+        calculateProgress();
+    }
+
     // Progress calculation functionality
     function calculateProgress() {
-        const targetAmount = parseFloat(document.getElementById('target_amount').value) || 0;
-        const collectedAmount = parseFloat(document.getElementById('collected_amount').value) || 0;
+        // Get raw values (remove formatting)
+        const targetAmountInput = document.getElementById('target_amount');
+        const collectedAmountInput = document.getElementById('collected_amount');
+        
+        const targetAmount = targetAmountInput ? parseFloat(targetAmountInput.value.replace(/[^\d]/g, '')) || 0 : 0;
+        const collectedAmount = collectedAmountInput ? parseFloat(collectedAmountInput.value.replace(/[^\d]/g, '')) || 0 : 0;
 
         // Update previews
-        document.getElementById('targetPreview').textContent = 'Rp ' + targetAmount.toLocaleString('id-ID');
-        document.getElementById('collectedPreview').textContent = 'Rp ' + collectedAmount.toLocaleString('id-ID');
+        if (document.getElementById('targetPreview')) {
+            document.getElementById('targetPreview').textContent = 'Rp ' + targetAmount.toLocaleString('id-ID');
+        }
+        if (document.getElementById('collectedPreview')) {
+            document.getElementById('collectedPreview').textContent = 'Rp ' + collectedAmount.toLocaleString('id-ID');
+        }
 
         // Calculate progress percentage
         let progressPercentage = 0;
@@ -258,18 +288,59 @@
         }
 
         // Update progress display
-        document.getElementById('progressPercentage').textContent = progressPercentage.toFixed(1) + '%';
-        document.getElementById('progressBar').style.width = progressPercentage + '%';
-        document.getElementById('progressBar').setAttribute('aria-valuenow', progressPercentage);
+        if (document.getElementById('progressPercentage')) {
+            document.getElementById('progressPercentage').textContent = progressPercentage.toFixed(1) + '%';
+        }
+        if (document.getElementById('progressBar')) {
+            document.getElementById('progressBar').style.width = progressPercentage + '%';
+            document.getElementById('progressBar').setAttribute('aria-valuenow', progressPercentage);
+        }
     }
 
-    // Attach event listeners to amount fields
-    document.getElementById('target_amount').addEventListener('input', calculateProgress);
-    // Note: collected_amount is readonly, so we don't need to listen for changes
-
-    // Initial calculation
+    // Initialize format untuk input amount
     document.addEventListener('DOMContentLoaded', function() {
+        const targetAmountInput = document.getElementById('target_amount');
+        if (targetAmountInput) {
+            // Format saat load jika ada value
+            if (targetAmountInput.value) {
+                formatNumberWithCommas(targetAmountInput);
+            }
+            
+            // Format saat user mengetik
+            targetAmountInput.addEventListener('input', function() {
+                formatNumberWithCommas(this);
+            });
+            
+            // Format saat blur (ketika user selesai mengetik)
+            targetAmountInput.addEventListener('blur', function() {
+                formatNumberWithCommas(this);
+            });
+        }
+
+        // Format collected_amount saat load
+        const collectedAmountInput = document.getElementById('collected_amount');
+        if (collectedAmountInput && collectedAmountInput.value) {
+            const value = collectedAmountInput.value.replace(/[^\d]/g, '');
+            if (value) {
+                collectedAmountInput.value = parseInt(value).toLocaleString('id-ID');
+            }
+        }
+
+        // Initial calculation
         calculateProgress();
+
+        // Update hidden input sebelum submit form
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const amountInput = document.getElementById('target_amount');
+                const hiddenInput = document.getElementById('target_amount_raw');
+                if (amountInput && hiddenInput) {
+                    const rawValue = amountInput.value.replace(/[^\d]/g, '');
+                    hiddenInput.value = rawValue || '0';
+                }
+            });
+        }
     });
 </script>
 @endpush

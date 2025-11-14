@@ -120,21 +120,30 @@ class CampaignController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'program_category' => 'required|string|max:50',
+            'program_category' => 'required|string|in:zakat,infaq,shadaqah,pendidikan,kesehatan,ekonomi,sosial-dakwah,kemanusiaan,lingkungan',
             'target_amount' => 'required|numeric|min:0',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:draft,published,completed,cancelled',
             'end_date' => 'nullable|date|after:today'
         ]);
 
+        // Get target_amount and ensure it's numeric (remove any formatting)
+        $targetAmount = $request->input('target_amount');
+        if ($targetAmount && $targetAmount !== '') {
+            $targetAmount = str_replace(['.', ','], '', $targetAmount);
+            $targetAmount = is_numeric($targetAmount) ? (float)$targetAmount : 0;
+        } else {
+            $targetAmount = 0;
+        }
+
         $data = $request->only([
             'title',
             'description',
             'program_category',
-            'target_amount',
             'status',
             'end_date'
         ]);
+        $data['target_amount'] = $targetAmount;
 
         // Set collected_amount to 0 for new campaigns
         $data['collected_amount'] = 0;
@@ -188,7 +197,7 @@ class CampaignController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'program_category' => 'required|string|max:50',
+            'program_category' => 'required|string|in:zakat,infaq,shadaqah,pendidikan,kesehatan,ekonomi,sosial-dakwah,kemanusiaan,lingkungan',
             'program_id' => 'nullable|exists:programs,id',
             'target_amount' => 'required|numeric|min:0',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -196,15 +205,24 @@ class CampaignController extends Controller
             'end_date' => 'nullable|date|after:today'
         ]);
 
+        // Get target_amount and ensure it's numeric (remove any formatting)
+        $targetAmount = $request->input('target_amount');
+        if ($targetAmount && $targetAmount !== '') {
+            $targetAmount = str_replace(['.', ','], '', $targetAmount);
+            $targetAmount = is_numeric($targetAmount) ? (float)$targetAmount : 0;
+        } else {
+            $targetAmount = 0;
+        }
+
         $data = $request->only([
             'title',
             'description',
             'program_category',
             'program_id',
-            'target_amount',
             'status',
             'end_date'
         ]);
+        $data['target_amount'] = $targetAmount;
 
         // Set collected_amount to 0 for new campaigns
         $data['collected_amount'] = 0;
@@ -238,7 +256,7 @@ class CampaignController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'program_category' => 'required|string|max:50',
+            'program_category' => 'required|string|in:zakat,infaq,shadaqah,pendidikan,kesehatan,ekonomi,sosial-dakwah,kemanusiaan,lingkungan',
             'program_id' => 'nullable|exists:programs,id',
             'target_amount' => 'required|numeric|min:0',
             // Remove collected_amount from validation as it should be readonly
@@ -247,15 +265,24 @@ class CampaignController extends Controller
             'end_date' => 'nullable|date|after:today'
         ]);
 
+        // Get target_amount and ensure it's numeric (remove any formatting)
+        $targetAmount = $request->input('target_amount');
+        if ($targetAmount && $targetAmount !== '') {
+            $targetAmount = str_replace(['.', ','], '', $targetAmount);
+            $targetAmount = is_numeric($targetAmount) ? (float)$targetAmount : 0;
+        } else {
+            $targetAmount = 0;
+        }
+
         $data = $request->only([
             'title',
             'description',
             'program_category',
             'program_id',
-            'target_amount',
             'status',
             'end_date'
         ]);
+        $data['target_amount'] = $targetAmount;
 
         // Ensure collected_amount remains unchanged (readonly)
         // $data['collected_amount'] = $campaign->collected_amount;

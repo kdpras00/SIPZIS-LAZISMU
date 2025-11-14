@@ -3,15 +3,18 @@
 @section('page-title', 'Tambah Distribusi Zakat')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h2 class="text-2xl font-bold mb-1">Tambah Distribusi Zakat</h2>
-        <p class="text-gray-600">Catat distribusi zakat kepada mustahik yang berhak</p>
+<div class="mb-6">
+    <div class="flex items-center gap-4 mb-4">
+        <a href="{{ route('distributions.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Kembali
+        </a>
     </div>
     <div>
-        <a href="{{ route('distributions.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-            <i class="bi bi-arrow-left mr-2"></i> Kembali
-        </a>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">Tambah Distribusi Zakat</h2>
+        <p class="text-gray-600">Catat distribusi zakat kepada mustahik yang berhak</p>
     </div>
 </div>
 
@@ -115,14 +118,15 @@
                                 <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah <span class="text-red-500">*</span></label>
                                 <div class="flex">
                                     <span class="inline-flex items-center px-3 border border-r-0 border-gray-300 rounded-l-lg bg-gray-50 text-gray-500">Rp</span>
-                                    <input type="number"
+                                    <input type="text"
                                         class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('amount') border-red-500 @enderror"
                                         id="amount"
-                                        name="amount"
-                                        value="{{ old('amount') }}"
-                                        min="0"
-                                        step="1000"
+                                        name="amount_display"
+                                        value="{{ old('amount') ? number_format(old('amount'), 0, ',', '.') : '' }}"
+                                        placeholder="0"
+                                        data-amount-input
                                         required>
+                                    <input type="hidden" id="amount_raw" name="amount" value="{{ old('amount') }}">
                                 </div>
                                 @error('amount')
                                 <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
@@ -353,9 +357,52 @@
         toggleGoodsField();
     }
 
+    // ===== FORMAT ANGKA DENGAN KOMA =====
+    function formatNumberWithCommas(input) {
+        // Hapus semua karakter selain angka
+        let value = input.value.replace(/[^\d]/g, '');
+        
+        // Format dengan titik sebagai pemisah ribuan (format Indonesia)
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
+        }
+        
+        input.value = value;
+        
+        // Update hidden input dengan nilai tanpa format
+        const hiddenInput = document.getElementById('amount_raw');
+        if (hiddenInput) {
+            hiddenInput.value = input.value.replace(/[^\d]/g, '');
+        }
+        
+        // Trigger validation
+        validateAmount();
+    }
+
+    // Initialize format untuk input amount
+    if (amountInput) {
+        // Format saat load jika ada value
+        if (amountInput.value) {
+            formatNumberWithCommas(amountInput);
+        }
+        
+        // Format saat user mengetik
+        amountInput.addEventListener('input', function() {
+            formatNumberWithCommas(this);
+        });
+        
+        // Format saat blur (ketika user selesai mengetik)
+        amountInput.addEventListener('blur', function() {
+            formatNumberWithCommas(this);
+        });
+    }
+
     // ===== AMOUNT VALIDATION =====
     function validateAmount() {
-        const amount = parseFloat(amountInput.value) || 0;
+        // Get raw value (remove formatting)
+        const rawValue = amountInput.value.replace(/[^\d]/g, '');
+        const amount = parseFloat(rawValue) || 0;
+        
         if (distributionType.value === 'cash' && amount > availableBalance) {
             amountWarning.classList.remove('hidden');
             amountInput.classList.add('border-red-500');
@@ -368,15 +415,17 @@
     amountInput.addEventListener('input', validateAmount);
     distributionType.addEventListener('change', validateAmount);
 
-    // Format amount input
-    amountInput.addEventListener('blur', function() {
-        const value = parseInt(this.value.replace(/[^0-9]/g, ''));
-        if (!isNaN(value)) this.value = value;
-    });
-
     // ===== FORM SUBMIT VALIDATION =====
     document.getElementById('distributionForm').addEventListener('submit', function(e) {
-        const amount = parseFloat(amountInput.value) || 0;
+        // Get raw value (remove formatting)
+        const rawValue = amountInput.value.replace(/[^\d]/g, '');
+        const amount = parseFloat(rawValue) || 0;
+        
+        // Update hidden input sebelum submit
+        const hiddenInput = document.getElementById('amount_raw');
+        if (hiddenInput) {
+            hiddenInput.value = rawValue || '0';
+        }
 
         if (distributionType.value === 'cash' && amount > availableBalance) {
             e.preventDefault();

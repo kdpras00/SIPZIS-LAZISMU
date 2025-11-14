@@ -47,7 +47,7 @@
                         <div class="artikel-main-overlay"></div>
                         <div class="artikel-main-content">
                             <div class="text-center mb-12">
-                                <h2 class="artikel-section-title">Artikel Zakat, Infaq & Sedekah</h2>
+                                <h2 class="artikel-section-title">Artikel Seputar Lazismu Banten</h2>
                                 <p class="artikel-section-description">Temukan informasi terbaru seputar zakat, infaq, dan
                                     sedekah untuk membantu Anda memahami pentingnya kegiatan sosial ini.</p>
                                 <div class="artikel-section-divider"></div>

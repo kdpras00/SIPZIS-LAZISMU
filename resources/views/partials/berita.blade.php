@@ -20,7 +20,7 @@
                 </div>
                 <div class="relative z-10">
                     <div class="text-center mb-12">
-                        <h2 class="text-4xl md:text-5xl font-black text-green-800 mb-4">Berita Zakat, Infaq & Sedekah
+                        <h2 class="text-4xl md:text-5xl font-black text-green-800 mb-4">Berita Seputar Lazismu Banten
                         </h2>
                         <p class="text-lg text-green-700 max-w-2xl mx-auto">Update terbaru seputar program zakat, infaq,
                             dan sedekah yang telah tersalurkan untuk membantu sesama</p>

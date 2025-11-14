@@ -184,7 +184,17 @@ class Program extends Model
         static::creating(function ($program) {
             // Generate slug if not provided
             if (empty($program->slug)) {
-                $program->slug = Str::slug($program->name);
+                $baseSlug = Str::slug($program->name);
+                $slug = $baseSlug;
+                $counter = 1;
+
+                // Ensure slug is unique
+                while (static::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+
+                $program->slug = $slug;
             }
         });
 

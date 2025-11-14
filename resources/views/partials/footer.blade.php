@@ -70,8 +70,8 @@
 
         <div class="border-t border-green-700 mt-12 pt-6 text-center">
             <p class="text-green-300 text-sm">
-                &copy; {{ date('Y') }} <span class="font-semibold text-white">SIPZIS</span> — Sistem Informasi Pengelolaan Zakat, Infaq, dan Sedekah.<br>
-                <span class="text-green-400">Hak Cipta Dilindungi.</span>
+                &copy; {{ date('Y') }} <span class="font-semibold text-white">Created By : </span> — Kurniawan Dwi Prasetyo<br>
+                <span class="text-green-400">Hak Cipta Dilindungi.</span> 
             </p>
         </div>
     </div>

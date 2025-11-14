@@ -61,9 +61,19 @@ class ProgramController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $request->only(['name', 'description', 'target_amount', 'status']);
+        // Get target_amount and ensure it's numeric (remove any formatting)
+        $targetAmount = $request->input('target_amount');
+        if ($targetAmount !== null && $targetAmount !== '') {
+            $targetAmount = str_replace(['.', ','], '', $targetAmount);
+            $targetAmount = is_numeric($targetAmount) ? (float)$targetAmount : null;
+        } else {
+            $targetAmount = null;
+        }
+
+        $data = $request->only(['name', 'description', 'status']);
+        $data['target_amount'] = $targetAmount;
         $data['category'] = $request->category; // Use category directly
-        $data['slug'] = Str::slug($data['name']);
+        $data['slug'] = $this->generateUniqueSlug($data['name']);
 
         // Cek duplikasi nama + kategori
         if (Program::where('name', $data['name'])->where('category', $data['category'])->exists()) {
@@ -96,13 +106,22 @@ class ProgramController extends Controller
         ]);
 
         foreach ($request->programs as $programData) {
+            // Get target_amount and ensure it's numeric (remove any formatting)
+            $targetAmount = $programData['target_amount'] ?? 0;
+            if ($targetAmount && $targetAmount !== '') {
+                $targetAmount = str_replace(['.', ','], '', $targetAmount);
+                $targetAmount = is_numeric($targetAmount) ? (float)$targetAmount : 0;
+            } else {
+                $targetAmount = 0;
+            }
+
             $data = [
                 'name' => $programData['name'],
                 'description' => $programData['description'] ?? '',
-                'target_amount' => $programData['target_amount'] ?? 0,
+                'target_amount' => $targetAmount,
                 'status' => $programData['status'],
                 'category' => $programData['category'], // Use category directly
-                'slug' => Str::slug($programData['name']),
+                'slug' => $this->generateUniqueSlug($programData['name']),
             ];
 
             // Cek duplikasi
@@ -145,9 +164,19 @@ class ProgramController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $request->only(['name', 'description', 'target_amount', 'status']);
+        // Get target_amount and ensure it's numeric (remove any formatting)
+        $targetAmount = $request->input('target_amount');
+        if ($targetAmount !== null && $targetAmount !== '') {
+            $targetAmount = str_replace(['.', ','], '', $targetAmount);
+            $targetAmount = is_numeric($targetAmount) ? (float)$targetAmount : null;
+        } else {
+            $targetAmount = null;
+        }
+
+        $data = $request->only(['name', 'description', 'status']);
+        $data['target_amount'] = $targetAmount;
         $data['category'] = $request->category; // Use category directly
-        $data['slug'] = Str::slug($data['name']);
+        $data['slug'] = $this->generateUniqueSlug($data['name'], $program->id);
 
         // Upload foto baru dan hapus yang lama
         if ($request->hasFile('photo')) {
@@ -212,5 +241,32 @@ class ProgramController extends Controller
             'kemanusiaan' => 'Kemanusiaan',
             'lingkungan' => 'Lingkungan',
         ];
+    }
+
+    /**
+     * Generate a unique slug for a program name.
+     * If the slug already exists, append a number to make it unique.
+     */
+    private function generateUniqueSlug(string $name, ?int $excludeId = null): string
+    {
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (true) {
+            $query = Program::where('slug', $slug);
+            
+            // Exclude current program when updating
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+
+            if (!$query->exists()) {
+                return $slug;
+            }
+
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
     }
 }

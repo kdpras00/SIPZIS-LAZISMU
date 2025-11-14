@@ -173,7 +173,7 @@
             // Configuration from server
             const config = {
                 isNotMuzakki: {!! auth()->user()->role !== 'muzakki' ? 'true' : 'false' !!},
-                apiRoute: '{!! route('api.payments.search') !!}',
+                apiRoute: '{!! url('/payments/search') !!}',
                 csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             };
 
@@ -182,18 +182,35 @@
 
             // Debounced search function
             function performSearch(page = 1) {
+                const searchInput = document.getElementById('search-input');
+                const zakatTypeFilter = document.getElementById('zakat-type-filter');
+                const paymentMethodFilter = document.getElementById('payment-method-filter');
+                const statusFilter = document.getElementById('status-filter');
+                const dateFrom = document.getElementById('date-from');
+                const dateTo = document.getElementById('date-to');
+
                 const searchData = {
-                    search: document.getElementById('search-input').value,
-                    zakat_type: document.getElementById('zakat-type-filter').value,
-                    payment_method: document.getElementById('payment-method-filter').value,
-                    status: document.getElementById('status-filter').value,
-                    date_from: document.getElementById('date-from').value,
-                    date_to: document.getElementById('date-to').value,
+                    search: searchInput ? searchInput.value.trim() : '',
+                    zakat_type: zakatTypeFilter ? zakatTypeFilter.value : '',
+                    payment_method: paymentMethodFilter ? paymentMethodFilter.value : '',
+                    status: statusFilter ? statusFilter.value : '',
+                    date_from: dateFrom ? dateFrom.value : '',
+                    date_to: dateTo ? dateTo.value : '',
                     page: page
                 };
 
+                // Remove empty values from searchData
+                Object.keys(searchData).forEach(key => {
+                    if (searchData[key] === '' || searchData[key] === null) {
+                        delete searchData[key];
+                    }
+                });
+
                 // Show loading indicator
-                document.getElementById('search-loading').classList.remove('hidden');
+                const loadingEl = document.getElementById('search-loading');
+                if (loadingEl) {
+                    loadingEl.classList.remove('hidden');
+                }
 
                 // Create query string
                 const params = new URLSearchParams(searchData);
@@ -204,10 +221,16 @@
                         method: 'GET',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': csrfToken
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(response => {
                         if (response.success) {
                             // Update table
@@ -216,14 +239,21 @@
                             updateStatistics(response.data.statistics);
                             // Update current page
                             currentPage = response.data.pagination.current_page;
+                        } else {
+                            console.error('Search failed:', response);
+                            alert('Pencarian gagal. Silakan coba lagi.');
                         }
                     })
                     .catch(error => {
                         console.error('Search error:', error);
+                        alert('Terjadi kesalahan saat mencari data. Silakan coba lagi.');
                     })
                     .finally(() => {
                         // Hide loading indicator
-                        document.getElementById('search-loading').classList.add('hidden');
+                        const loadingEl = document.getElementById('search-loading');
+                        if (loadingEl) {
+                            loadingEl.classList.add('hidden');
+                        }
                     });
             }
 
@@ -251,11 +281,20 @@
             `;
 
                     payments.forEach(function(payment) {
-                        const paymentDate = new Date(payment.payment_date).toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                        });
+                        // Safe date parsing
+                        let paymentDate = '-';
+                        try {
+                            if (payment.payment_date) {
+                                paymentDate = new Date(payment.payment_date).toLocaleDateString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                });
+                            }
+                        } catch (e) {
+                            console.error('Error parsing date:', e);
+                            paymentDate = payment.payment_date || '-';
+                        }
 
                         // Payment method display names
                         const paymentMethods = {
@@ -282,52 +321,72 @@
                         const isNotMuzakki = config.isNotMuzakki;
                         const muzakkiCell = isNotMuzakki ? `
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-semibold text-gray-900">${payment.muzakki.name}</div>
-                        ${payment.muzakki.phone ? '<small class="text-gray-500">' + payment.muzakki.phone + '</small>' : ''}
+                        <div class="font-semibold text-gray-900">${payment.muzakki ? payment.muzakki.name : 'N/A'}</div>
+                        ${payment.muzakki && payment.muzakki.phone ? '<small class="text-gray-500">' + payment.muzakki.phone + '</small>' : ''}
                     </td>
                 ` : '';
+
+                        // Safe access to zakat_type
+                        const zakatTypeName = payment.zakat_type && payment.zakat_type.name ? payment.zakat_type.name : 'Tidak Diketahui';
 
                         tableHtml += `
                     <tr class="bg-white border-b hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="font-semibold text-gray-900">${payment.payment_code}</div>
-                            <small class="text-gray-500">${payment.receipt_number}</small>
+                            <div class="font-semibold text-gray-900">${payment.payment_code || 'N/A'}</div>
+                            <small class="text-gray-500">${payment.receipt_number || '-'}</small>
                         </td>
                         ${muzakkiCell}
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">${payment.zakat_type.name}</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">${zakatTypeName}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="font-bold text-gray-900">Rp ${parseInt(payment.paid_amount).toLocaleString('id-ID')}</div>
+                            <div class="font-bold text-gray-900">Rp ${payment.paid_amount ? parseInt(payment.paid_amount).toLocaleString('id-ID') : '0'}</div>
                             ${payment.zakat_amount ? '<small class="text-gray-500">Zakat: Rp ' + parseInt(payment.zakat_amount).toLocaleString('id-ID') + '</small>' : ''}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">${paymentMethods[payment.payment_method]}</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">${paymentMethods[payment.payment_method] || payment.payment_method || 'Tidak Diketahui'}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[payment.status]}">
-                                ${statusTexts[payment.status]}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[payment.status] || 'bg-gray-100 text-gray-800'}">
+                                ${statusTexts[payment.status] || payment.status || 'Tidak Diketahui'}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-gray-900">${paymentDate}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-2">
-                                <a href="/payments/${payment.id}" class="text-blue-600 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1.5" title="Lihat Detail">
-                                    <i class="bi bi-eye"></i>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <a href="/payments/${payment.id}" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" 
+                                   title="Lihat Detail">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
                                 </a>
-                                <a href="/payments/${payment.id}/receipt" class="text-green-600 hover:text-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg p-1.5" title="Kwitansi" target="_blank">
-                                    <i class="bi bi-receipt"></i>
+                                <a href="/payments/${payment.id}/receipt" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-green-300 shadow-sm text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200" 
+                                   title="Kwitansi" target="_blank">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
                                 </a>
                                 ${config.isNotMuzakki ? `
-                                                                                <a href="/payments/${payment.id}/edit" class="text-purple-600 hover:text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg p-1.5" title="Edit">
-                                                                                    <i class="bi bi-pencil"></i>
+                                    <a href="/payments/${payment.id}/edit" 
+                                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200" 
+                                       title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
                                                                                 </a>
                                                                                 ${payment.status !== 'completed' ? `
-                                <form action="/payments/${payment.id}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus pembayaran ini?')">
+                                    <form action="/payments/${payment.id}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran ini?')">
                                     <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit" class="text-red-600 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 rounded-lg p-1.5" title="Hapus">
-                                        <i class="bi bi-trash"></i>
+                                        <button type="submit" 
+                                                class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200" 
+                                                title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
                                     </button>
                                 </form>
                                 ` : ''}
@@ -387,11 +446,16 @@
                 } else {
                     tableHtml = `
                 <div class="text-center py-12 px-6">
-                    <i class="bi bi-inbox text-6xl text-gray-400 mb-4 block"></i>
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
                     <h5 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data pembayaran</h5>
                     <p class="text-gray-600 mb-4">Tidak ada pembayaran yang sesuai dengan kriteria pencarian</p>
-                    <button type="button" id="clear-search" class="text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-300 focus:ring-4 focus:ring-blue-200 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
-                        <i class="bi bi-arrow-clockwise"></i> Reset Pencarian
+                    <button type="button" id="clear-search" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Reset Pencarian
                     </button>
                 </div>
             `;
@@ -410,13 +474,38 @@
                 document.getElementById('pending-count').textContent = stats.pending.toLocaleString('id-ID');
             }
 
-            // Search input with debouncing
-            document.getElementById('search-input').addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function() {
-                    performSearch(1);
-                }, 500); // 500ms delay
-            });
+            // Search input with debouncing (reduced delay for better responsiveness)
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    clearTimeout(searchTimeout);
+                    // Show loading immediately
+                    const loadingEl = document.getElementById('search-loading');
+                    if (loadingEl) {
+                        loadingEl.classList.remove('hidden');
+                    }
+                    // Perform search after 300ms delay
+                    searchTimeout = setTimeout(function() {
+                        performSearch(1);
+                    }, 300); // Reduced to 300ms for better responsiveness
+                });
+
+                // Also trigger search on keyup for immediate feedback (Enter key)
+                searchInput.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        clearTimeout(searchTimeout);
+                        performSearch(1);
+                    }
+                });
+
+                // Trigger search on paste event
+                searchInput.addEventListener('paste', function(e) {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(function() {
+                        performSearch(1);
+                    }, 300);
+                });
+            }
 
             // Filter changes
             document.getElementById('zakat-type-filter').addEventListener('change', function() {
@@ -441,12 +530,20 @@
 
             // Reset filters
             document.getElementById('reset-filters').addEventListener('click', function() {
+                // Clear all filter inputs
                 document.getElementById('search-input').value = '';
                 document.getElementById('zakat-type-filter').value = '';
                 document.getElementById('payment-method-filter').value = '';
                 document.getElementById('status-filter').value = '';
                 document.getElementById('date-from').value = '';
                 document.getElementById('date-to').value = '';
+                
+                // Reset URL to remove query parameters
+                const url = new URL(window.location);
+                url.search = '';
+                window.history.pushState({}, '', url);
+                
+                // Perform search with empty filters
                 performSearch(1);
             });
 
@@ -460,15 +557,57 @@
 
                 // Clear search button (using event delegation)
                 if (e.target.id === 'clear-search' || e.target.closest('#clear-search')) {
+                    // Clear all filter inputs
                     document.getElementById('search-input').value = '';
                     document.getElementById('zakat-type-filter').value = '';
                     document.getElementById('payment-method-filter').value = '';
                     document.getElementById('status-filter').value = '';
                     document.getElementById('date-from').value = '';
                     document.getElementById('date-to').value = '';
+                    
+                    // Reset URL to remove query parameters
+                    const url = new URL(window.location);
+                    url.search = '';
+                    window.history.pushState({}, '', url);
+                    
+                    // Perform search with empty filters
                     performSearch(1);
                 }
             });
+
+            // Initialize: Check if we need to perform search on page load
+            // If there are query parameters, use them; otherwise show all data
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasSearchParams = urlParams.has('search') || 
+                                   urlParams.has('zakat_type') || 
+                                   urlParams.has('payment_method') || 
+                                   urlParams.has('status') || 
+                                   urlParams.has('date_from') || 
+                                   urlParams.has('date_to');
+            
+            // If there are search parameters in URL, sync them with form and search
+            if (hasSearchParams) {
+                if (urlParams.has('search')) {
+                    document.getElementById('search-input').value = urlParams.get('search');
+                }
+                if (urlParams.has('zakat_type')) {
+                    document.getElementById('zakat-type-filter').value = urlParams.get('zakat_type');
+                }
+                if (urlParams.has('payment_method')) {
+                    document.getElementById('payment-method-filter').value = urlParams.get('payment_method');
+                }
+                if (urlParams.has('status')) {
+                    document.getElementById('status-filter').value = urlParams.get('status');
+                }
+                if (urlParams.has('date_from')) {
+                    document.getElementById('date-from').value = urlParams.get('date_from');
+                }
+                if (urlParams.has('date_to')) {
+                    document.getElementById('date-to').value = urlParams.get('date_to');
+                }
+                // Perform search with URL parameters
+                performSearch(1);
+            }
         });
     </script>
 @endpush
