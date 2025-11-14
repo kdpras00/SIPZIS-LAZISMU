@@ -107,27 +107,27 @@
 
 
                 <!-- Bottom Navigation -->
-                <div class="card border-0 shadow-sm mt-4 fixed-bottom-nav">
-                    <div class="card-body d-flex justify-content-around text-center">
-                        <div>
+                <div class="card border-0 shadow-sm mt-4 fixed-bottom-nav" style="max-width: 910px;">
+                    <div class="card-body d-flex justify-content-between text-center px-2 px-sm-4">
+                        <div class="flex-fill">
                             <a href="{{ route('home') }}" class="text-decoration-none text-dark">
                                 <i class="bi bi-house fs-5 d-block"></i>
                                 <small>Home</small>
                             </a>
                         </div>
-                        <div>
+                        <div class="flex-fill">
                             <a href="{{ route('muzakki.donation') }}" class="text-decoration-none text-dark">
                                 <i class="bi bi-heart fs-5 d-block"></i>
                                 <small>Donasi</small>
                             </a>
                         </div>
-                        <div>
+                        <div class="flex-fill">
                             <a href="{{ route('muzakki.fundraising') }}" class="text-decoration-none text-dark">
                                 <i class="bi bi-box-seam fs-5 d-block"></i>
                                 <small>Galang Dana</small>
                             </a>
                         </div>
-                        <div>
+                        <div class="flex-fill">
                             <a href="{{ route('muzakki.amalanku') }}" class="text-decoration-none text-dark">
                                 <i class="bi bi-person fs-5 d-block"></i>
                                 <small>Amalanku</small>
