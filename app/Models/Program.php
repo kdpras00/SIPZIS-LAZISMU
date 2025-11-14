@@ -36,21 +36,14 @@ class Program extends Model
         return $this->hasMany(Campaign::class);
     }
 
-    // Note: program_id column doesn't exist in zakat_payments table
-    // Payments are linked via campaigns, not directly to programs
-    // This method returns a query builder that always returns empty results
-    // Use campaigns relationship instead to get payments
     public function zakatPayments()
     {
-        // Return query builder with condition that's always false
-        // This prevents "Column not found" SQL errors when accessing the relationship
-        return ZakatPayment::where('id', '<', 0); // Always returns empty result
+        return $this->hasMany(ZakatPayment::class);
     }
 
-    // Relationship to get zakat distributions related to this program
     public function zakatDistributions()
     {
-        return $this->hasMany(ZakatDistribution::class, 'program_name', 'category');
+        return $this->hasMany(ZakatDistribution::class);
     }
 
     public function notifications()
@@ -90,20 +83,13 @@ class Program extends Model
         return Storage::url($imagePath);
     }
 
-    // Total dana terkumpul dari semua campaign yang published
+    // Total dana terkumpul dari payments yang langsung terikat ke program ini
     public function getTotalCollectedAttribute()
     {
-        // Note: program_id doesn't exist in zakat_payments table
-        // Only get payments from campaigns associated with this program
-        $campaignPayments = $this->campaigns()
-            ->published()
-            ->with('zakatPayments')
-            ->get()
-            ->sum(function ($campaign) {
-                return $campaign->zakatPayments()->sum('paid_amount');
-            });
-
-        return $campaignPayments;
+        // Get payments directly linked to this program via program_id with status completed
+        return ZakatPayment::where('program_id', $this->id)
+            ->where('status', 'completed')
+            ->sum('paid_amount');
     }
 
     // Total dana yang telah didistribusikan

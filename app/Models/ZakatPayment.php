@@ -14,7 +14,7 @@ class ZakatPayment extends Model
         'midtrans_order_id',
         'snap_token',
         'muzakki_id',
-        // 'program_id', // REMOVED: Column doesn't exist in database
+        'program_id',
         'program_category',
         'program_type_id',
         'zakat_type_id',
@@ -46,6 +46,11 @@ class ZakatPayment extends Model
     public function zakatType()
     {
         return $this->belongsTo(ZakatType::class, 'zakat_type_id');
+    }
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
     }
 
     public function programType()

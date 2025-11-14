@@ -106,10 +106,16 @@
             <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Donatur Terbaru</h2>
 
             @php
-            // Note: program_id doesn't exist in zakat_payments table
-            // Get payments by program_category matching program category
+            // Get payments by program_id (preferred) or fallback to program_category
             $recentDonations = \App\Models\ZakatPayment::where('status', 'completed')
-                ->where('program_category', $program->category)
+                ->where(function($query) use ($program) {
+                    $query->where('program_id', $program->id)
+                          ->orWhere(function($q) use ($program) {
+                              // Fallback for old payments without program_id
+                              $q->whereNull('program_id')
+                                ->where('program_category', $program->category);
+                          });
+                })
                 ->latest('payment_date')
                 ->limit(10)
                 ->get();

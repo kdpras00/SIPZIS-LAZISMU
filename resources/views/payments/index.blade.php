@@ -286,10 +286,10 @@
                         try {
                             if (payment.payment_date) {
                                 paymentDate = new Date(payment.payment_date).toLocaleDateString('id-ID', {
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric'
-                                });
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                        });
                             }
                         } catch (e) {
                             console.error('Error parsing date:', e);
@@ -500,11 +500,11 @@
 
                 // Trigger search on paste event
                 searchInput.addEventListener('paste', function(e) {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(function() {
-                        performSearch(1);
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    performSearch(1);
                     }, 300);
-                });
+            });
             }
 
             // Filter changes

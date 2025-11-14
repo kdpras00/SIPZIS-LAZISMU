@@ -33,6 +33,13 @@ class Campaign extends Model
 
     public function zakatPayments()
     {
+        // If campaign has program_id, use it; otherwise fallback to program_category
+        if ($this->program_id) {
+            return $this->hasMany(ZakatPayment::class, 'program_id', 'program_id')
+                ->where('status', 'completed');
+        }
+        
+        // Fallback to program_category for backward compatibility
         return $this->hasMany(ZakatPayment::class, 'program_category', 'program_category')
             ->whereNotNull('program_category')
             ->where('status', 'completed');
@@ -59,6 +66,14 @@ class Campaign extends Model
 
     public function getCollectedAmountAttribute()
     {
+        // If campaign has program_id, get payments for that program
+        if ($this->program_id) {
+            return ZakatPayment::where('program_id', $this->program_id)
+                ->where('status', 'completed')
+                ->sum('paid_amount');
+        }
+        
+        // Fallback to old method using program_category
         return $this->zakatPayments()->sum('paid_amount');
     }
 

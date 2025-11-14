@@ -17,6 +17,7 @@ class ZakatDistribution extends Model
         'goods_description',
         'distribution_date',
         'notes',
+        'program_id',
         'program_name',
         'distributed_by',
         'location',
@@ -37,6 +38,11 @@ class ZakatDistribution extends Model
     public function mustahik()
     {
         return $this->belongsTo(Mustahik::class);
+    }
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
     }
 
     public function distributedBy()

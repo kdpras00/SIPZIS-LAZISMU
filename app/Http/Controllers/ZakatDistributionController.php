@@ -146,6 +146,17 @@ class ZakatDistributionController extends Controller
 
             $distributionCode = ZakatDistribution::generateDistributionCode();
 
+            // Determine program_id from request
+            $programId = null;
+            if ($request->filled('program_id')) {
+                $programId = $request->program_id;
+            } elseif ($request->filled('program_slug')) {
+                $program = \App\Models\Program::where('slug', $request->program_slug)->first();
+                if ($program) {
+                    $programId = $program->id;
+                }
+            }
+
             ZakatDistribution::create([
                 'distribution_code' => $distributionCode,
                 'mustahik_id' => $mustahik->id,
@@ -154,6 +165,7 @@ class ZakatDistributionController extends Controller
                 'goods_description' => $request->goods_description,
                 'distribution_date' => $request->distribution_date,
                 'notes' => $request->notes,
+                'program_id' => $programId,
                 'program_name' => $request->program_name,
                 'distributed_by' => Auth::id(),
                 'location' => $request->location,
@@ -188,6 +200,8 @@ class ZakatDistributionController extends Controller
             'goods_description' => 'required_if:distribution_type,goods,service|nullable|string',
             'distribution_date' => 'required|date',
             'notes' => 'nullable|string',
+            'program_id' => 'nullable|exists:programs,id',
+            'program_slug' => 'nullable|string|exists:programs,slug',
             'program_name' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
         ]);
@@ -216,8 +230,20 @@ class ZakatDistributionController extends Controller
                 return back()->withInput()->with('error', 'Saldo zakat tidak mencukupi.');
             }
 
+            // Determine program_id from request
+            $programId = null;
+            if ($request->filled('program_id')) {
+                $programId = $request->program_id;
+            } elseif ($request->filled('program_slug')) {
+                $program = \App\Models\Program::where('slug', $request->program_slug)->first();
+                if ($program) {
+                    $programId = $program->id;
+                }
+            }
+
             $data = $request->all();
             $data['amount'] = $amount;
+            $data['program_id'] = $programId;
             $distribution->update($data);
             return redirect()->route('distributions.index')->with('success', 'Distribusi zakat berhasil diperbarui.');
         });

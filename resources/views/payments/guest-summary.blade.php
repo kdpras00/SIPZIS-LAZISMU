@@ -159,8 +159,7 @@
         let selectedMethod = null;
         let isProcessing = false; // Flag to prevent multiple calls
 
-        // Define checkPaymentStatus function in global scope so it can be called from Snap.js callbacks
-        let checkPaymentStatus = null;
+        // checkPaymentStatus will be defined in the pending status script below
 
         // Add event listeners to payment method buttons
         document.querySelectorAll('.payment-method').forEach(button => {
@@ -287,12 +286,14 @@
                                     window.snapHandled = true;
                                     window.snapIsOpen = false;
 
+                                    // Show notification briefly then redirect immediately
                                     showNotification('Pembayaran berhasil! Terima kasih.',
                                         'success');
+                                    // Redirect immediately (minimal delay for UX)
                                     setTimeout(() => {
                                         window.location.href =
                                             '{{ route('guest.payment.success', $payment->payment_code) }}';
-                                    }, 3000);
+                                    }, 500); // Reduced to 500ms for faster redirect
                                 },
                                 onPending: function(result) {
                                     if (window.snapHandled) return;
@@ -307,10 +308,11 @@
                                     // This helps catch payment that was completed while on payment page
                                     // The checkPaymentStatus function will be available after page redirects back to summary
 
+                                    // Redirect immediately for faster response
                                     setTimeout(() => {
                                         window.location.href =
                                             '{{ route('guest.payment.summary', $payment->payment_code) }}';
-                                    }, 1000); // Reduced from 3000ms to 1000ms for faster redirect
+                                    }, 300); // Reduced to 300ms for faster redirect
                                 },
                                 onError: function(result) {
                                     if (window.snapHandled) return;
@@ -377,24 +379,31 @@
 
 @if ($payment->status === 'pending')
     <script>
-        // Auto check every 1 second for faster detection in sandbox
+        // Auto check every 200ms for ultra-fast detection
         const paymentCode = "{{ $payment->payment_code }}";
         const checkUrl = "{{ route('guest.payment.checkStatus', $payment->payment_code) }}";
         let checkCount = 0;
-        const maxChecks = 300; // Max ~5 minutes (300 checks * 1 second)
+        const maxChecks = 1500; // Max ~5 minutes (1500 checks * 0.2 second)
 
-        // Define checkPaymentStatus function and assign to global variable
-        checkPaymentStatus = async function() {
+        // Define checkPaymentStatus function in global scope
+        window.checkPaymentStatus = async function() {
             try {
                 checkCount++;
 
-                const res = await fetch(checkUrl, {
+                // Add timestamp to URL to prevent browser/proxy caching
+                const urlWithTimestamp = checkUrl + (checkUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+
+                const res = await fetch(urlWithTimestamp, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'Cache-Control': 'no-cache'
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    credentials: 'same-origin'
                 });
 
                 if (!res.ok) {
@@ -407,7 +416,7 @@
                 if (data.status === 'completed') {
                     // Clear interval immediately to prevent multiple redirects
                     if (statusCheckInterval) clearInterval(statusCheckInterval);
-                    // Immediate redirect to success page
+                    // Immediate redirect to success page (no delay)
                     window.location.href = "{{ route('guest.payment.success', $payment->payment_code) }}";
                     return;
                 } else if (data.status === 'cancelled' || data.status === 'failed') {
@@ -430,17 +439,27 @@
         let statusCheckInterval;
 
         // Initial check immediately for fastest response
-        checkPaymentStatus();
+        window.checkPaymentStatus();
 
-        // Then check every 1 second (very aggressive for sandbox environment)
-        statusCheckInterval = setInterval(checkPaymentStatus, 1000);
+        // Then check every 200ms (ultra-aggressive for fastest detection)
+        statusCheckInterval = setInterval(window.checkPaymentStatus, 200);
 
         // Also check immediately after user returns from payment page (e.g., after closing Snap.js)
         // This helps catch payment status changes that happened while user was on payment page
         window.addEventListener('focus', function() {
+            // Immediately check status when window gains focus
+            if (window.checkPaymentStatus) {
+                window.checkPaymentStatus();
+            }
             if (!statusCheckInterval) {
-                checkPaymentStatus();
-                statusCheckInterval = setInterval(checkPaymentStatus, 1000);
+                statusCheckInterval = setInterval(window.checkPaymentStatus, 200);
+            }
+        });
+
+        // Also check when page becomes visible (user switches back to tab)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && window.checkPaymentStatus) {
+                window.checkPaymentStatus();
             }
         });
     </script>

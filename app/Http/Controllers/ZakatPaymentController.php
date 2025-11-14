@@ -923,15 +923,21 @@ class ZakatPaymentController extends Controller
         // Add detailed logging
         Log::info('=== GUEST STORE START ===', [
             'all_request_data' => $request->all(),
+            'program_id' => $request->program_id,
+            'program_slug' => $request->program_slug,
             'program_category' => $request->program_category,
             'program_type_id' => $request->program_type_id,
             'url_params' => $request->query(),
+            'has_program_id' => $request->has('program_id'),
+            'filled_program_id' => $request->filled('program_id'),
             'has_program_type_id' => $request->has('program_type_id'),
             'filled_program_type_id' => $request->filled('program_type_id')
         ]);
 
         // VALIDASI YANG SUDAH DIPERBAIKI DAN DISESUAIKAN DENGAN FORM
         $validatedData = $request->validate([
+            'program_id'       => 'nullable|exists:programs,id',
+            'program_slug'     => 'nullable|string|exists:programs,slug',
             'program_category' => 'nullable|string|max:255',
             'program_type_id'  => 'nullable|exists:program_types,id',
             'paid_amount'      => 'required|numeric|min:10000',
@@ -1044,11 +1050,18 @@ class ZakatPaymentController extends Controller
                 'receipt_number'   => ZakatPayment::generateReceiptNumber(), // Use the existing method
             ];
 
-            // Note: program_id column doesn't exist in zakat_payments table
-            // If program_id is provided in request, use it to get program category
+            // Set program_id if provided in request (by ID or slug)
             if ($request->filled('program_id')) {
                 $program = Program::find($request->program_id);
                 if ($program) {
+                    $paymentData['program_id'] = $program->id;
+                    $paymentData['program_category'] = $program->category;
+                }
+            } elseif ($request->filled('program_slug')) {
+                // If slug is provided, find program by slug
+                $program = Program::where('slug', $request->program_slug)->first();
+                if ($program) {
+                    $paymentData['program_id'] = $program->id;
                     $paymentData['program_category'] = $program->category;
                 }
             }
@@ -1107,8 +1120,10 @@ class ZakatPaymentController extends Controller
             // Log the created payment data
             Log::info('Payment created successfully', [
                 'payment_id' => $payment->id,
+                'program_id' => $payment->program_id,
                 'program_category' => $payment->program_category,
                 'program_type_id' => $payment->program_type_id,
+                'paid_amount' => $payment->paid_amount,
                 'payment_data' => $paymentData
             ]);
 
@@ -1553,12 +1568,12 @@ class ZakatPaymentController extends Controller
                     'success' => true,
                     'status' => 'completed',
                     'message' => 'Status pembayaran: Completed'
-                ]);
+                ], 200, [], JSON_UNESCAPED_UNICODE);
             }
 
-            // Only skip Midtrans API call if payment was updated very recently (within last 5 seconds)
+            // Only skip Midtrans API call if payment was updated very recently (within last 1 second)
             // This allows more frequent checks while still preventing excessive API calls
-            $recentUpdate = $payment->updated_at && $payment->updated_at->diffInSeconds(now()) < 5;
+            $recentUpdate = $payment->updated_at && $payment->updated_at->diffInSeconds(now()) < 1;
 
             if ($recentUpdate && $payment->status === 'pending') {
                 // If very recently updated and still pending, skip Midtrans call to reduce load
@@ -1567,7 +1582,7 @@ class ZakatPaymentController extends Controller
                     'success' => true,
                     'status' => $payment->status,
                     'message' => 'Status pembayaran: ' . ucfirst($payment->status)
-                ]);
+                ], 200, [], JSON_UNESCAPED_UNICODE);
             }
 
             // Call Midtrans API to get real-time status
@@ -1575,7 +1590,9 @@ class ZakatPaymentController extends Controller
                 // Configure Midtrans
                 \Midtrans\Config::$serverKey = config('midtrans.server_key');
                 \Midtrans\Config::$isProduction = config('midtrans.is_production');
-                \Midtrans\Config::$curlOptions[CURLOPT_TIMEOUT] = 3; // Set timeout to 3 seconds for faster response
+                \Midtrans\Config::$curlOptions[CURLOPT_TIMEOUT] = 1; // Reduced timeout to 1 second for ultra-fast response
+                \Midtrans\Config::$curlOptions[CURLOPT_CONNECTTIMEOUT] = 0.5; // Connection timeout 0.5 second
+                \Midtrans\Config::$curlOptions[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2_0; // Use HTTP/2 for faster connection
 
                 // Get transaction status from Midtrans using midtrans_order_id if available
                 $orderId = $payment->midtrans_order_id ?? $payment->payment_code;
@@ -1623,7 +1640,7 @@ class ZakatPaymentController extends Controller
                     'success' => true,
                     'status' => $newStatus ?? $payment->status,
                     'message' => 'Status pembayaran: ' . ucfirst($newStatus ?? $payment->status)
-                ]);
+                ], 200, [], JSON_UNESCAPED_UNICODE);
             } catch (\Exception $e) {
                 // If Midtrans API call fails, return current database status
                 Log::warning('Failed to get Midtrans status: ' . $e->getMessage());
@@ -1631,7 +1648,7 @@ class ZakatPaymentController extends Controller
                     'success' => true,
                     'status' => $payment->status,
                     'message' => 'Status pembayaran (dari database): ' . ucfirst($payment->status)
-                ]);
+                ], 200, [], JSON_UNESCAPED_UNICODE);
             }
         } catch (\Exception $e) {
             Log::error('Guest Check Status Error: ' . $e->getMessage());
@@ -1874,7 +1891,7 @@ class ZakatPaymentController extends Controller
     public function search(Request $request)
     {
         try {
-            $query = ZakatPayment::with(['muzakki', 'zakatType']);
+        $query = ZakatPayment::with(['muzakki', 'zakatType']);
 
             // Filter by user role - muzakki can only see their own payments
             if (Auth::check() && Auth::user()->role === 'muzakki') {
@@ -1888,12 +1905,12 @@ class ZakatPaymentController extends Controller
             if ($request->has('search') && $request->search) {
                 $query->where(function ($q) use ($request) {
                     $q->where('payment_code', 'like', '%' . $request->search . '%')
-                        ->orWhere('receipt_number', 'like', '%' . $request->search . '%')
-                        ->orWhereHas('muzakki', function ($q) use ($request) {
-                            $q->where('name', 'like', '%' . $request->search . '%');
-                        });
+                ->orWhere('receipt_number', 'like', '%' . $request->search . '%')
+                ->orWhereHas('muzakki', function ($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%');
                 });
-            }
+                });
+        }
 
             // Filter tambahan
             if ($request->has('zakat_type') && $request->zakat_type) {
@@ -1951,7 +1968,7 @@ class ZakatPaymentController extends Controller
             }
             if ($request->has('payment_method') && $request->payment_method) {
                 $statsQuery->where('payment_method', $request->payment_method);
-            }
+        }
             if ($request->has('status') && $request->status) {
                 $statsQuery->where('status', $request->status);
             }
@@ -1969,17 +1986,17 @@ class ZakatPaymentController extends Controller
                 'pending' => $statsQuery->where('status', 'pending')->count(),
             ];
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'payments' => $payments->items(),
-                    'pagination' => [
-                        'current_page' => $payments->currentPage(),
-                        'last_page' => $payments->lastPage(),
-                        'from' => $payments->firstItem(),
-                        'to' => $payments->lastItem(),
-                        'total' => $payments->total(),
-                    ],
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'payments' => $payments->items(),
+                'pagination' => [
+                    'current_page' => $payments->currentPage(),
+                    'last_page' => $payments->lastPage(),
+                    'from' => $payments->firstItem(),
+                    'to' => $payments->lastItem(),
+                    'total' => $payments->total(),
+                ],
                     'statistics' => $stats,
                 ]
             ]);
