@@ -185,8 +185,7 @@ class CampaignController extends Controller
      */
     public function adminCreate()
     {
-        $programs = Program::active()->get();
-        return view('admin.campaigns.create', compact('programs'));
+        return view('admin.campaigns.create');
     }
 
     /**
@@ -224,6 +223,14 @@ class CampaignController extends Controller
         ]);
         $data['target_amount'] = $targetAmount;
 
+        // Auto-fill program_id based on program_category if not provided
+        if (empty($data['program_id']) && !empty($data['program_category'])) {
+            $program = Program::where('category', $data['program_category'])->first();
+            if ($program) {
+                $data['program_id'] = $program->id;
+            }
+        }
+
         // Set collected_amount to 0 for new campaigns
         $data['collected_amount'] = 0;
 
@@ -243,9 +250,8 @@ class CampaignController extends Controller
     {
         // Don't overwrite collected amount - allow manual editing
         // $campaign->collected_amount = $campaign->zakatPayments()->sum('paid_amount');
-        $programs = Program::active()->get();
 
-        return view('admin.campaigns.edit', compact('campaign', 'programs'));
+        return view('admin.campaigns.edit', compact('campaign'));
     }
 
     /**
@@ -283,6 +289,14 @@ class CampaignController extends Controller
             'end_date'
         ]);
         $data['target_amount'] = $targetAmount;
+
+        // Auto-fill program_id based on program_category if not provided
+        if (empty($data['program_id']) && !empty($data['program_category'])) {
+            $program = Program::where('category', $data['program_category'])->first();
+            if ($program) {
+                $data['program_id'] = $program->id;
+            }
+        }
 
         // Ensure collected_amount remains unchanged (readonly)
         // $data['collected_amount'] = $campaign->collected_amount;

@@ -1110,6 +1110,18 @@ class ZakatPaymentController extends Controller
                     ]);
                 }
             } elseif ($request->filled('program_category')) {
+                // Auto-fill program_id based on program_category if not already set
+                if (empty($paymentData['program_id']) && !empty($request->program_category)) {
+                    $program = Program::where('category', $request->program_category)->first();
+                    if ($program) {
+                        $paymentData['program_id'] = $program->id;
+                        Log::info('Auto-filled program_id from program_category', [
+                            'program_category' => $request->program_category,
+                            'program_id' => $program->id,
+                            'program_name' => $program->name
+                        ]);
+                    }
+                }
                 $paymentData['program_category'] = $request->program_category;
             } else {
                 $paymentData['program_category'] = 'umum'; // Default fallback

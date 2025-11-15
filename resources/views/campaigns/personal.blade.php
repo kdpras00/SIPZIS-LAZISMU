@@ -119,22 +119,17 @@
                             </p>
 
                             <!-- Progress Bar -->
-                            @php
-                            $percentage = $campaign->target_amount > 0
-                            ? min(($campaign->collected_amount / $campaign->target_amount) * 100, 100)
-                            : 0;
-                            @endphp
                             <div class="progress mb-2" style="height: 8px;">
                                 <div class="progress-bar bg-success"
                                     role="progressbar"
-                                    style="width: {{ $percentage }}%">
+                                    style="width: {{ $campaign->progress_percentage }}%">
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-between mb-2">
                                 <small class="text-muted">Terkumpul</small>
                                 <small class="fw-bold text-success">
-                                    Rp {{ number_format($campaign->collected_amount, 0, ',', '.') }}
+                                    {{ $campaign->formatted_collected_amount }}
                                 </small>
                             </div>
 

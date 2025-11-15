@@ -136,19 +136,16 @@
 
                                 <!-- Progress Bar -->
                                 <div class="mb-4">
-                                    @php
-                                    $progressPercentage = $campaign->target_amount > 0 ? min(100, ($campaign->collected_amount / $campaign->target_amount) * 100) : 0;
-                                    @endphp
                                     <div class="flex justify-between text-sm mb-1">
                                         <span class="font-semibold text-blue-700">
-                                            {{ number_format($progressPercentage, 1) }}%
+                                            {{ number_format($campaign->progress_percentage, 1) }}%
                                         </span>
                                         <span class="text-gray-500">
-                                            Rp {{ number_format($campaign->collected_amount, 0, ',', '.') }} / Rp {{ number_format($campaign->target_amount, 0, ',', '.') }}
+                                            {{ $campaign->formatted_collected_amount }} / {{ $campaign->formatted_target_amount }}
                                         </span>
                                     </div>
                                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full" style="width: {{ $progressPercentage }}%"></div>
+                                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full" style="width: {{ $campaign->progress_percentage }}%"></div>
                                     </div>
                                 </div>
 

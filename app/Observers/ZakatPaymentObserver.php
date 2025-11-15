@@ -139,23 +139,53 @@ class ZakatPaymentObserver
      */
     private function updateCampaignAndProgramTotals(ZakatPayment $zakatPayment): void
     {
-        // Find campaigns with the same program category
-        $campaigns = Campaign::where('program_category', $zakatPayment->program_category)->get();
+        // Find campaigns that should be updated based on payment
+        $campaigns = collect();
 
-        // Update each campaign's collected amount
-        foreach ($campaigns as $campaign) {
-            // The collected amount is calculated dynamically in the model accessor
-            // So we don't need to update the database field directly
-            // But we can trigger any necessary recalculations here if needed
+        // If payment has program_id, find campaigns with that program_id
+        if ($zakatPayment->program_id) {
+            $campaigns = Campaign::where('program_id', $zakatPayment->program_id)
+                ->get();
         }
 
-        // Find program with the same category
-        $program = Program::where('category', $zakatPayment->program_category)->first();
+        // Also find campaigns with same program_category (for backward compatibility)
+        // Only if payment was created after campaign was created
+        if ($zakatPayment->program_category) {
+            $campaignsByCategory = Campaign::where('program_category', $zakatPayment->program_category)
+                ->where('created_at', '<=', $zakatPayment->created_at)
+                ->get();
+            $campaigns = $campaigns->merge($campaignsByCategory)->unique('id');
+        }
 
-        if ($program) {
-            // The program totals are calculated dynamically in the model accessor
-            // So we don't need to update the database field directly
-            // But we can trigger any necessary recalculations here if needed
+        // Update each campaign's collected amount in database
+        foreach ($campaigns as $campaign) {
+            $collectedAmount = 0;
+
+            // Calculate collected amount based on campaign's program_id or program_category
+            if ($campaign->program_id) {
+                $collectedAmount = \App\Models\ZakatPayment::where('program_id', $campaign->program_id)
+                    ->where('status', 'completed')
+                    ->where('created_at', '>=', $campaign->created_at)
+                    ->sum('paid_amount');
+            } else {
+                $collectedAmount = \App\Models\ZakatPayment::where('program_category', $campaign->program_category)
+                    ->whereNotNull('program_category')
+                    ->where('status', 'completed')
+                    ->where('created_at', '>=', $campaign->created_at)
+                    ->sum('paid_amount');
+            }
+
+            // Update collected_amount in database
+            $campaign->update(['collected_amount' => $collectedAmount]);
+        }
+
+        // Update program totals (programs use accessor, so no need to update database)
+        // But we can clear cache if needed
+        if ($zakatPayment->program_id) {
+            $program = Program::find($zakatPayment->program_id);
+            if ($program) {
+                Cache::forget("program_total_collected_{$program->id}");
+            }
         }
     }
 

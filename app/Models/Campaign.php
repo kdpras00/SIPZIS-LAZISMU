@@ -70,11 +70,18 @@ class Campaign extends Model
         if ($this->program_id) {
             return ZakatPayment::where('program_id', $this->program_id)
                 ->where('status', 'completed')
+                // Only count payments created AFTER the campaign was created
+                ->where('created_at', '>=', $this->created_at)
                 ->sum('paid_amount');
         }
         
         // Fallback to old method using program_category
-        return $this->zakatPayments()->sum('paid_amount');
+        // Only count payments created AFTER the campaign was created
+        return ZakatPayment::where('program_category', $this->program_category)
+            ->whereNotNull('program_category')
+            ->where('status', 'completed')
+            ->where('created_at', '>=', $this->created_at)
+            ->sum('paid_amount');
     }
 
     public function getDistributedAmountAttribute()
