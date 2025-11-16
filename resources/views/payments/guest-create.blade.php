@@ -92,7 +92,9 @@
                     {{-- Program Information Header --}}
                     <div class="flex items-start sm:items-center gap-4 border-b border-gray-200 pb-6 mb-6">
                         @php
-                            if (isset($program)) {
+                            if (isset($campaign)) {
+                                $imageUrl = $campaign->image_url;
+                            } elseif (isset($program)) {
                                 $imageUrl = $program->image_url;
                             } else {
                                 $categoryProgram = \App\Models\Program::byCategory($programCategory)->first();

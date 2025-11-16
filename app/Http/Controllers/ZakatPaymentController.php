@@ -1176,12 +1176,26 @@ class ZakatPaymentController extends Controller
     }
 
     /**
-     * Handle Midtrans Notification
+     * Handle Midtrans Notification (Webhook)
+     * 
+     * Best practices implemented:
+     * 1. Fast response (200 OK immediately)
+     * 2. Idempotency (handle duplicate notifications)
+     * 3. Comprehensive status verification
+     * 4. Detailed logging for audit
      */
     public function handleNotification(Request $request)
     {
-        Log::info('=== MIDTRANS NOTIFICATION START ===');
-        Log::info('Body:', ['body' => $request->all()]);
+        $startTime = microtime(true);
+        $notificationId = uniqid('notif_', true);
+        
+        Log::info('=== MIDTRANS NOTIFICATION START ===', [
+            'notification_id' => $notificationId,
+            'timestamp' => now()->toIso8601String(),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'raw_body' => $request->all()
+        ]);
 
         try {
             // Konfigurasi Midtrans
@@ -1193,44 +1207,86 @@ class ZakatPaymentController extends Controller
             // Ambil notifikasi dari Midtrans
             $notification = new \Midtrans\Notification();
 
+            // Extract all important fields
             $transactionStatus = $notification->transaction_status;
             $orderId = $notification->order_id;
-            $transactionId = $notification->transaction_id;
+            $transactionId = $notification->transaction_id ?? null;
             $fraudStatus = $notification->fraud_status ?? null;
             $paymentType = $notification->payment_type ?? null;
+            $statusCode = $notification->status_code ?? null;
+            $grossAmount = $notification->gross_amount ?? null;
+            $signatureKey = $notification->signature_key ?? null;
 
-            Log::info('Midtrans Notification Received', [
+            Log::info('Midtrans Notification Parsed', [
+                'notification_id' => $notificationId,
                 'order_id' => $orderId,
-                'status' => $transactionStatus,
+                'transaction_id' => $transactionId,
+                'transaction_status' => $transactionStatus,
+                'status_code' => $statusCode,
                 'fraud_status' => $fraudStatus,
-                'payment_type' => $paymentType
+                'payment_type' => $paymentType,
+                'gross_amount' => $grossAmount
             ]);
 
             // Cari pembayaran berdasarkan midtrans_order_id
             $payment = ZakatPayment::where('midtrans_order_id', $orderId)->first();
 
             if (!$payment) {
-                Log::warning("Payment not found for order_id: {$orderId}");
+                Log::warning("Payment not found for order_id", [
+                    'notification_id' => $notificationId,
+                    'order_id' => $orderId
+                ]);
+                // Return 200 OK immediately (best practice)
                 return response()->json(['status' => 'ok', 'message' => 'Payment not found'], 200);
             }
 
-            // Tentukan status baru berdasarkan aturan Midtrans
+            // Idempotency check: If payment already has this status and transaction_id matches, skip
+            if ($payment->status === 'completed' && 
+                $payment->payment_reference === $transactionId && 
+                $transactionStatus === 'settlement') {
+                Log::info('Duplicate notification ignored (idempotency)', [
+                    'notification_id' => $notificationId,
+                    'payment_id' => $payment->id,
+                    'order_id' => $orderId,
+                    'status' => $payment->status
+                ]);
+                return response()->json(['status' => 'ok', 'message' => 'Already processed'], 200);
+            }
+
+            // Determine new status based on Midtrans documentation
             $newStatus = $payment->status; // Default to current status
 
-            // Handle status updates according to Midtrans documentation
+            // Comprehensive status verification
             switch ($transactionStatus) {
                 case 'capture':
                     // For credit card transactions
-                    if ($fraudStatus === 'accept') {
+                    if ($paymentType === 'credit_card') {
+                        if ($fraudStatus === 'accept') {
+                            $newStatus = 'completed';
+                        } else if ($fraudStatus === 'challenge') {
+                            $newStatus = 'pending';
+                        } else if ($fraudStatus === 'deny') {
+                            $newStatus = 'cancelled';
+                        }
+                    } else {
+                        // For non-credit card capture
                         $newStatus = 'completed';
-                    } else if ($fraudStatus === 'challenge') {
-                        $newStatus = 'pending';
                     }
                     break;
 
                 case 'settlement':
-                    // For non-credit card transactions (bank transfers, e-wallets, etc.)
-                    $newStatus = 'completed';
+                    // Settlement means payment is confirmed
+                    // Verify status_code is 200 for successful settlement
+                    if ($statusCode == '200') {
+                        $newStatus = 'completed';
+                    } else {
+                        Log::warning('Settlement with non-200 status_code', [
+                            'notification_id' => $notificationId,
+                            'status_code' => $statusCode,
+                            'order_id' => $orderId
+                        ]);
+                        $newStatus = 'pending'; // Keep as pending if status_code is not 200
+                    }
                     break;
 
                 case 'pending':
@@ -1244,43 +1300,84 @@ class ZakatPaymentController extends Controller
                     break;
             }
 
-            // Update hanya jika status berubah
+            // Update only if status changed
             if ($payment->status !== $newStatus) {
-                $updateData = [
-                    'status' => $newStatus,
-                    'payment_reference' => $transactionId,
-                ];
+                DB::beginTransaction();
+                try {
+                    $updateData = [
+                        'status' => $newStatus,
+                        'payment_reference' => $transactionId,
+                    ];
 
-                // Update payment method if available
-                if ($paymentType) {
-                    $updateData['midtrans_payment_method'] = $paymentType;
+                    // Update payment method if available
+                    if ($paymentType) {
+                        $updateData['midtrans_payment_method'] = $paymentType;
+                    }
+
+                    $oldStatus = $payment->status;
+                    $payment->update($updateData);
+                    
+                    // Refresh payment to get updated data
+                    $payment->refresh();
+
+                    Log::info('Payment status updated successfully', [
+                        'notification_id' => $notificationId,
+                        'payment_id' => $payment->id,
+                        'payment_code' => $payment->payment_code,
+                        'order_id' => $orderId,
+                        'old_status' => $oldStatus,
+                        'new_status' => $newStatus,
+                        'transaction_id' => $transactionId,
+                        'transaction_status' => $transactionStatus,
+                        'status_code' => $statusCode,
+                        'fraud_status' => $fraudStatus
+                    ]);
+
+                    DB::commit();
+                    
+                    // Observer will automatically update campaign collected_amount
+                    // when payment status changes to completed
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('Failed to update payment status', [
+                        'notification_id' => $notificationId,
+                        'payment_id' => $payment->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Still return 200 OK to prevent retry
+                    return response()->json(['status' => 'ok', 'message' => 'Update failed but acknowledged'], 200);
                 }
-
-                $payment->update($updateData);
-
-                Log::info('Payment updated', [
-                    'id' => $payment->id,
-                    'payment_code' => $payment->payment_code,
-                    'old_status' => $payment->status,
-                    'new_status' => $newStatus,
-                    'transaction_id' => $transactionId
-                ]);
             } else {
-                Log::info('Payment status unchanged', [
-                    'id' => $payment->id,
-                    'payment_code' => $payment->payment_code,
+                Log::info('Payment status unchanged (already processed)', [
+                    'notification_id' => $notificationId,
+                    'payment_id' => $payment->id,
+                    'order_id' => $orderId,
                     'status' => $payment->status
                 ]);
             }
 
-            Log::info('=== MIDTRANS NOTIFICATION END ===');
-            return response()->json(['status' => 'success'], 200);
-        } catch (\Exception $e) {
-            Log::error('Midtrans Notification Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            $processingTime = round((microtime(true) - $startTime) * 1000, 2);
+            Log::info('=== MIDTRANS NOTIFICATION END ===', [
+                'notification_id' => $notificationId,
+                'processing_time_ms' => $processingTime,
+                'order_id' => $orderId
             ]);
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 200);
+
+            // Return 200 OK immediately (best practice)
+            return response()->json(['status' => 'ok'], 200);
+        } catch (\Exception $e) {
+            $processingTime = round((microtime(true) - $startTime) * 1000, 2);
+            Log::error('Midtrans Notification Error', [
+                'notification_id' => $notificationId,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'processing_time_ms' => $processingTime
+            ]);
+            // Always return 200 OK to prevent Midtrans from retrying
+            return response()->json(['status' => 'ok', 'message' => 'Error logged'], 200);
         }
     }
 
@@ -1337,7 +1434,8 @@ class ZakatPaymentController extends Controller
 
             if (!$payment) {
                 Log::warning("Midtrans notification: Payment not found for order ID {$orderId}, payment code {$paymentCode}");
-                return response()->json(['status' => 'error', 'message' => 'Payment not found'], 404);
+                // Return 200 OK to prevent Midtrans from retrying
+                return response()->json(['status' => 'ok', 'message' => 'Payment not found'], 200);
             }
 
             $newStatus = $payment->status; // Default, kalau tidak berubah
@@ -1393,6 +1491,8 @@ class ZakatPaymentController extends Controller
                     }
 
                     $payment->update($updateData);
+                    // Refresh payment to trigger observer
+                    $payment->refresh();
                     Log::info("Payment updated for {$orderId}: status={$newStatus}, reference={$transactionId}");
                 } else {
                     Log::info("Payment already up-to-date for {$orderId}");
@@ -1401,11 +1501,15 @@ class ZakatPaymentController extends Controller
                 Log::info("Status update blocked: {$payment->status} -> {$newStatus} for Payment ID {$payment->id}");
             }
 
-            // Response JSON untuk Midtrans
-            return response()->json(['status' => 'success']);
+            // Response JSON untuk Midtrans (always return 200 OK)
+            return response()->json(['status' => 'ok'], 200);
         } catch (\Exception $e) {
-            Log::error('Midtrans notification error: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            Log::error('Midtrans callback error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Always return 200 OK to prevent Midtrans from retrying
+            return response()->json(['status' => 'ok', 'message' => 'Error logged'], 200);
         }
     }
 

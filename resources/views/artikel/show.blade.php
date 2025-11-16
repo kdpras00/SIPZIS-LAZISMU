@@ -35,7 +35,7 @@
                 @endif
 
                 <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8">
-                    <div class="flex justify-end items-center text-black mb-3">
+                    <div class="flex justify-start items-center text-white mb-3">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                             @if($artikel->category === 'zakat') bg-green-500/90
                             @elseif($artikel->category === 'infaq') bg-blue-500/90

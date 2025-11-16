@@ -80,15 +80,33 @@
 
             {{-- Share Buttons (Optional) --}}
             <div class="flex gap-3">
-                <button class="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors shadow-sm" title="Share to Facebook">
+                <a 
+                    href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(Request::url()) }}" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors shadow-sm"
+                    title="Share to Facebook"
+                >
                     <i class="fab fa-facebook-f"></i>
-                </button>
-                <button class="w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition-colors shadow-sm" title="Share to WhatsApp">
+                </a>
+                <a 
+                    href="https://api.whatsapp.com/send?text={{ urlencode($news->title . ' ' . Request::url()) }}" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition-colors shadow-sm"
+                    title="Share to WhatsApp"
+                >
                     <i class="fab fa-whatsapp"></i>
-                </button>
-                <button class="w-10 h-10 rounded-full bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center transition-colors shadow-sm" title="Share to Twitter">
+                </a>
+                <a 
+                    href="https://twitter.com/intent/tweet?url={{ urlencode(Request::url()) }}&text={{ urlencode($news->title) }}" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center transition-colors shadow-sm"
+                    title="Share to Twitter"
+                >
                     <i class="fab fa-twitter"></i>
-                </button>
+                </a>
             </div>
         </div>
     </div>
