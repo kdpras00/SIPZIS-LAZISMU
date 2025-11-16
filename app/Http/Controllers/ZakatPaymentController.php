@@ -709,15 +709,18 @@ class ZakatPaymentController extends Controller
      */
     public function show(ZakatPayment $payment)
     {
-        $payment->load(['muzakki', 'receivedBy']);
+        $payment->load(['muzakki', 'receivedBy', 'program', 'programType', 'zakatType']);
 
         // Check permission for muzakki role
         if (Auth::check() && Auth::user()->role === 'muzakki') {
             if ($payment->muzakki->user_id !== Auth::id()) {
                 abort(403, 'Anda tidak memiliki akses ke pembayaran ini.');
             }
+            // Return muzakki-specific view
+            return view('muzakki.payments.show', compact('payment'));
         }
 
+        // Return admin view
         return view('payments.show', compact('payment'));
     }
 
@@ -779,6 +782,19 @@ class ZakatPaymentController extends Controller
         $campaign = null;
         if ($campaignId) {
             $campaign = Campaign::find($campaignId);
+            // If campaign found, use its program_id and program_category
+            if ($campaign) {
+                if ($campaign->program_id) {
+                    $programId = $campaign->program_id;
+                    $program = Program::find($programId);
+                    if ($program) {
+                        $programCategory = $program->category;
+                    }
+                }
+                if (!$programId && $campaign->program_category) {
+                    $programCategory = $campaign->program_category;
+                }
+            }
         }
 
         // Check if user is logged in and has a muzakki profile
@@ -1050,6 +1066,29 @@ class ZakatPaymentController extends Controller
                 'receipt_number'   => ZakatPayment::generateReceiptNumber(), // Use the existing method
             ];
 
+            // Check if campaign ID is provided in query params (from donation page)
+            $campaignId = $request->query('campaign');
+            if ($campaignId && empty($paymentData['program_id'])) {
+                $campaign = Campaign::find($campaignId);
+                if ($campaign) {
+                    if ($campaign->program_id) {
+                        $paymentData['program_id'] = $campaign->program_id;
+                        $program = Program::find($campaign->program_id);
+                        if ($program) {
+                            $paymentData['program_category'] = $program->category;
+                        }
+                    } elseif ($campaign->program_category) {
+                        $paymentData['program_category'] = $campaign->program_category;
+                    }
+                    Log::info('Set program_id from campaign', [
+                        'campaign_id' => $campaign->id,
+                        'campaign_title' => $campaign->title,
+                        'program_id' => $campaign->program_id,
+                        'program_category' => $campaign->program_category
+                    ]);
+                }
+            }
+            
             // Set program_id if provided in request (by ID or slug)
             if ($request->filled('program_id')) {
                 $program = Program::find($request->program_id);
@@ -1112,6 +1151,7 @@ class ZakatPaymentController extends Controller
             } elseif ($request->filled('program_category')) {
                 // Auto-fill program_id based on program_category if not already set
                 if (empty($paymentData['program_id']) && !empty($request->program_category)) {
+                    // First try to find program by category
                     $program = Program::where('category', $request->program_category)->first();
                     if ($program) {
                         $paymentData['program_id'] = $program->id;
@@ -1120,6 +1160,24 @@ class ZakatPaymentController extends Controller
                             'program_id' => $program->id,
                             'program_name' => $program->name
                         ]);
+                    } else {
+                        // If no program found, try to find campaign by category and get its program_id
+                        $campaign = Campaign::where('program_category', $request->program_category)
+                            ->where(function($query) {
+                                $query->where('status', 'published')
+                                      ->orWhere('status', 'completed');
+                            })
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+                        if ($campaign && $campaign->program_id) {
+                            $paymentData['program_id'] = $campaign->program_id;
+                            Log::info('Auto-filled program_id from campaign', [
+                                'program_category' => $request->program_category,
+                                'campaign_id' => $campaign->id,
+                                'campaign_title' => $campaign->title,
+                                'program_id' => $campaign->program_id
+                            ]);
+                        }
                     }
                 }
                 $paymentData['program_category'] = $request->program_category;

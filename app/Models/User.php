@@ -126,7 +126,10 @@ class User extends Authenticatable
             // Check if password has changed
             if ($user->isDirty('password')) {
                 // Create a notification about password change
-                Notification::createAccountNotification($user, 'password');
+                // Refresh relationship untuk memastikan muzakki ter-link
+                $user->refresh();
+                $muzakki = $user->muzakki;
+                Notification::createAccountNotification($user, 'password', $muzakki);
             }
         });
     }

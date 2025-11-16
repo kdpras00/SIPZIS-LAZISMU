@@ -186,16 +186,28 @@ class Program extends Model
 
         // When a program is created
         static::created(function ($program) {
-            // Create a notification for all users about the new program
-            // This would typically be done in a scheduled job or event listener
+            // Buat notifikasi untuk semua muzakki tentang program baru
+            if ($program->status === 'active') {
+                $muzakkiList = \App\Models\Muzakki::whereNotNull('user_id')->get();
+                foreach ($muzakkiList as $muzakki) {
+                    if ($muzakki->user) {
+                        \App\Models\Notification::createProgramNotification($muzakki->user, $program, 'program');
+                    }
+                }
+            }
         });
 
         // When a program is updated
         static::updated(function ($program) {
             // Check if status has changed to active
             if ($program->isDirty('status') && $program->status === 'active') {
-                // Create a notification for all users about the program being active
-                // This would typically be done in a scheduled job or event listener
+                // Buat notifikasi untuk semua muzakki tentang program yang diaktifkan
+                $muzakkiList = \App\Models\Muzakki::whereNotNull('user_id')->get();
+                foreach ($muzakkiList as $muzakki) {
+                    if ($muzakki->user) {
+                        \App\Models\Notification::createProgramNotification($muzakki->user, $program, 'program');
+                    }
+                }
             }
         });
     }

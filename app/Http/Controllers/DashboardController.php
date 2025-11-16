@@ -193,7 +193,7 @@ class DashboardController extends Controller
         }
 
         $payments = $muzakki->zakatPayments()
-            ->with('programType')
+            ->with(['programType', 'program'])
             ->latest('payment_date')
             ->paginate(10);
 

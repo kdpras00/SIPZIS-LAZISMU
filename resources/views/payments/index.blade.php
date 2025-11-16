@@ -14,7 +14,7 @@
             </h2>
             <p class="text-gray-600">
                 @if (auth()->user()->role === 'muzakki')
-                    Kelola dan lihat riwayat pembayaran zakat Anda
+                    Kelola dan lihat riwayat pembayaran Donasi Anda
                 @else
                     Kelola data pembayaran zakat
                 @endif

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ZakatDistribution;
 use App\Models\Mustahik;
 use App\Models\ZakatPayment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -131,7 +132,7 @@ class ZakatDistributionController extends Controller
 
         $mustahik = Mustahik::verified()->active()->findOrFail($request->mustahik_id);
 
-        return DB::transaction(function () use ($request, $mustahik) {
+        return DB::transaction(function () use ($request, $mustahik, $amount) {
 
             // Lock database agar saldo akurat saat concurrent
             $paid = ZakatPayment::completed()->lockForUpdate()->sum('paid_amount');
@@ -157,7 +158,7 @@ class ZakatDistributionController extends Controller
                 }
             }
 
-            ZakatDistribution::create([
+            $distribution = ZakatDistribution::create([
                 'distribution_code' => $distributionCode,
                 'mustahik_id' => $mustahik->id,
                 'amount' => $amount,
@@ -172,8 +173,33 @@ class ZakatDistributionController extends Controller
                 'is_received' => false,
             ]);
 
+            // Buat notifikasi untuk semua muzakki yang telah melakukan pembayaran completed
+            // Semua muzakki berhak tahu bahwa zakat mereka telah disalurkan
+            $muzakkiIds = ZakatPayment::completed()
+                ->whereNotNull('muzakki_id')
+                ->distinct()
+                ->pluck('muzakki_id');
+
+            // Buat notifikasi untuk setiap muzakki
+            foreach ($muzakkiIds as $muzakkiId) {
+                $muzakki = \App\Models\Muzakki::find($muzakkiId);
+                if ($muzakki && $muzakki->user_id) {
+                    Notification::createDistributionNotification($muzakki, $distribution);
+                }
+            }
+
             return redirect()->route('distributions.index')->with('success', 'Distribusi zakat berhasil dicatat.');
         });
+    }
+
+    /**
+     * Tampilkan detail distribusi zakat.
+     */
+    public function show(ZakatDistribution $distribution)
+    {
+        $distribution->load(['mustahik', 'distributedBy', 'program']);
+
+        return view('distributions.show', compact('distribution'));
     }
 
     /**
@@ -250,6 +276,31 @@ class ZakatDistributionController extends Controller
     }
 
     /**
+     * Tandai distribusi sebagai sudah diterima.
+     */
+    public function markAsReceived(Request $request, ZakatDistribution $distribution)
+    {
+        $request->validate([
+            'received_by_name' => 'nullable|string|max:255',
+            'received_notes' => 'nullable|string',
+        ]);
+
+        if ($distribution->is_received) {
+            return back()->with('error', 'Distribusi ini sudah ditandai sebagai diterima.');
+        }
+
+        $distribution->update([
+            'is_received' => true,
+            'received_date' => now(),
+            'received_by_name' => $request->received_by_name,
+            'received_notes' => $request->received_notes,
+        ]);
+
+        return redirect()->route('distributions.show', $distribution)
+            ->with('success', 'Distribusi berhasil ditandai sebagai sudah diterima.');
+    }
+
+    /**
      * Hapus distribusi zakat.
      * Tidak bisa dihapus jika sudah diterima.
      */
@@ -261,6 +312,16 @@ class ZakatDistributionController extends Controller
 
         $distribution->delete();
         return redirect()->route('distributions.index')->with('success', 'Data distribusi berhasil dihapus.');
+    }
+
+    /**
+     * Tampilkan kwitansi distribusi zakat.
+     */
+    public function receipt(ZakatDistribution $distribution)
+    {
+        $distribution->load(['mustahik', 'distributedBy']);
+
+        return view('distributions.receipt', compact('distribution'));
     }
 
     /**

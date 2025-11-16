@@ -80,7 +80,7 @@
     <a href="{{ route('dashboard.transactions') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">
         <i class="bi bi-credit-card text-5xl text-blue-500 mb-3 block"></i>
         <h5 class="text-lg font-semibold text-gray-900 mb-2">Transaksi Saya</h5>
-        <p class="text-gray-600 text-sm">Lihat riwayat pembayaran zakat Anda</p>
+        <p class="text-gray-600 text-sm">Lihat riwayat pembayaran donasi Anda</p>
     </a>
 
     <a href="{{ route('dashboard.recurring') }}" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center p-6 block no-underline h-full">

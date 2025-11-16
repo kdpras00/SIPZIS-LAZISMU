@@ -26,7 +26,7 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="text-muted small">Kelengkapan Profil</span>
                 <span class="text-success fw-bold">
-                    <span id="profileCompletion">{{ calculateProfileCompletion($muzakki) }}%</span>
+                    <span id="profileCompletion">{{ $muzakki->profile_completeness }}%</span>
                     <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip"
                         title="Lengkapi profil untuk meningkatkan persentase"></i>
                 </span>
@@ -666,7 +666,7 @@
         }
 
         // Set initial width for progress bar
-        const completionPercent = <?php echo calculateProfileCompletion($muzakki); ?>;
+        const completionPercent = <?php echo $muzakki->profile_completeness; ?>;
         document.getElementById('progressBar').style.width = completionPercent + '%';
         document.getElementById('profileCompletion').textContent = completionPercent + '%';
         document.getElementById('progressBar').style.transition = 'width 0.6s ease-in-out';

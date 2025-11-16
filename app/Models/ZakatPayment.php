@@ -58,6 +58,45 @@ class ZakatPayment extends Model
         return $this->belongsTo(ProgramType::class, 'program_type_id');
     }
 
+    public function campaign()
+    {
+        // Try to find campaign by program_id first (most specific)
+        if ($this->program_id) {
+            // Find campaign with same program_id, prioritize published ones
+            $campaign = Campaign::where('program_id', $this->program_id)
+                ->where(function($query) {
+                    $query->where('status', 'published')
+                          ->orWhere('status', 'completed');
+                })
+                ->orderByRaw("CASE WHEN status = 'published' THEN 1 ELSE 2 END")
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($campaign) {
+                return $campaign;
+            }
+        }
+        
+        // Fallback to program_category (for backward compatibility)
+        if ($this->program_category && $this->program_category !== 'umum') {
+            // Find campaign with same program_category, prioritize published ones
+            $campaign = Campaign::where('program_category', $this->program_category)
+                ->where(function($query) {
+                    $query->where('status', 'published')
+                          ->orWhere('status', 'completed');
+                })
+                ->orderByRaw("CASE WHEN status = 'published' THEN 1 ELSE 2 END")
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($campaign) {
+                return $campaign;
+            }
+        }
+        
+        return null;
+    }
+
     public function receivedBy()
     {
         return $this->belongsTo(User::class, 'received_by');

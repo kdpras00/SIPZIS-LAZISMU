@@ -97,7 +97,7 @@
                             </tr>
                             <tr>
                                 <td class="text-muted">Dicatat Oleh:</td>
-                                <td class="fw-semibold">{{ $distribution->createdBy->name }}</td>
+                                <td class="fw-semibold">{{ $distribution->distributedBy->name ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Tanggal Dicatat:</td>
@@ -159,7 +159,7 @@
                         <div class="timeline-marker bg-primary"></div>
                         <div class="timeline-content">
                             <h6 class="mb-1">Distribusi Dicatat</h6>
-                            <p class="mb-1">{{ $distribution->createdBy->name }} mencatat distribusi ini</p>
+                            <p class="mb-1">{{ $distribution->distributedBy->name ?? 'Sistem' }} mencatat distribusi ini</p>
                             <small class="text-muted">{{ $distribution->created_at->format('d F Y H:i') }}</small>
                         </div>
                     </div>

@@ -160,10 +160,40 @@ class Notification extends Model
     // Static methods for creating different types of notifications
     public static function createPaymentNotification($muzakki, $payment, $status)
     {
+        // Tentukan jenis pembayaran berdasarkan program_category
+        $paymentType = 'Pembayaran'; // Default
+        if ($payment->program_category) {
+            $category = strtolower(trim($payment->program_category));
+            
+            // Cek kategori utama (exact match atau dimulai dengan kategori tersebut)
+            if ($category === 'zakat' || strpos($category, 'zakat-') === 0) {
+                $paymentType = 'Zakat';
+            } elseif ($category === 'infaq' || strpos($category, 'infaq-') === 0) {
+                $paymentType = 'Infaq';
+            } elseif ($category === 'shadaqah' || strpos($category, 'shadaqah-') === 0 || 
+                      $category === 'sedekah' || strpos($category, 'sedekah-') === 0) {
+                $paymentType = 'Shadaqah';
+            } elseif (in_array($category, ['pendidikan', 'kesehatan', 'ekonomi', 'sosial-dakwah', 'kemanusiaan', 'lingkungan'])) {
+                // Program Pilar: format nama kategori dengan huruf kapital di awal
+                $pilarNames = [
+                    'pendidikan' => 'Pendidikan',
+                    'kesehatan' => 'Kesehatan',
+                    'ekonomi' => 'Ekonomi',
+                    'sosial-dakwah' => 'Sosial & Dakwah',
+                    'kemanusiaan' => 'Kemanusiaan',
+                    'lingkungan' => 'Lingkungan'
+                ];
+                $paymentType = $pilarNames[$category] ?? ucfirst(str_replace('-', ' ', $category));
+            } else {
+                // Untuk kategori lain, gunakan format yang lebih ramah
+                $paymentType = ucfirst(str_replace('-', ' ', $category));
+            }
+        }
+
         $messages = [
-            'completed' => 'Pembayaran ' . ucfirst(str_replace('-', ' ', $payment->program_category)) . ' Anda telah berhasil diverifikasi.',
-            'failed' => 'Pembayaran Anda gagal diproses, silakan coba kembali.',
-            'pending' => 'Menunggu konfirmasi pembayaran melalui ' . ($payment->payment_method ?? 'transfer bank') . '.'
+            'completed' => 'Pembayaran ' . $paymentType . ' Anda telah berhasil diverifikasi.',
+            'failed' => 'Pembayaran ' . $paymentType . ' Anda gagal diproses, silakan coba kembali.',
+            'pending' => 'Menunggu konfirmasi pembayaran ' . $paymentType . ' melalui ' . ($payment->payment_method ?? 'transfer bank') . '.'
         ];
 
         $titles = [
@@ -184,7 +214,8 @@ class Notification extends Model
                 'payment_id' => $payment->id,
                 'status' => $status,
                 'amount' => $payment->paid_amount,
-                'program_category' => $payment->program_category
+                'program_category' => $payment->program_category,
+                'payment_type' => $paymentType
             ]
         ]);
     }
@@ -210,18 +241,38 @@ class Notification extends Model
     }
 
     // 🔴 PERBAIKAN: Tambahkan muzakki_id untuk program notification
-    public static function createProgramNotification($user, $program, $eventType)
+    // Method ini bisa menerima Program atau Campaign
+    public static function createProgramNotification($user, $notifiable, $eventType)
     {
         $muzakki = $user->muzakki; // Ambil muzakki profile
 
+        // Tentukan nama dan tipe notifiable (Program atau Campaign)
+        $notifiableName = null;
+        $notifiableType = null;
+        $notifiableId = null;
+
+        if ($notifiable instanceof \App\Models\Program) {
+            $notifiableName = $notifiable->name ?? 'Program Baru';
+            $notifiableType = Program::class;
+            $notifiableId = $notifiable->id;
+        } elseif ($notifiable instanceof \App\Models\Campaign) {
+            $notifiableName = $notifiable->title ?? 'Campaign Baru';
+            $notifiableType = \App\Models\Campaign::class;
+            $notifiableId = $notifiable->id;
+        } else {
+            $notifiableName = 'Program Baru';
+            $notifiableType = Program::class;
+            $notifiableId = $notifiable->id ?? null;
+        }
+
         $messages = [
             'event' => 'Kajian Jumat besok pukul 09.00 di Aula Utama.',
-            'program' => 'Program Sedekah Subuh kembali dibuka minggu ini.'
+            'program' => ($notifiable instanceof \App\Models\Campaign ? 'Campaign' : 'Program') . ' ' . $notifiableName . ' telah tersedia. Mari berpartisipasi dalam ' . ($notifiable instanceof \App\Models\Campaign ? 'campaign' : 'program') . ' ini!'
         ];
 
         $titles = [
             'event' => '📅 Kegiatan Mendatang',
-            'program' => '🕌 Program Baru'
+            'program' => $notifiable instanceof \App\Models\Campaign ? '🎯 Campaign Baru' : '🕌 Program Baru'
         ];
 
         return self::create([
@@ -230,19 +281,24 @@ class Notification extends Model
             'type' => 'program',
             'title' => $titles[$eventType],
             'message' => $messages[$eventType],
-            'notifiable_type' => Program::class,
-            'notifiable_id' => $program->id,
+            'notifiable_type' => $notifiableType,
+            'notifiable_id' => $notifiableId,
             'data' => [
-                'program_id' => $program->id,
+                'program_id' => $notifiable instanceof \App\Models\Program ? $notifiable->id : ($notifiable->program_id ?? null),
+                'campaign_id' => $notifiable instanceof \App\Models\Campaign ? $notifiable->id : null,
+                'program_name' => $notifiableName,
                 'event_type' => $eventType
             ]
         ]);
     }
 
-    public static function createAccountNotification($user, $eventType)
+    public static function createAccountNotification($user, $eventType, $muzakki = null)
     {
         // Ambil profil muzakki yang terhubung dengan user
-        $muzakki = $user->muzakki;
+        // Jika muzakki tidak diberikan, ambil dari relationship
+        if (!$muzakki) {
+            $muzakki = $user->muzakki;
+        }
 
         $messages = [
             'profile' => 'Selamat datang! Lengkapi profil Anda untuk mempermudah transaksi donasi.',

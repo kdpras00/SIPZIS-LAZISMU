@@ -31,6 +31,11 @@ class Campaign extends Model
         return $this->belongsTo(Program::class);
     }
 
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable');
+    }
+
     public function zakatPayments()
     {
         // If campaign has program_id, use it; otherwise fallback to program_category
@@ -208,5 +213,42 @@ class Campaign extends Model
     public function scopeExpired($query)
     {
         return $query->where('end_date', '<', now()->startOfDay());
+    }
+
+    /**
+     * Boot method untuk event handling
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When a campaign is created
+        static::created(function ($campaign) {
+            // Buat notifikasi untuk semua muzakki tentang campaign baru yang published
+            if ($campaign->status === 'published') {
+                $muzakkiList = \App\Models\Muzakki::whereNotNull('user_id')->get();
+                foreach ($muzakkiList as $muzakki) {
+                    if ($muzakki->user) {
+                        // Langsung gunakan campaign sebagai notifiable
+                        \App\Models\Notification::createProgramNotification($muzakki->user, $campaign, 'program');
+                    }
+                }
+            }
+        });
+
+        // When a campaign is updated
+        static::updated(function ($campaign) {
+            // Check if status has changed to published
+            if ($campaign->isDirty('status') && $campaign->status === 'published') {
+                // Buat notifikasi untuk semua muzakki tentang campaign yang dipublish
+                $muzakkiList = \App\Models\Muzakki::whereNotNull('user_id')->get();
+                foreach ($muzakkiList as $muzakki) {
+                    if ($muzakki->user) {
+                        // Langsung gunakan campaign sebagai notifiable
+                        \App\Models\Notification::createProgramNotification($muzakki->user, $campaign, 'program');
+                    }
+                }
+            }
+        });
     }
 }

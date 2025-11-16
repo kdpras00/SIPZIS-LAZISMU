@@ -99,6 +99,26 @@ class AuthController extends Controller
                     $muzakki->campaign_url = url('/campaigner/' . $muzakki->email);
                     $muzakki->save();
                 }
+
+                // Cek apakah ini login pertama kali (belum ada notifikasi account)
+                if ($muzakki) {
+                    $hasAccountNotification = \App\Models\Notification::where('muzakki_id', $muzakki->id)
+                        ->where('type', 'account')
+                        ->exists();
+
+                    // Jika belum ada notifikasi account, berarti ini login pertama kali
+                    if (!$hasAccountNotification) {
+                        try {
+                            \App\Models\Notification::createAccountNotification($user, 'profile', $muzakki);
+                            Log::info('Welcome notification created for first login', [
+                                'user_id' => $user->id,
+                                'muzakki_id' => $muzakki->id
+                            ]);
+                        } catch (\Exception $e) {
+                            Log::error('Failed to create welcome notification on first login: ' . $e->getMessage());
+                        }
+                    }
+                }
             }
 
             $request->session()->regenerate();
@@ -225,7 +245,7 @@ class AuthController extends Controller
             // Generate campaign URL
             $campaignUrl = url('/campaigner/' . $request->email);
 
-            Muzakki::updateOrCreate(
+            $muzakki = Muzakki::updateOrCreate(
                 ['email' => $request->email],
                 [
                     'name' => $request->name,
@@ -244,12 +264,41 @@ class AuthController extends Controller
                 ]
             );
 
+            // Refresh user relationship untuk memastikan muzakki ter-link
+            $user->refresh();
+
             // Send welcome email to new muzakki
             try {
                 Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
             } catch (\Exception $e) {
                 // Log error but don't stop registration process
                 Log::error('Failed to send welcome email: ' . $e->getMessage());
+            }
+
+            // Buat notifikasi "Selamat Datang" untuk user baru
+            try {
+                // Pastikan muzakki sudah ter-link dengan user
+                if ($muzakki && $muzakki->user_id === $user->id) {
+                    // Pass muzakki langsung untuk memastikan notifikasi menggunakan muzakki yang benar
+                    \App\Models\Notification::createAccountNotification($user, 'profile', $muzakki);
+                    Log::info('Welcome notification created for new user', [
+                        'user_id' => $user->id,
+                        'muzakki_id' => $muzakki->id
+                    ]);
+                } else {
+                    Log::warning('Muzakki not properly linked to user during registration', [
+                        'user_id' => $user->id,
+                        'muzakki_id' => $muzakki->id ?? null,
+                        'muzakki_user_id' => $muzakki->user_id ?? null
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to create welcome notification: ' . $e->getMessage(), [
+                    'user_id' => $user->id,
+                    'muzakki_id' => $muzakki->id ?? null,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
             }
 
             session(['registered_email' => $request->email]);
@@ -320,7 +369,7 @@ class AuthController extends Controller
             // Generate campaign URL
             $campaignUrl = url('/campaigner/' . $request->email);
 
-            Muzakki::updateOrCreate(
+            $muzakki = Muzakki::updateOrCreate(
                 ['email' => $request->email],
                 [
                     'name' => $request->name,
@@ -331,6 +380,9 @@ class AuthController extends Controller
                 ]
             );
 
+            // Refresh user relationship untuk memastikan muzakki ter-link
+            $user->refresh();
+
             // Send welcome email to new users registered via Firebase
             if ($isNewUser) {
                 try {
@@ -339,6 +391,32 @@ class AuthController extends Controller
                 } catch (\Exception $e) {
                     // Log error but don't stop login process
                     Log::error('Failed to send welcome email to Firebase user: ' . $e->getMessage());
+                }
+
+                // Buat notifikasi "Selamat Datang" untuk user baru
+                try {
+                    // Pastikan muzakki sudah ter-link dengan user
+                    if ($muzakki && $muzakki->user_id === $user->id) {
+                        // Pass muzakki langsung untuk memastikan notifikasi menggunakan muzakki yang benar
+                        \App\Models\Notification::createAccountNotification($user, 'profile', $muzakki);
+                        Log::info('Welcome notification created for Firebase user', [
+                            'user_id' => $user->id,
+                            'muzakki_id' => $muzakki->id
+                        ]);
+                    } else {
+                        Log::warning('Muzakki not properly linked to user', [
+                            'user_id' => $user->id,
+                            'muzakki_id' => $muzakki->id ?? null,
+                            'muzakki_user_id' => $muzakki->user_id ?? null
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to create welcome notification for Firebase user: ' . $e->getMessage(), [
+                        'user_id' => $user->id,
+                        'muzakki_id' => $muzakki->id ?? null,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                 }
             }
 

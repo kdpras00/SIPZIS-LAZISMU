@@ -5,10 +5,13 @@
 @section('content')
 <div class="py-4 px-4 max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="flex items-center mb-6">
-        <a href="{{ route('dashboard') }}" class="text-gray-700 mr-3 hover:text-gray-900">
+    <div class="mb-2">
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-gray-700 hover:text-gray-900 mb-3">
             <i class="bi bi-arrow-left text-xl"></i>
+            <span class="ml-2"></span>
         </a>
+    </div>
+    <div class="mb-6">
         <h5 class="text-xl font-semibold text-gray-900 mb-0">Transaksi saya</h5>
     </div>
 
@@ -16,20 +19,31 @@
     <div class="bg-white rounded-xl shadow-md mb-6">
         <div class="p-6">
             <!-- Bulan -->
-            <h6 class="font-semibold text-purple-600 mb-4">
+            <h6 class="font-semibold text-green-600 mb-4">
                 {{ now()->translatedFormat('F Y') }}
             </h6>
 
             <!-- Daftar Transaksi -->
             @foreach($payments as $payment)
-            <div class="p-4 mb-3 rounded-xl border border-gray-100 hover:bg-purple-50 hover:border-purple-200 transition-all duration-200 {{ $loop->odd ? 'bg-gray-50' : 'bg-white' }}">
+            <div class="p-4 mb-3 rounded-xl border border-gray-100 hover:bg-green-50 hover:border-green-200 transition-all duration-200 {{ $loop->odd ? 'bg-gray-50' : 'bg-white' }}">
                 <div class="flex justify-between items-start">
                     <div>
                         <small class="text-gray-500 block">
                             Donasi • {{ $payment->payment_date->translatedFormat('d F Y') }}
                         </small>
                         <p class="font-semibold text-gray-900 mb-1 mt-1 text-base">
-                            {{ $payment->programType ? $payment->programType->name : 'Donasi Umum' }}
+                            @php
+                                $campaign = $payment->campaign();
+                            @endphp
+                            @if($campaign)
+                                {{ $campaign->title }}
+                            @elseif($payment->program)
+                                {{ $payment->program->name }}
+                            @elseif($payment->programType)
+                                {{ $payment->programType->name }}
+                            @else
+                                Donasi Umum
+                            @endif
                         </p>
                     </div>
                     <div class="text-right">
