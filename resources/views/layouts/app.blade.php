@@ -174,6 +174,28 @@
             position: relative;
             z-index: 1;
         }
+
+        /* Force hide modal backdrops on page load - AGGRESSIVE */
+        .modal-backdrop {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        /* Only show backdrop when modal is actually being shown AND user clicked */
+        body.modal-open .modal.show ~ .modal-backdrop.show,
+        body.modal-open .modal.show + .modal-backdrop.show {
+            display: block !important;
+            opacity: 0.5 !important;
+            visibility: visible !important;
+        }
+
+        /* Force remove modal-open if no modal is showing */
+        body.modal-open {
+            overflow: auto !important;
+            padding-right: 0 !important;
+        }
     </style>
 </head>
 
@@ -225,6 +247,83 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     @stack('scripts')
+
+    <!-- Cleanup script - only removes leftover backdrops, doesn't close user-opened modals -->
+    <script>
+        (function() {
+            // Track which modals were opened by user
+            const userOpenedModals = new Set();
+            
+            // Track when user clicks modal trigger buttons
+            document.addEventListener('click', function(e) {
+                const trigger = e.target.closest('[data-bs-toggle="modal"]') || 
+                               e.target.closest('[data-bs-target*="Modal"]');
+                if (trigger) {
+                    const targetId = trigger.getAttribute('data-bs-target') || 
+                                   trigger.getAttribute('href');
+                    if (targetId) {
+                        const modalId = targetId.replace('#', '');
+                        userOpenedModals.add(modalId);
+                        // Remove from set after modal is closed (handled by event listener below)
+                    }
+                }
+            }, true);
+            
+            // Cleanup function - only removes backdrops when no modals are showing
+            const cleanupBackdrops = () => {
+                const showingModals = document.querySelectorAll('.modal.show');
+                
+                // Only cleanup if NO modals are showing
+                if (showingModals.length === 0) {
+                    // Remove ALL backdrops
+                    document.querySelectorAll('.modal-backdrop').forEach(el => {
+                        el.remove();
+                    });
+                    
+                    // Reset body
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }
+            };
+            
+            // Cleanup on page load only - close modals that opened automatically
+            const initialCleanup = () => {
+                // Close any modals that are open on page load (not user-opened)
+                const openModals = document.querySelectorAll('.modal.show');
+                openModals.forEach(modal => {
+                    const modalId = modal.id;
+                    // Only close if not opened by user (userOpenedModals will be empty on page load)
+                    if (!userOpenedModals.has(modalId)) {
+                        modal.classList.remove('show');
+                        modal.style.display = 'none';
+                        modal.setAttribute('aria-hidden', 'true');
+                    }
+                });
+                cleanupBackdrops();
+            };
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initialCleanup);
+            } else {
+                // Run after a small delay to ensure modals are initialized
+                setTimeout(initialCleanup, 100);
+            }
+            
+            // Cleanup when modals are closed by user (X button, backdrop click, etc)
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    // When modal is hidden, remove from userOpenedModals and cleanup
+                    modal.addEventListener('hidden.bs.modal', function() {
+                        const modalId = this.id;
+                        userOpenedModals.delete(modalId);
+                        // Small delay to ensure Bootstrap has finished
+                        setTimeout(cleanupBackdrops, 100);
+                    });
+                });
+            });
+        })();
+    </script>
 
     <script>
         // Wait for Bootstrap to be fully loaded
@@ -310,6 +409,30 @@
                     const dropdownMenus = document.querySelectorAll('.navbar .dropdown-menu');
                     dropdownMenus.forEach(menu => {
                         menu.style.zIndex = '1053';
+                    });
+
+                    // Simple cleanup for modal backdrops
+                    function cleanupModals() {
+                        // Only cleanup if no modal is currently being shown
+                        const showingModals = document.querySelectorAll('.modal.show');
+                        if (showingModals.length === 0) {
+                            // Remove any leftover backdrops
+                            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                            
+                            // Reset body
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = '';
+                            document.body.style.paddingRight = '';
+                        }
+                    }
+                    
+                    // Don't clean up on page load - let Bootstrap handle initialization
+                    // Only clean up when modals are actually hidden
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.addEventListener('hidden.bs.modal', function() {
+                            // Small delay to ensure Bootstrap has finished
+                            setTimeout(cleanupModals, 100);
+                        });
                     });
                 });
             }
