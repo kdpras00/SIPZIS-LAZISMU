@@ -79,6 +79,16 @@ class Muzakki extends Model
         return $this->hasMany(Notification::class);
     }
 
+    public function bankAccounts()
+    {
+        return $this->hasMany(BankAccount::class);
+    }
+
+    public function recurringDonations()
+    {
+        return $this->hasMany(RecurringDonation::class);
+    }
+
     // Methods
     public function getTotalZakatPaidAttribute()
     {

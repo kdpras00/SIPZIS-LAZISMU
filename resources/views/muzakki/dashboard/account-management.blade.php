@@ -15,47 +15,6 @@
     <!-- Account Settings Menu -->
     <div class="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
         <div class="divide-y divide-gray-100">
-            <!-- Two Factor Authentication -->
-            <a href="{{ route('dashboard.two-factor.setup') }}" class="flex items-center gap-4 p-5 hover:bg-blue-50 transition-all duration-300 cursor-pointer group">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 8V12M12 16H12.01" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M9 12L11 14L15 10" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class="flex-grow">
-                    <div class="font-medium text-gray-900 mb-1">Autentikasi Dua Faktor (2FA)</div>
-                    <p class="text-sm text-gray-600 m-0">
-                        @if(auth()->user()->two_factor_enabled ?? false)
-                            <span class="text-green-600 font-semibold">✓ Aktif</span> - Tambahkan lapisan keamanan ekstra
-                        @else
-                            Aktifkan autentikasi dua faktor untuk keamanan akun
-                        @endif
-                    </p>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-            </a>
-
-            <!-- Change Password -->
-            <a href="#" class="flex items-center gap-4 p-5 hover:bg-purple-50 transition-all duration-300 cursor-pointer group"
-                data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 14.5V16.5M7 10.0288C7.47142 10 8.05259 10 8.8 10H15.2C15.9474 10 16.5286 10 17 10.0288M7 10.0288C6.41168 10.0647 5.99429 10.1455 5.63803 10.327C5.07354 10.6146 4.6146 11.0735 4.32698 11.638C4 12.2798 4 13.1198 4 14.8V16.2C4 17.8802 4 18.7202 4.32698 19.362C4.6146 19.9265 5.07354 20.3854 5.63803 20.673C6.27976 21 7.11984 21 8.8 21H15.2C16.8802 21 17.7202 21 18.362 20.673C18.9265 20.3854 19.3854 19.9265 19.673 19.362C20 18.7202 20 17.8802 20 16.2V14.8C20 13.1198 20 12.2798 19.673 11.638C19.3854 11.0735 18.9265 10.6146 18.362 10.327C18.0057 10.1455 17.5883 10.0647 17 10.0288M7 10.0288V8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8V10.0288" stroke="#9333ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </div>
-                <div class="flex-grow">
-                    <div class="font-medium text-gray-900 mb-1">Ganti Kata Sandi</div>
-                    <p class="text-sm text-gray-600 m-0">Perbarui kata sandi untuk keamanan akun</p>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-purple-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-            </a>
-
             <!-- Transfer Campaign Ownership -->
             <a href="#" class="flex items-center gap-4 p-5 hover:bg-purple-50 transition-all duration-300 cursor-pointer group"
                 data-bs-toggle="modal" data-bs-target="#transferOwnershipModal">
@@ -89,76 +48,6 @@
                     <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </a>
-        </div>
-    </div>
-</div>
-
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-2xl border-0">
-            <div class="modal-header bg-gradient-to-r from-purple-50 to-purple-100 border-0 rounded-t-2xl px-6 py-5">
-                <h5 class="modal-title font-semibold text-gray-900" id="changePasswordModalLabel">Ganti Kata Sandi</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST" action="{{ route('profile.update') }}" id="changePasswordForm">
-                @csrf
-                @method('PUT')
-                <div class="modal-body px-6 py-5">
-                    <div class="mb-4">
-                        <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">Kata Sandi Saat Ini</label>
-                        <div class="relative">
-                            <input type="password" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all" id="current_password" name="current_password" placeholder="Masukkan kata sandi saat ini" required>
-                            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" type="button" id="toggleCurrentPassword" tabindex="-1">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">Kata Sandi Baru</label>
-                        <div class="relative">
-                            <input type="password" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all" id="new_password" name="new_password" placeholder="Masukkan kata sandi baru" required>
-                            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" type="button" id="toggleNewPassword" tabindex="-1">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                        <!-- Password Requirements -->
-                        <div class="mt-3">
-                            <small class="text-gray-600 block mb-2">Kata sandi harus mengandung:</small>
-                            <ul class="list-none space-y-1 text-sm">
-                                <li class="flex items-center">
-                                    <i class="bi bi-x-circle-fill text-gray-400 mr-2" id="length-icon"></i>
-                                    <span id="length-text">Minimal 8 karakter</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="bi bi-x-circle-fill text-gray-400 mr-2" id="uppercase-icon"></i>
-                                    <span id="uppercase-text">Minimal 1 huruf kapital</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="bi bi-x-circle-fill text-gray-400 mr-2" id="number-icon"></i>
-                                    <span id="number-text">Minimal 1 angka</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Kata Sandi Baru</label>
-                        <div class="relative">
-                            <input type="password" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all" id="new_password_confirmation" name="new_password_confirmation" placeholder="Ulangi kata sandi baru" required>
-                            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" type="button" id="toggleConfirmPassword" tabindex="-1">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                        <div id="password-match-feedback" class="mt-2 text-sm hidden"></div>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 px-6 py-4">
-                    <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" id="changePasswordBtn" disabled>
-                        <i class="bi bi-check-circle mr-1"></i> Ganti Kata Sandi
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

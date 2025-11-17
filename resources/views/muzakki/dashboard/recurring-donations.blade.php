@@ -12,29 +12,54 @@
         <h5 class="text-xl font-semibold text-gray-900 mb-0">Donasi rutin saya</h5>
     </div>
 
-    <!-- Info Card -->
-    <div class="bg-white rounded-xl shadow-md mb-6">
-        <div class="p-6">
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
-                <div class="flex items-start">
-                    <i class="bi bi-info-circle text-blue-600 mr-2 mt-0.5"></i>
-                    <p class="text-sm text-blue-800 m-0">Fitur donasi rutin akan segera tersedia. Anda dapat mengatur donasi otomatis setiap bulan.</p>
-                </div>
+    @if($recurringDonations->isEmpty())
+        <div class="bg-white rounded-xl shadow-md mb-6">
+            <div class="p-12 text-center">
+                <i class="bi bi-calendar-check text-6xl text-gray-400 mb-4 block"></i>
+                <h4 class="text-xl font-semibold text-gray-900 mb-2">Belum ada donasi rutin</h4>
+                <p class="text-gray-600 mb-6">Buat donasi otomatis agar ibadah berbagi tetap konsisten.</p>
+                <button class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium" data-bs-toggle="modal" data-bs-target="#createRecurringModal">
+                    <i class="bi bi-plus-circle mr-2"></i>Buat Donasi Rutin
+                </button>
             </div>
         </div>
-    </div>
-
-    <!-- Empty State -->
-    <div class="bg-white rounded-xl shadow-md mb-6">
-        <div class="p-12 text-center">
-            <i class="bi bi-calendar-check text-6xl text-gray-400 mb-4 block"></i>
-            <h4 class="text-xl font-semibold text-gray-900 mb-2">Donasi Rutin</h4>
-            <p class="text-gray-600 mb-6">Fitur ini memungkinkan Anda untuk membuat donasi otomatis setiap bulan.</p>
-            <button class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium" data-bs-toggle="modal" data-bs-target="#createRecurringModal">
-                <i class="bi bi-plus-circle mr-2"></i>Buat Donasi Rutin
+    @else
+        <div class="space-y-4 mb-6">
+            @foreach($recurringDonations as $donation)
+                <div class="bg-white rounded-xl shadow-md p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <p class="text-sm uppercase tracking-wide text-gray-500 mb-1">{{ ucfirst($donation->frequency) }}</p>
+                        <h6 class="text-lg font-semibold text-gray-900 mb-1">
+                            {{ $donation->program?->name ?? 'Program Pilihan' }}
+                        </h6>
+                        <p class="text-emerald-600 font-semibold mb-1">Rp {{ number_format($donation->amount, 0, ',', '.') }}</p>
+                        <p class="text-gray-500 text-sm mb-0">Mulai {{ optional($donation->start_date)->translatedFormat('d F Y') ?? 'segera' }}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <form action="{{ route('dashboard.recurring-donations.toggle', $donation) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="px-4 py-2 text-sm font-medium {{ $donation->is_active ? 'text-yellow-600 border border-yellow-200 hover:bg-yellow-50' : 'text-green-600 border border-green-200 hover:bg-green-50' }} rounded-lg transition-colors">
+                                {{ $donation->is_active ? 'Jeda' : 'Aktifkan' }}
+                            </button>
+                        </form>
+                        <form action="{{ route('dashboard.recurring-donations.destroy', $donation) }}" method="POST" onsubmit="return confirm('Hapus donasi rutin ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+                                Hapus
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        <div class="text-right mb-6">
+            <button class="inline-flex items-center px-5 py-2.5 bg-green-600 text-white rounded-full hover:bg-green-700 text-sm font-medium" data-bs-toggle="modal" data-bs-target="#createRecurringModal">
+                <i class="bi bi-plus-circle mr-2"></i>Tambah lagi
             </button>
         </div>
-    </div>
+    @endif
 
     <!-- Bottom Navigation -->
     <div class="bg-white rounded-t-xl shadow-lg fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl z-50 border-t border-gray-200">
@@ -67,36 +92,45 @@
                 <h5 class="modal-title font-semibold text-gray-900" id="createRecurringModalLabel">Buat Donasi Rutin</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body px-6 py-5">
-                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 rounded-lg">
-                    <div class="flex items-start">
-                        <i class="bi bi-exclamation-triangle text-amber-600 mr-2 mt-0.5"></i>
-                        <p class="text-sm text-amber-800 m-0">Fitur ini sedang dalam pengembangan.</p>
+            <form method="POST" action="{{ route('dashboard.recurring-donations.store') }}">
+                @csrf
+                <div class="modal-body px-6 py-5 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Program</label>
+                        <select name="program_id" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+                            <option value="">Pilih program</option>
+                            @foreach($programs as $program)
+                                <option value="{{ $program->id }}">{{ $program->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nominal donasi</label>
+                        <input type="number" min="10000" name="amount" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Minimal Rp10.000" required>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Frekuensi</label>
+                            <select name="frequency" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+                                <option value="monthly">Bulanan</option>
+                                <option value="weekly">Mingguan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mulai tanggal</label>
+                            <input type="date" name="start_date" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Catatan (opsional)</label>
+                        <textarea name="notes" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Tambahkan doa atau niat khusus"></textarea>
                     </div>
                 </div>
-                <p class="text-gray-700 mb-3">Fitur donasi rutin akan memungkinkan Anda untuk:</p>
-                <ul class="space-y-2 text-gray-700">
-                    <li class="flex items-start">
-                        <span class="mr-2">•</span>
-                        <span>Mengatur donasi otomatis setiap bulan</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="mr-2">•</span>
-                        <span>Memilih program zakat yang akan didonasikan</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="mr-2">•</span>
-                        <span>Mengatur jumlah donasi tetap atau variabel</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="mr-2">•</span>
-                        <span>Mengelola jadwal donasi</span>
-                    </li>
-                </ul>
-            </div>
-            <div class="modal-footer border-0 px-6 py-4">
-                <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" data-bs-dismiss="modal">Tutup</button>
-            </div>
+                <div class="modal-footer border-0 px-6 py-4">
+                    <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

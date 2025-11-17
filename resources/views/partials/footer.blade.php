@@ -32,7 +32,7 @@
                     <li><a href="{{ route('news.all') }}" class="text-green-200 hover:text-white transition-colors">Berita</a></li>
                     <li><a href="{{ route('artikel.index') }}" class="text-green-200 hover:text-white transition-colors">Artikel</a></li>
                     <li><a href="{{ route('calculator.index') }}" class="text-green-200 hover:text-white transition-colors">Kalkulator Zakat</a></li>
-                    <li><a href="{{ route('guest.payment.create') }}" class="text-green-200 hover:text-white transition-colors">Bayar Zakat</a></li>
+                    <!-- <li><a href="{{ route('guest.payment.create') }}" class="text-green-200 hover:text-white transition-colors">Bayar Zakat</a></li> -->
                 </ul>
             </div>
 

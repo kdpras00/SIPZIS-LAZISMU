@@ -37,12 +37,12 @@
             </div>
 
             @if(isset($campaignFeatureAvailable) && !$campaignFeatureAvailable)
-            <div class="alert alert-warning border-0 shadow-sm mb-4">
+            <div class="alert alert-info border-0 shadow-sm mb-4">
                 <div class="d-flex align-items-center">
-                    <i class="bi bi-info-circle-fill fs-4 me-3 text-warning"></i>
+                    <i class="bi bi-info-circle-fill fs-4 me-3 text-info"></i>
                     <div>
-                        <h6 class="mb-1 fw-semibold text-warning">Fitur kampanye pribadi belum tersedia</h6>
-                        <p class="mb-0 text-muted">Kami belum bisa menampilkan campaign berdasarkan akun ini karena data pembuat campaign belum ditautkan. Silakan hubungi admin jika ingin mengaktifkan fitur ini.</p>
+                        <h6 class="mb-1 fw-semibold text-info">Belum ada campaign yang terhubung</h6>
+                        <p class="mb-0 text-muted">Halaman ini akan otomatis menampilkan campaign yang Anda buat setelah fitur kampanye personal diaktifkan pada akun Anda.</p>
                     </div>
                 </div>
             </div>

@@ -21,6 +21,8 @@ use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ArtikelController;
 use App\Http\Controllers\RegionController; // Add this
 use App\Http\Controllers\OTPController;
+use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\RecurringDonationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; // Add this import
 
@@ -194,6 +196,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/two-factor/setup', [App\Http\Controllers\TwoFactorController::class, 'showSetup'])->name('two-factor.setup');
         Route::post('/two-factor/enable', [App\Http\Controllers\TwoFactorController::class, 'enable'])->name('two-factor.enable');
         Route::post('/two-factor/disable', [App\Http\Controllers\TwoFactorController::class, 'disable'])->name('two-factor.disable');
+
+        Route::post('/bank-accounts', [BankAccountController::class, 'store'])->name('bank-accounts.store');
+        Route::delete('/bank-accounts/{bankAccount}', [BankAccountController::class, 'destroy'])->name('bank-accounts.destroy');
+        Route::post('/bank-accounts/{bankAccount}/set-primary', [BankAccountController::class, 'setPrimary'])->name('bank-accounts.set-primary');
+
+        Route::post('/recurring-donations', [RecurringDonationController::class, 'store'])->name('recurring-donations.store');
+        Route::patch('/recurring-donations/{recurringDonation}/toggle', [RecurringDonationController::class, 'toggle'])->name('recurring-donations.toggle');
+        Route::delete('/recurring-donations/{recurringDonation}', [RecurringDonationController::class, 'destroy'])->name('recurring-donations.destroy');
     });
 
     // Muzakki-specific routes (without muzakki prefix)

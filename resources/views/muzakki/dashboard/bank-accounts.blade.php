@@ -17,29 +17,52 @@
         </button>
     </div>
 
-    <!-- Info Card -->
-    <div class="bg-white rounded-xl shadow-md mb-6">
-        <div class="p-6">
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
-                <div class="flex items-start">
-                    <i class="bi bi-info-circle text-blue-600 mr-2 mt-0.5"></i>
-                    <p class="text-sm text-blue-800 m-0">Fitur manajemen akun bank akan segera tersedia. Anda dapat menyimpan informasi rekening bank untuk memudahkan pembayaran.</p>
-                </div>
+    @if($bankAccounts->isEmpty())
+        <div class="bg-white rounded-xl shadow-md mb-6">
+            <div class="p-12 text-center">
+                <i class="bi bi-bank text-6xl text-gray-400 mb-4 block"></i>
+                <h4 class="text-xl font-semibold text-gray-900 mb-2">Belum ada akun bank</h4>
+                <p class="text-gray-600 mb-6">Simpan informasi rekening bank Anda untuk memudahkan pembayaran zakat.</p>
+                <button class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium" data-bs-toggle="modal" data-bs-target="#addBankAccountModal">
+                    <i class="bi bi-plus-circle mr-2"></i>Tambah Akun Bank
+                </button>
             </div>
         </div>
-    </div>
-
-    <!-- Empty State -->
-    <div class="bg-white rounded-xl shadow-md mb-6">
-        <div class="p-12 text-center">
-            <i class="bi bi-bank text-6xl text-gray-400 mb-4 block"></i>
-            <h4 class="text-xl font-semibold text-gray-900 mb-2">Akun Bank</h4>
-            <p class="text-gray-600 mb-6">Simpan informasi rekening bank Anda untuk memudahkan pembayaran zakat.</p>
-            <button class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium" data-bs-toggle="modal" data-bs-target="#addBankAccountModal">
-                <i class="bi bi-plus-circle mr-2"></i>Tambah Akun Bank
-            </button>
+    @else
+        <div class="space-y-4 mb-6">
+            @foreach($bankAccounts as $account)
+                <div class="bg-white rounded-xl shadow-md p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <h6 class="text-lg font-semibold text-gray-900 mb-0">{{ $account->bank_name }}</h6>
+                            @if($account->is_primary)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Rekening Utama</span>
+                            @endif
+                        </div>
+                        <p class="text-gray-700 font-mono text-sm mb-1">{{ $account->account_number }}</p>
+                        <p class="text-gray-500 text-sm mb-0">{{ $account->account_holder }}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if(!$account->is_primary)
+                            <form action="{{ route('dashboard.bank-accounts.set-primary', $account) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    Jadikan Utama
+                                </button>
+                            </form>
+                        @endif
+                        <form action="{{ route('dashboard.bank-accounts.destroy', $account) }}" method="POST" onsubmit="return confirm('Hapus akun bank ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+                                Hapus
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
         </div>
-    </div>
+    @endif
 
     <!-- Bottom Navigation -->
     <div class="bg-white rounded-t-xl shadow-lg fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl z-50 border-t border-gray-200">
@@ -72,32 +95,28 @@
                 <h5 class="modal-title font-semibold text-gray-900" id="addBankAccountModalLabel">Tambah Akun Bank</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body px-6 py-5">
-                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 rounded-lg">
-                    <div class="flex items-start">
-                        <i class="bi bi-exclamation-triangle text-amber-600 mr-2 mt-0.5"></i>
-                        <p class="text-sm text-amber-800 m-0">Fitur ini sedang dalam pengembangan.</p>
+            <form method="POST" action="{{ route('dashboard.bank-accounts.store') }}">
+                @csrf
+                <div class="modal-body px-6 py-5 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Bank</label>
+                        <input type="text" name="bank_name" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Contoh: BSI" required>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                        <input type="text" name="account_number" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Masukkan nomor rekening" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Atas Nama</label>
+                        <input type="text" name="account_holder" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Nama pemilik rekening" required>
+                    </div>
+                    <p class="text-xs text-gray-500">Informasi rekening disimpan aman dan hanya digunakan untuk mempermudah pembayaran zakat Anda.</p>
                 </div>
-                <p class="text-gray-700 mb-3">Dengan menyimpan akun bank, Anda dapat:</p>
-                <ul class="space-y-2 text-gray-700">
-                    <li class="flex items-start">
-                        <span class="mr-2">•</span>
-                        <span>Menggunakan rekening yang sama untuk pembayaran berikutnya</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="mr-2">•</span>
-                        <span>Melihat riwayat transaksi berdasarkan rekening</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="mr-2">•</span>
-                        <span>Mengatur rekening utama untuk pembayaran otomatis</span>
-                    </li>
-                </ul>
-            </div>
-            <div class="modal-footer border-0 px-6 py-4">
-                <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" data-bs-dismiss="modal">Tutup</button>
-            </div>
+                <div class="modal-footer border-0 px-6 py-4">
+                    <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

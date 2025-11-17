@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Muzakki;
 use App\Models\Mustahik;
 use App\Models\ZakatPayment;
+use App\Models\Program;
 use App\Models\ZakatDistribution;
 use App\Models\ZakatType;
 use Illuminate\Http\Request;
@@ -209,9 +210,14 @@ class DashboardController extends Controller
             return redirect()->route('profile.show')->with('info', 'Silakan lengkapi profil muzakki Anda.');
         }
 
-        // For now, we're just returning the view
-        // In a real implementation, this would fetch recurring donations
-        return view('muzakki.dashboard.recurring-donations', compact('muzakki'));
+        $recurringDonations = $muzakki->recurringDonations()
+            ->with('program')
+            ->latest()
+            ->get();
+
+        $programs = Program::active()->orderBy('name')->get();
+
+        return view('muzakki.dashboard.recurring-donations', compact('muzakki', 'recurringDonations', 'programs'));
     }
 
     public function bankAccounts()
@@ -223,9 +229,9 @@ class DashboardController extends Controller
             return redirect()->route('profile.show')->with('info', 'Silakan lengkapi profil muzakki Anda.');
         }
 
-        // For now, we're just returning the view
-        // In a real implementation, this would fetch bank accounts
-        return view('muzakki.dashboard.bank-accounts', compact('muzakki'));
+        $bankAccounts = $muzakki->bankAccounts()->orderByDesc('is_primary')->latest()->get();
+
+        return view('muzakki.dashboard.bank-accounts', compact('muzakki', 'bankAccounts'));
     }
 
     public function accountManagement()
