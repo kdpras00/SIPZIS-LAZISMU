@@ -15,6 +15,30 @@
     <!-- Account Settings Menu -->
     <div class="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
         <div class="divide-y divide-gray-100">
+            <!-- Two Factor Authentication -->
+            <a href="{{ route('dashboard.two-factor.setup') }}" class="flex items-center gap-4 p-5 hover:bg-blue-50 transition-all duration-300 cursor-pointer group">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 8V12M12 16H12.01" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 12L11 14L15 10" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="flex-grow">
+                    <div class="font-medium text-gray-900 mb-1">Autentikasi Dua Faktor (2FA)</div>
+                    <p class="text-sm text-gray-600 m-0">
+                        @if(auth()->user()->two_factor_enabled ?? false)
+                            <span class="text-green-600 font-semibold">✓ Aktif</span> - Tambahkan lapisan keamanan ekstra
+                        @else
+                            Aktifkan autentikasi dua faktor untuk keamanan akun
+                        @endif
+                    </p>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </a>
+
             <!-- Change Password -->
             <a href="#" class="flex items-center gap-4 p-5 hover:bg-purple-50 transition-all duration-300 cursor-pointer group"
                 data-bs-toggle="modal" data-bs-target="#changePasswordModal">

@@ -3,74 +3,49 @@
 @section('title', 'Page Not Found')
 
 @section('content')
-<div class="position-relative d-flex justify-content-center align-items-center"
-    style="min-height: 100vh; flex-direction: column; background: linear-gradient(135deg, #ecfdf5, #f0fdfa, #e0f2fe); overflow: hidden;">
+<section class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-cyan-50 flex items-center justify-center p-6">
+    <div
+        class="max-w-4xl w-full bg-white/90 backdrop-blur border border-emerald-100 rounded-3xl shadow-xl px-10 py-12 text-center relative overflow-hidden">
+        <div class="pointer-events-none absolute inset-0">
+            <div class="absolute -top-12 -left-12 w-48 h-48 bg-emerald-100 rounded-full opacity-60"></div>
+            <div class="absolute -bottom-16 -right-16 w-60 h-60 bg-cyan-100 rounded-full opacity-60"></div>
+        </div>
 
-    <!-- Background blob animasi -->
-    <div class="position-absolute top-0 start-0 w-50 h-50 bg-success rounded-circle opacity-0 blur-5 animate-pulse blob"></div>
-    <div class="position-absolute bottom-0 end-0 w-50 h-50 bg-info rounded-circle opacity-0 blur-5 animate-pulse animation-delay-2000 blob"></div>
+        <div class="relative">
+            <div class="mx-auto w-32 h-32 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mb-6">
+                <svg viewBox="0 0 120 120" class="w-20 h-20 text-emerald-500">
+                    <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="6 10"
+                        stroke-linecap="round"></circle>
+                    <path d="M40 50h12m16 0h12 M45 75c6 6 24 6 30 0" stroke="currentColor" stroke-width="4" stroke-linecap="round"
+                        stroke-linejoin="round" fill="none"></path>
+                </svg>
+            </div>
 
-    <!-- Container animasi Lottie -->
-    <div id="lottie-container" style="width: 500px; height: 500px; margin-bottom: 20px; z-index: 1;"></div>
+            <p class="text-sm uppercase tracking-[0.4em] font-semibold text-emerald-500 mb-4">Error 404</p>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Halaman Tidak Ditemukan</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto leading-relaxed mb-10">
+                Maaf, halaman yang Anda cari tidak tersedia atau sudah dipindahkan. Gunakan tombol di bawah ini untuk
+                kembali ke beranda atau lanjutkan eksplorasi program donasi kami.
+            </p>
 
-    <!-- Pesan 404 -->
-    <h1 class="display-1 fw-bold"
-        style="font-family: 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif; color: gray; text-shadow: 2px 2px 6px rgba(0,0,0,0.2); z-index: 1;">
-        Whoops!</h1>
-    <p class="lead" style="z-index: 1;">Not Found.</p>
+            <div class="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
+                <a href="{{ url('/') }}"
+                    class="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-colors">
+                    Kembali ke Beranda
+                    <i class="bi bi-arrow-right-short text-2xl ml-1"></i>
+                </a>
+                <a href="{{ route('program') }}"
+                    class="inline-flex items-center justify-center px-6 py-3 rounded-2xl border-2 border-emerald-200 text-emerald-700 font-semibold hover:bg-emerald-50 transition-colors">
+                    Lihat Program Donasi
+                    <i class="bi bi-heart text-lg ml-2"></i>
+                </a>
+            </div>
 
-</div>
-
-<!-- Lottie JS -->
-<script src="https://unpkg.com/lottie-web@5.10.0/build/player/lottie.min.js"></script>
-<script>
-    const animation = lottie.loadAnimation({
-        container: document.getElementById('lottie-container'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: "{{ asset('json/Sleeping404.json') }}"
-    });
-</script>
-
-<!-- Animasi lembut untuk background -->
-<style>
-    @keyframes pulse-slow {
-
-        0%,
-        100% {
-            opacity: 0.25;
-            transform: scale(1);
-        }
-
-        50% {
-            opacity: 0.4;
-            transform: scale(1.1);
-        }
-    }
-
-    .animate-pulse {
-        animation: pulse-slow 8s ease-in-out infinite;
-        filter: blur(30px);
-        /* lebih ringan dari 60px */
-        will-change: transform, opacity;
-        /* kasih tahu browser untuk optimasi GPU */
-    }
-
-
-    .animation-delay-2000 {
-        animation-delay: 2s;
-    }
-</style>
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".blob").forEach(b => {
-            b.style.transition = "opacity 1s ease-in";
-            requestAnimationFrame(() => {
-                b.style.opacity = "0.25";
-            }); // scripty sedikit biar halus
-        });
-    });
-</script>
+            <div class="mt-10 text-sm text-gray-500">
+                <p>Butuh bantuan? <a href="{{ route('home') }}#contact"
+                        class="text-emerald-600 font-medium hover:underline">Hubungi tim SIPZIS</a></p>
+            </div>
+        </div>
+    </div>
+</section>
 @endsection

@@ -10,6 +10,13 @@
                     <p class="text-gray-500 text-sm">Masuk untuk melanjutkan</p>
                 </div>
 
+                <!-- Success Message -->
+                @if(session('success'))
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
                 <!-- Login Form -->
                 <form method="POST" action="{{ route('login') }}" class="space-y-4" id="loginForm">
                     @csrf
@@ -40,6 +47,13 @@
                         @error('password')
                             <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span>
                         @enderror
+                    </div>
+
+                    <!-- Forgot Password Link -->
+                    <div class="text-right">
+                        <a href="{{ route('password.request') }}" class="text-sm text-green-600 hover:text-green-700 font-medium">
+                            Lupa Password?
+                        </a>
                     </div>
 
                     <!-- Submit Button -->
@@ -103,18 +117,17 @@
     <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
     <!-- Google reCAPTCHA v3 -->
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
-    </script>
 
     <!-- Firebase Configuration -->
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyAt4qk6a7sZNCee7AT1NCG7KPSzjodj8KE",
-            authDomain: "permatajatifurniture-pras.firebaseapp.com",
-            projectId: "permatajatifurniture-pras",
-            storageBucket: "permatajatifurniture-pras.firebasestorage.app",
-            messagingSenderId: "655538583549",
-            appId: "1:655538583549:web:e6124e9e12863ff23b8b94",
-            measurementId: "G-1SX60CDLY6",
+            apiKey: "{{ config('services.firebase.api_key') }}",
+            authDomain: "{{ config('services.firebase.auth_domain') }}",
+            projectId: "{{ config('services.firebase.project_id') }}",
+            storageBucket: "{{ config('services.firebase.storage_bucket') }}",
+            messagingSenderId: "{{ config('services.firebase.messaging_sender_id') }}",
+            appId: "{{ config('services.firebase.app_id') }}",
+            measurementId: "{{ config('services.firebase.measurement_id') }}",
         };
 
         // Initialize Firebase
@@ -305,18 +318,23 @@
                             'g-recaptcha-response': recaptchaResponse || ''
                         })
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Redirect to home page or dashboard
-                            window.location.href = data.redirect || '/';
-                        } else {
-                            alert('Login gagal: ' + data.message);
+                    .then(async response => {
+                        const data = await response.json();
+
+                        if (data.two_factor_required) {
+                            window.location.href = data.redirect || '/two-factor/verify';
+                            return;
                         }
+
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || 'Login gagal.');
+                        }
+
+                        window.location.href = data.redirect || '/';
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Terjadi kesalahan saat login.');
+                        alert(error.message || 'Terjadi kesalahan saat login.');
                     });
             }
         });

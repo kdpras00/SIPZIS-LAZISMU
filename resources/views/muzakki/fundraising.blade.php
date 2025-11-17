@@ -12,7 +12,8 @@
             </a>
             <h5 class="text-xl font-semibold text-gray-900 mb-0">Galang Dana</h5>
         </div>
-        <a href="#" class="px-4 py-2 bg-green-600 text-white text-sm rounded-full hover:bg-green-700 transition-colors font-medium no-underline">
+        <a href="{{ optional($muzakki)->email ? route('campaigner.personal', $muzakki->email) : route('home') }}"
+            class="px-4 py-2 bg-green-600 text-white text-sm rounded-full hover:bg-green-700 transition-colors font-medium no-underline">
             <i class="bi bi-plus-circle mr-1"></i>Buat Campaign
         </a>
     </div>
@@ -58,7 +59,8 @@
             <i class="bi bi-box-seam text-6xl text-gray-400 mb-4 block"></i>
             <h4 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Campaign</h4>
             <p class="text-gray-600 mb-6">Anda belum membuat campaign galang dana.</p>
-            <a href="#" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium no-underline">
+            <a href="{{ optional($muzakki)->email ? route('campaigner.personal', $muzakki->email) : route('home') }}"
+                class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium no-underline">
                 <i class="bi bi-plus-circle mr-2"></i>Buat Campaign Pertama
             </a>
         </div>

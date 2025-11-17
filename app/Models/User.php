@@ -24,6 +24,9 @@ class User extends Authenticatable
         'role',
         'is_active',
         'phone',
+        'two_factor_secret',
+        'two_factor_enabled',
+        'two_factor_confirmed_at',
     ];
 
     /**
@@ -47,6 +50,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'two_factor_enabled' => 'boolean',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
@@ -91,6 +96,14 @@ class User extends Authenticatable
     public function hasRole($role)
     {
         return $this->role === $role;
+    }
+
+    /**
+     * Check if user has 2FA enabled
+     */
+    public function hasTwoFactorEnabled()
+    {
+        return $this->two_factor_enabled && $this->two_factor_secret;
     }
 
     // Get count of unread notifications

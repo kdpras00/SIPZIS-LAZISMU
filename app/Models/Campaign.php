@@ -16,13 +16,16 @@ class Campaign extends Model
         'collected_amount',
         'photo',
         'status',
-        'end_date'
+        'end_date',
+        'created_by',
+        'is_published',
     ];
 
     protected $casts = [
         'target_amount' => 'decimal:2',
         'collected_amount' => 'decimal:2',
-        'end_date' => 'date'
+        'end_date' => 'date',
+        'is_published' => 'boolean',
     ];
 
     // Relationships

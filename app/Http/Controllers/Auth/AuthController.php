@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -89,6 +91,16 @@ class AuthController extends Controller
             if ($user->role !== 'muzakki') {
                 Auth::logout();
                 return back()->withErrors(['email' => 'Halaman ini hanya untuk muzakki. Silakan gunakan halaman login admin.']);
+            }
+
+            // Check if user has 2FA enabled
+            if ($user->hasTwoFactorEnabled()) {
+                // Store user ID in session and logout
+                $request->session()->put('login.id', $user->id);
+                Auth::logout();
+                
+                // Redirect to 2FA verification page
+                return redirect()->route('two-factor.verify');
             }
 
             // Generate campaign URL if not exists
@@ -420,13 +432,41 @@ class AuthController extends Controller
                 }
             }
 
+            if (!$user->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akun Anda tidak aktif. Silakan hubungi administrator.'
+                ], 403);
+            }
+
+            if ($user->role !== 'muzakki') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Login Google hanya tersedia untuk akun muzakki.'
+                ], 403);
+            }
+
+            // Handle 2FA requirement
+            if ($user->hasTwoFactorEnabled()) {
+                $request->session()->put('login.id', $user->id);
+                Auth::logout();
+
+                return response()->json([
+                    'success' => true,
+                    'two_factor_required' => true,
+                    'redirect' => route('two-factor.verify'),
+                    'message' => 'Autentikasi dua faktor diperlukan.'
+                ]);
+            }
+
             // Log in the user
             Auth::login($user);
+            $request->session()->regenerate();
 
             return response()->json([
                 'success' => true,
                 'redirect' => '/',
-                'message' => 'Login successful'
+                'message' => 'Login berhasil.'
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -434,5 +474,184 @@ class AuthController extends Controller
                 'message' => 'Authentication failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Show the forgot password form
+     */
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    /**
+     * Send password reset email
+     */
+    public function sendPasswordResetEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        // Verify reCAPTCHA v3 token (optional - don't block if it fails)
+        $recaptchaToken = $request->input('g-recaptcha-response');
+        if ($recaptchaToken && config('services.recaptcha.secret_key')) {
+            try {
+                $verification = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret' => config('services.recaptcha.secret_key'),
+                    'response' => $recaptchaToken,
+                    'remoteip' => $request->ip(),
+                ])->json();
+
+                if (!($verification['success'] ?? false)) {
+                    Log::warning('reCAPTCHA verification failed for password reset', [
+                        'email' => $request->email,
+                        'verification' => $verification
+                    ]);
+                    // Continue anyway - don't block user
+                } else {
+                    $score = (float) ($verification['score'] ?? 0);
+                    $action = $verification['action'] ?? null;
+                    $threshold = (float) config('services.recaptcha.threshold', 0.5);
+
+                    if ($score < $threshold) {
+                        Log::warning('reCAPTCHA score too low for password reset', [
+                            'email' => $request->email,
+                            'score' => $score,
+                            'threshold' => $threshold
+                        ]);
+                        // Continue anyway - don't block user
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error('reCAPTCHA verification failed: ' . $e->getMessage());
+                // Continue without blocking if reCAPTCHA fails
+            }
+        }
+
+        // Check if user exists
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            // Don't reveal if email exists or not for security
+            return back()->with('status', 'Jika email terdaftar, link reset password telah dikirim ke email Anda.');
+        }
+
+        // Generate password reset token
+        $token = Str::random(64);
+        
+        // Store token in password_reset_tokens table
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'token' => Hash::make($token),
+                'created_at' => now()
+            ]
+        );
+
+        // Send password reset email
+        try {
+            Mail::to($user->email)->send(new \App\Mail\PasswordReset($user, $token));
+            Log::info('Password reset email sent to: ' . $user->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send password reset email', [
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Try using log driver as fallback for development
+            if (config('mail.default') !== 'log') {
+                try {
+                    // Temporarily switch to log driver
+                    $originalMailer = config('mail.default');
+                    config(['mail.default' => 'log']);
+                    
+                    Mail::to($user->email)->send(new \App\Mail\PasswordReset($user, $token));
+                    Log::info('Password reset email sent via log driver to: ' . $user->email);
+                    Log::info('Password reset link: ' . url('password/reset', $token));
+                    
+                    // Reset config
+                    config(['mail.default' => $originalMailer]);
+                    
+                    // Show success message with reset link (for development)
+                    $resetLink = url('password/reset', $token);
+                    return back()->with('status', 'Link reset password telah dibuat. Karena SMTP Gmail gagal, email disimpan di log. Link reset password: <a href="' . $resetLink . '" class="text-green-600 underline">' . $resetLink . '</a>');
+                } catch (\Exception $logException) {
+                    Log::error('Failed to send email even with log driver: ' . $logException->getMessage());
+                    // Still show success message for security (don't reveal email issues)
+                    return back()->with('status', 'Jika email terdaftar, link reset password telah dikirim ke email Anda.');
+                }
+            }
+            
+            // For development: show more detailed error if APP_DEBUG is true
+            if (config('app.debug')) {
+                return back()->withErrors(['email' => 'Gagal mengirim email: ' . $e->getMessage() . '. Silakan cek konfigurasi MAIL di .env atau gunakan MAIL_MAILER=log untuk development.'])->withInput();
+            }
+            
+            // For production: show generic message for security
+            return back()->withErrors(['email' => 'Gagal mengirim email. Silakan coba lagi nanti atau hubungi admin.'])->withInput();
+        }
+
+        return back()->with('status', 'Jika email terdaftar, link reset password telah dikirim ke email Anda.');
+    }
+
+    /**
+     * Show the reset password form
+     */
+    public function showResetPassword($token)
+    {
+        return view('auth.reset-password', ['token' => $token]);
+    }
+
+    /**
+     * Handle password reset
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        // Find the password reset record
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$resetRecord) {
+            return back()->withErrors(['email' => 'Token reset password tidak valid atau sudah kedaluwarsa.'])->withInput();
+        }
+
+        // Check if token is valid (not expired - 60 minutes)
+        $createdAt = \Carbon\Carbon::parse($resetRecord->created_at);
+        if ($createdAt->addMinutes(60)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return back()->withErrors(['email' => 'Token reset password sudah kedaluwarsa. Silakan request reset password baru.'])->withInput();
+        }
+
+        // Verify token
+        if (!Hash::check($request->token, $resetRecord->token)) {
+            return back()->withErrors(['email' => 'Token reset password tidak valid.'])->withInput();
+        }
+
+        // Find user and update password
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'Email tidak terdaftar.'])->withInput();
+        }
+
+        // Update password
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Delete the password reset token
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        Log::info('Password reset successful for user: ' . $user->email);
+
+        return redirect()->route('login')->with('success', 'Password berhasil direset. Silakan login dengan password baru.');
     }
 }

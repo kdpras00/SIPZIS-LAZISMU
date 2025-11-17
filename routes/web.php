@@ -132,7 +132,17 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
+
+// Password Reset Routes
+Route::get('/password/reset', [AuthController::class, 'showForgotPassword'])->name('password.request');
+Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Two Factor Authentication verification (public route for login)
+Route::get('/two-factor/verify', [App\Http\Controllers\TwoFactorController::class, 'showVerify'])->name('two-factor.verify');
+Route::post('/two-factor/verify', [App\Http\Controllers\TwoFactorController::class, 'verify'])->name('two-factor.verify.post');
 
 // Public zakat calculator
 Route::get('/calculator', [ZakatCalculatorController::class, 'index'])->name('calculator.index');
@@ -179,6 +189,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/recurring', [DashboardController::class, 'recurringDonations'])->name('recurring');
         Route::get('/bank-accounts', [DashboardController::class, 'bankAccounts'])->name('bank-accounts');
         Route::get('/management', [DashboardController::class, 'accountManagement'])->name('management');
+        
+        // Two Factor Authentication routes
+        Route::get('/two-factor/setup', [App\Http\Controllers\TwoFactorController::class, 'showSetup'])->name('two-factor.setup');
+        Route::post('/two-factor/enable', [App\Http\Controllers\TwoFactorController::class, 'enable'])->name('two-factor.enable');
+        Route::post('/two-factor/disable', [App\Http\Controllers\TwoFactorController::class, 'disable'])->name('two-factor.disable');
     });
 
     // Muzakki-specific routes (without muzakki prefix)
@@ -378,6 +393,20 @@ Route::post('/firebase-login', function (Request $request) {
             $user->update(['name' => $request->name]);
         }
 
+        if (!$user->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda tidak aktif. Silakan hubungi administrator.'
+            ], 403);
+        }
+
+        if ($user->role !== 'muzakki') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Login Google hanya tersedia untuk akun muzakki.'
+            ], 403);
+        }
+
         // Use findOrCreate method to handle muzakki profile
         $muzakkiData = [
             'name' => $request->name,
@@ -388,13 +417,27 @@ Route::post('/firebase-login', function (Request $request) {
 
         \App\Models\Muzakki::findOrCreate($muzakkiData);
 
+        // Handle 2FA requirement
+        if ($user->hasTwoFactorEnabled()) {
+            $request->session()->put('login.id', $user->id);
+            Auth::logout();
+
+            return response()->json([
+                'success' => true,
+                'two_factor_required' => true,
+                'redirect' => route('two-factor.verify'),
+                'message' => 'Autentikasi dua faktor diperlukan.'
+            ]);
+        }
+
         // Log in the user
         Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'success' => true,
             'redirect' => '/',
-            'message' => 'Login successful'
+            'message' => 'Login berhasil.'
         ]);
     } catch (\Exception $e) {
         return response()->json([

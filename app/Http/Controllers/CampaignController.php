@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Campaign;
 use App\Models\Program;
 use App\Models\ZakatPayment;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class CampaignController extends Controller
@@ -147,6 +150,8 @@ class CampaignController extends Controller
 
         // Set collected_amount to 0 for new campaigns
         $data['collected_amount'] = 0;
+        $data['created_by'] = Auth::id();
+        $data['is_published'] = ($data['status'] ?? 'draft') === 'published';
 
         // Associate with program if exists
         $program = Program::byCategory($request->program_category)->first();
@@ -233,6 +238,8 @@ class CampaignController extends Controller
 
         // Set collected_amount to 0 for new campaigns
         $data['collected_amount'] = 0;
+        $data['created_by'] = Auth::id();
+        $data['is_published'] = ($data['status'] ?? 'draft') === 'published';
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('campaigns', 'public');
@@ -308,6 +315,8 @@ class CampaignController extends Controller
             }
             $data['photo'] = $request->file('photo')->store('campaigns', 'public');
         }
+
+        $data['is_published'] = ($data['status'] ?? $campaign->status) === 'published';
 
         $campaign->update($data);
 
@@ -433,12 +442,24 @@ class CampaignController extends Controller
             abort(404, 'Campaigner tidak ditemukan');
         }
 
-        // Ambil semua campaign yang dibuat oleh muzakki ini
-        $campaigns = \App\Models\Campaign::where('created_by', $muzakki->user_id)
-            ->where('is_published', true)
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
+        $featureAvailable = Schema::hasColumn('campaigns', 'created_by');
 
-        return view('campaigns.personal', compact('muzakki', 'campaigns'));
+        if ($featureAvailable) {
+            $campaigns = Campaign::where('created_by', $muzakki->user_id)
+                ->where('is_published', true)
+                ->orderBy('created_at', 'desc')
+                ->paginate(12);
+        } else {
+            $campaigns = new LengthAwarePaginator([], 0, 12, 1, [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ]);
+        }
+
+        return view('campaigns.personal', [
+            'muzakki' => $muzakki,
+            'campaigns' => $campaigns,
+            'campaignFeatureAvailable' => $featureAvailable,
+        ]);
     }
 }

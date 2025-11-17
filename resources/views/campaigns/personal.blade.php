@@ -36,6 +36,18 @@
                 </div>
             </div>
 
+            @if(isset($campaignFeatureAvailable) && !$campaignFeatureAvailable)
+            <div class="alert alert-warning border-0 shadow-sm mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill fs-4 me-3 text-warning"></i>
+                    <div>
+                        <h6 class="mb-1 fw-semibold text-warning">Fitur kampanye pribadi belum tersedia</h6>
+                        <p class="mb-0 text-muted">Kami belum bisa menampilkan campaign berdasarkan akun ini karena data pembuat campaign belum ditautkan. Silakan hubungi admin jika ingin mengaktifkan fitur ini.</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Campaign Stats -->
             <div class="row mb-4">
                 <div class="col-md-4 mb-3">

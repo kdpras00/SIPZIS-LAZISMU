@@ -213,7 +213,6 @@
                     <main class="col-md-9 col-lg-10 p-0">
                         @include('components.navbar')
                         <div class="p-4">
-                            @include('components.alerts')
                             @yield('content')
                         </div>
                     </main>
@@ -245,6 +244,228 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const useSweetAlert = {{ auth()->check() && auth()->user()->role !== 'muzakki' ? 'true' : 'false' }};
+
+            if (!useSweetAlert || typeof Swal === 'undefined') {
+                return;
+            }
+
+            const flash = {
+                success: @json(session('success')),
+                error: @json(session('error')),
+                warning: @json(session('warning')),
+                info: @json(session('info'))
+            };
+
+            const swalBase = {
+                confirmButtonColor: '#047857',
+                confirmButtonText: 'Mengerti',
+                allowOutsideClick: false,
+                buttonsStyling: true,
+            };
+
+            if (flash.success) {
+                Swal.fire({
+                    ...swalBase,
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: flash.success,
+                });
+            } else if (flash.error) {
+                Swal.fire({
+                    ...swalBase,
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: flash.error,
+                });
+            } else if (flash.warning) {
+                Swal.fire({
+                    ...swalBase,
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: flash.warning,
+                });
+            } else if (flash.info) {
+                Swal.fire({
+                    ...swalBase,
+                    icon: 'info',
+                    title: 'Informasi',
+                    text: flash.info,
+                });
+            }
+
+            const validationErrors = @json($errors->all());
+            if (validationErrors.length) {
+                const errorList = validationErrors.map(err => `<li class="mb-1">${err}</li>`).join('');
+                Swal.fire({
+                    ...swalBase,
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan',
+                    html: `<ul class="text-left list-disc pl-4 text-sm text-gray-700">${errorList}</ul>`
+                });
+            }
+
+            const extractMessage = (str) => {
+                if (!str) {
+                    return null;
+                }
+                const match = str.match(/confirm\s*\(\s*(['"])(.*?)\1\s*\)/);
+                return match ? match[2].replace(/\\'/g, "'").replace(/\\"/g, '"') : null;
+            };
+
+            const confirmOptions = {
+                icon: 'warning',
+                title: 'Anda yakin?',
+                confirmButtonText: 'Ya, lanjutkan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                showCancelButton: true,
+                reverseButtons: true,
+                focusCancel: true,
+            };
+
+            const bindFormConfirm = (form, message) => {
+                if (!message || form.dataset.swalConfirmBound === 'true') {
+                    return;
+                }
+                form.dataset.swalConfirmBound = 'true';
+                form.removeAttribute('onsubmit');
+
+                form.addEventListener('submit', function(e) {
+                    if (form.dataset.swalConfirmed === 'true') {
+                        form.dataset.swalConfirmed = 'false';
+                        return;
+                    }
+
+                    e.preventDefault();
+                    Swal.fire({
+                        ...confirmOptions,
+                        text: message
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            form.dataset.swalConfirmed = 'true';
+                            form.submit();
+                        }
+                    });
+                });
+            };
+
+            const bindClickConfirm = (element, message) => {
+                if (!message || element.dataset.swalConfirmBound === 'true') {
+                    return;
+                }
+
+                const isLink = element.tagName === 'A';
+                const href = element.getAttribute('href');
+
+                element.dataset.swalConfirmBound = 'true';
+                element.removeAttribute('onclick');
+
+                element.addEventListener('click', function(e) {
+                    if (element.dataset.swalConfirmed === 'true') {
+                        element.dataset.swalConfirmed = 'false';
+                        return;
+                    }
+
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+
+                    Swal.fire({
+                        ...confirmOptions,
+                        text: message
+                    }).then(result => {
+                        if (!result.isConfirmed) {
+                            return;
+                        }
+
+                        element.dataset.swalConfirmed = 'true';
+
+                        if (element.type === 'submit' && element.form) {
+                            if (element.form.dataset.swalConfirmBound === 'true') {
+                                element.form.dataset.swalConfirmed = 'true';
+                            }
+                            if (typeof element.form.requestSubmit === 'function') {
+                                element.form.requestSubmit(element);
+                            } else {
+                                element.form.submit();
+                            }
+                        } else if (isLink && href) {
+                            window.location.href = href;
+                        } else {
+                            element.dataset.swalConfirmed = 'false';
+                        }
+                    });
+                });
+            };
+
+            const scanConfirmables = (root = document) => {
+                const forms = root === document
+                    ? document.querySelectorAll('form[onsubmit]')
+                    : root.matches?.('form[onsubmit]')
+                        ? [root, ...root.querySelectorAll('form[onsubmit]')]
+                        : root.querySelectorAll
+                            ? root.querySelectorAll('form[onsubmit]')
+                            : [];
+
+                forms.forEach(form => {
+                    const attr = form.getAttribute('onsubmit');
+                    if (!attr || !attr.includes('confirm')) {
+                        return;
+                    }
+                    const message = extractMessage(attr);
+                    bindFormConfirm(form, message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?');
+                });
+
+                const clickables = root === document
+                    ? document.querySelectorAll('[onclick]')
+                    : root.matches?.('[onclick]')
+                        ? [root, ...root.querySelectorAll('[onclick]')]
+                        : root.querySelectorAll
+                            ? root.querySelectorAll('[onclick]')
+                            : [];
+
+                clickables.forEach(element => {
+                    const attr = element.getAttribute('onclick');
+                    if (!attr || !attr.includes('confirm(')) {
+                        return;
+                    }
+                    const message = extractMessage(attr);
+                    bindClickConfirm(element, message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?');
+                });
+            };
+
+            scanConfirmables();
+
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'attributes') {
+                        scanConfirmables(mutation.target);
+                        return;
+                    }
+
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType !== 1) {
+                            return;
+                        }
+                        scanConfirmables(node);
+                    });
+                });
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['onsubmit', 'onclick']
+            });
+        });
+    </script>
 
     @stack('scripts')
 

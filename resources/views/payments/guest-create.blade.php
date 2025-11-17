@@ -292,7 +292,7 @@
             if (phoneInput) {
                 iti = window.intlTelInput(phoneInput, {
                     ...itiConfig,
-                    customPlaceholder: (p) => "e.g. " + p
+                    customPlaceholder: (p) => p
                 });
                 phoneInput.addEventListener('blur', () => validatePhone(iti, phoneInput));
                 phoneInput.addEventListener('input', () => {

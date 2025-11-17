@@ -72,6 +72,53 @@
     {{-- Additional Scripts from Pages --}}
     @stack('scripts')
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const useSweetAlert = {{ auth()->check() && auth()->user()->role === 'muzakki' ? 'true' : 'false' }};
+
+            if (!useSweetAlert || typeof Swal === 'undefined') {
+                return;
+            }
+
+            const flash = {
+                success: @json(session('success')),
+                error: @json(session('error')),
+                warning: @json(session('warning')),
+                info: @json(session('info'))
+            };
+
+            const swalBase = {
+                confirmButtonColor: '#047857',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false,
+                buttonsStyling: true,
+            };
+
+            if (flash.success) {
+                Swal.fire({ ...swalBase, icon: 'success', title: 'Berhasil', text: flash.success });
+            } else if (flash.error) {
+                Swal.fire({ ...swalBase, icon: 'error', title: 'Gagal', text: flash.error });
+            } else if (flash.warning) {
+                Swal.fire({ ...swalBase, icon: 'warning', title: 'Perhatian', text: flash.warning });
+            } else if (flash.info) {
+                Swal.fire({ ...swalBase, icon: 'info', title: 'Informasi', text: flash.info });
+            }
+
+            const validationErrors = @json($errors->all());
+            if (validationErrors.length) {
+                const errorList = validationErrors.map(err => `<li class="mb-1">${err}</li>`).join('');
+                Swal.fire({
+                    ...swalBase,
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan',
+                    html: `<ul class="text-left list-disc pl-4 text-sm text-gray-700">${errorList}</ul>`
+                });
+            }
+        });
+    </script>
+
     <script>
         // Add page-loaded class to body after page loads to show animated elements
         (function() {
