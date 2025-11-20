@@ -133,6 +133,76 @@ class Notification extends Model
         return $colors[$this->type] ?? $colors['message'];
     }
 
+    public function getActionUrlAttribute(): string
+    {
+        try {
+            return match ($this->type) {
+                'payment' => $this->paymentActionUrl(),
+                'distribution' => route('dashboard.amalanku'),
+                'program' => $this->programActionUrl(),
+                'account' => $this->accountActionUrl(),
+                'reminder' => $this->reminderActionUrl(),
+                'message' => route('notifications.index'),
+                default => route('notifications.index'),
+            };
+        } catch (\Throwable $e) {
+            return route('notifications.index');
+        }
+    }
+
+    protected function paymentActionUrl(): string
+    {
+        $paymentId = $this->data['payment_id'] ?? $this->notifiable_id;
+
+        if ($paymentId) {
+            return route('payments.show', $paymentId);
+        }
+
+        return route('dashboard.transactions');
+    }
+
+    protected function programActionUrl(): string
+    {
+        if ($campaignId = $this->data['campaign_id'] ?? null) {
+            $campaign = Campaign::find($campaignId);
+            if ($campaign) {
+                $category = $campaign->program_category ?? 'zakat';
+                return route('campaigns.show', [$category, $campaign->id]);
+            }
+        }
+
+        if ($programId = $this->data['program_id'] ?? $this->notifiable_id) {
+            $program = Program::find($programId);
+            if ($program && $program->slug) {
+                return route('program.show', $program->slug);
+            }
+        }
+
+        return route('program');
+    }
+
+    protected function accountActionUrl(): string
+    {
+        $eventType = $this->data['event_type'] ?? null;
+
+        return match ($eventType) {
+            'profile' => route('profile.edit'),
+            'password' => route('dashboard.management'),
+            default => route('dashboard.management'),
+        };
+    }
+
+    protected function reminderActionUrl(): string
+    {
+        $reminderType = $this->data['reminder_type'] ?? null;
+
+        return match ($reminderType) {
+            'zakat' => route('donation'),
+            'balance' => route('dashboard.amalanku'),
+            default => route('dashboard'),
+        };
+    }
+
     // Group notifications by type
     public static function groupByType($notifications)
     {

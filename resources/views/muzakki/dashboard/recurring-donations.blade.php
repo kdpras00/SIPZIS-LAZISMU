@@ -18,9 +18,9 @@
                 <i class="bi bi-calendar-check text-6xl text-gray-400 mb-4 block"></i>
                 <h4 class="text-xl font-semibold text-gray-900 mb-2">Belum ada donasi rutin</h4>
                 <p class="text-gray-600 mb-6">Buat donasi otomatis agar ibadah berbagi tetap konsisten.</p>
-                <button class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium" data-bs-toggle="modal" data-bs-target="#createRecurringModal">
+                <a href="{{ route('dashboard.recurring.create') }}" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium">
                     <i class="bi bi-plus-circle mr-2"></i>Buat Donasi Rutin
-                </button>
+                </a>
             </div>
         </div>
     @else
@@ -55,9 +55,9 @@
             @endforeach
         </div>
         <div class="text-right mb-6">
-            <button class="inline-flex items-center px-5 py-2.5 bg-green-600 text-white rounded-full hover:bg-green-700 text-sm font-medium" data-bs-toggle="modal" data-bs-target="#createRecurringModal">
+            <a href="{{ route('dashboard.recurring.create') }}" class="inline-flex items-center px-5 py-2.5 bg-green-600 text-white rounded-full hover:bg-green-700 text-sm font-medium">
                 <i class="bi bi-plus-circle mr-2"></i>Tambah lagi
-            </button>
+            </a>
         </div>
     @endif
 
@@ -80,57 +80,6 @@
                 <i class="bi bi-person text-xl block mb-1"></i>
                 <small class="text-xs">Amalanku</small>
             </a>
-        </div>
-    </div>
-</div>
-
-<!-- Create Recurring Donation Modal -->
-<div class="modal fade" id="createRecurringModal" tabindex="-1" aria-labelledby="createRecurringModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-2xl border-0">
-            <div class="modal-header bg-gradient-to-r from-green-50 to-green-100 border-0 rounded-t-2xl px-6 py-5">
-                <h5 class="modal-title font-semibold text-gray-900" id="createRecurringModalLabel">Buat Donasi Rutin</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST" action="{{ route('dashboard.recurring-donations.store') }}">
-                @csrf
-                <div class="modal-body px-6 py-5 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Program</label>
-                        <select name="program_id" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
-                            <option value="">Pilih program</option>
-                            @foreach($programs as $program)
-                                <option value="{{ $program->id }}">{{ $program->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nominal donasi</label>
-                        <input type="number" min="10000" name="amount" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Minimal Rp10.000" required>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Frekuensi</label>
-                            <select name="frequency" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
-                                <option value="monthly">Bulanan</option>
-                                <option value="weekly">Mingguan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Mulai tanggal</label>
-                            <input type="date" name="start_date" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Catatan (opsional)</label>
-                        <textarea name="notes" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Tambahkan doa atau niat khusus"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 px-6 py-4">
-                    <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">Simpan</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

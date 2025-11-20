@@ -8,6 +8,17 @@ use Illuminate\Support\Facades\Auth;
 
 class BankAccountController extends Controller
 {
+    public function create()
+    {
+        $muzakki = Auth::user()->muzakki;
+
+        if (!$muzakki) {
+            return redirect()->route('profile.show')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+        }
+
+        return view('muzakki.dashboard.bank-account-create', compact('muzakki'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

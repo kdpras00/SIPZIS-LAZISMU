@@ -246,6 +246,30 @@ class DashboardController extends Controller
         return view('muzakki.dashboard.account-management', compact('muzakki'));
     }
 
+    public function transferAccount()
+    {
+        $user = Auth::user();
+        $muzakki = $user->muzakki;
+
+        if (!$muzakki) {
+            return redirect()->route('profile.show')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+        }
+
+        return view('muzakki.dashboard.account-transfer', compact('muzakki'));
+    }
+
+    public function deleteAccount()
+    {
+        $user = Auth::user();
+        $muzakki = $user->muzakki;
+
+        if (!$muzakki) {
+            return redirect()->route('profile.show')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+        }
+
+        return view('muzakki.dashboard.account-delete', compact('muzakki'));
+    }
+
     public function donation()
     {
         try {

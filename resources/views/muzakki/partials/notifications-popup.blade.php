@@ -13,7 +13,10 @@
     {{-- Notifications List --}}
     <div class="space-y-3">
         @foreach($notifications as $notification)
-        <div class="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-sm {{ $notification->is_read ? 'bg-white' : 'bg-blue-50' }}">
+        @php
+            $actionUrl = $notification->action_url ?? route('notifications.index');
+        @endphp
+        <a href="{{ $actionUrl }}" class="block border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-green-200 no-underline text-gray-900 {{ $notification->is_read ? 'bg-white' : 'bg-blue-50' }}">
             <div class="flex items-start">
                 {{-- Icon --}}
                 <div class="flex-shrink-0 mt-1">
@@ -68,7 +71,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
         @endforeach
     </div>
 

@@ -12,9 +12,9 @@
             </a>
             <h5 class="text-xl font-semibold text-gray-900 mb-0">Akun bank</h5>
         </div>
-        <button class="px-4 py-2 bg-green-600 text-white text-sm rounded-full hover:bg-green-700 transition-colors font-medium" data-bs-toggle="modal" data-bs-target="#addBankAccountModal">
+        <a href="{{ route('dashboard.bank-accounts.create') }}" class="px-4 py-2 bg-green-600 text-white text-sm rounded-full hover:bg-green-700 transition-colors font-medium">
             <i class="bi bi-plus-circle mr-1"></i>Tambah
-        </button>
+        </a>
     </div>
 
     @if($bankAccounts->isEmpty())
@@ -23,9 +23,9 @@
                 <i class="bi bi-bank text-6xl text-gray-400 mb-4 block"></i>
                 <h4 class="text-xl font-semibold text-gray-900 mb-2">Belum ada akun bank</h4>
                 <p class="text-gray-600 mb-6">Simpan informasi rekening bank Anda untuk memudahkan pembayaran zakat.</p>
-                <button class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium" data-bs-toggle="modal" data-bs-target="#addBankAccountModal">
+                <a href="{{ route('dashboard.bank-accounts.create') }}" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium">
                     <i class="bi bi-plus-circle mr-2"></i>Tambah Akun Bank
-                </button>
+                </a>
             </div>
         </div>
     @else
@@ -83,40 +83,6 @@
                 <i class="bi bi-person text-xl block mb-1"></i>
                 <small class="text-xs">Amalanku</small>
             </a>
-        </div>
-    </div>
-</div>
-
-<!-- Add Bank Account Modal -->
-<div class="modal fade" id="addBankAccountModal" tabindex="-1" aria-labelledby="addBankAccountModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-2xl border-0">
-            <div class="modal-header bg-gradient-to-r from-cyan-50 to-cyan-100 border-0 rounded-t-2xl px-6 py-5">
-                <h5 class="modal-title font-semibold text-gray-900" id="addBankAccountModalLabel">Tambah Akun Bank</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST" action="{{ route('dashboard.bank-accounts.store') }}">
-                @csrf
-                <div class="modal-body px-6 py-5 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Bank</label>
-                        <input type="text" name="bank_name" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Contoh: BSI" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
-                        <input type="text" name="account_number" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Masukkan nomor rekening" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Atas Nama</label>
-                        <input type="text" name="account_holder" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="Nama pemilik rekening" required>
-                    </div>
-                    <p class="text-xs text-gray-500">Informasi rekening disimpan aman dan hanya digunakan untuk mempermudah pembayaran zakat Anda.</p>
-                </div>
-                <div class="modal-footer border-0 px-6 py-4">
-                    <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">Simpan</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

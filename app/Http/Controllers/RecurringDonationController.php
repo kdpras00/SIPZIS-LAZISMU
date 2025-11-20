@@ -9,6 +9,19 @@ use Illuminate\Support\Facades\Auth;
 
 class RecurringDonationController extends Controller
 {
+    public function create()
+    {
+        $muzakki = Auth::user()->muzakki;
+
+        if (!$muzakki) {
+            return redirect()->route('profile.show')->with('info', 'Silakan lengkapi profil muzakki Anda.');
+        }
+
+        $programs = Program::active()->orderBy('name')->get();
+
+        return view('muzakki.dashboard.recurring-create', compact('muzakki', 'programs'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

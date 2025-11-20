@@ -190,7 +190,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
         Route::get('/recurring', [DashboardController::class, 'recurringDonations'])->name('recurring');
         Route::get('/bank-accounts', [DashboardController::class, 'bankAccounts'])->name('bank-accounts');
+        Route::get('/bank-accounts/add', [BankAccountController::class, 'create'])->name('bank-accounts.create');
         Route::get('/management', [DashboardController::class, 'accountManagement'])->name('management');
+        Route::get('/management/account/transfer-account', [DashboardController::class, 'transferAccount'])->name('management.transfer-account');
+        Route::get('/management/account/delete-account', [DashboardController::class, 'deleteAccount'])->name('management.delete-account');
+        Route::get('/recurring/create', [RecurringDonationController::class, 'create'])->name('recurring.create');
         
         // Two Factor Authentication routes
         Route::get('/two-factor/setup', [App\Http\Controllers\TwoFactorController::class, 'showSetup'])->name('two-factor.setup');
