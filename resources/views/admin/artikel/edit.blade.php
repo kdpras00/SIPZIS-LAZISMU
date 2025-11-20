@@ -62,23 +62,6 @@
 
                 <!-- Sidebar -->
                 <div class="lg:col-span-1 space-y-6">
-                    <!-- Category -->
-                    <div>
-                        <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-                            Kategori <span class="text-red-500">*</span>
-                        </label>
-                        <select id="category" name="category"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 @error('category') border-red-500 @enderror" required>
-                            <option value="">Pilih Kategori</option>
-                            <option value="zakat" {{ old('category', $artikel->category) === 'zakat' ? 'selected' : '' }}>Zakat</option>
-                            <option value="infaq" {{ old('category', $artikel->category) === 'infaq' ? 'selected' : '' }}>Infaq</option>
-                            <option value="sedekah" {{ old('category', $artikel->category) === 'sedekah' ? 'selected' : '' }}>Sedekah</option>
-                        </select>
-                        @error('category')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <!-- Current Image -->
                     @if($artikel->image)
                     <div>

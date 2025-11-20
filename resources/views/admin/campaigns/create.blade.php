@@ -122,23 +122,6 @@
                                             @enderror
                                         </div>
                                     </div>
-
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="collected_amount" class="form-control-label">Dana Terkumpul (Rp)</label>
-                                            <input class="form-control @error('collected_amount') is-invalid @enderror"
-                                                type="text"
-                                                id="collected_amount"
-                                                name="collected_amount"
-                                                value="0"
-                                                placeholder="0"
-                                                readonly>
-                                            <small class="form-text text-muted">Nilai ini akan bertambah otomatis saat ada donasi.</small>
-                                            @error('collected_amount')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <div class="row">

@@ -13,7 +13,6 @@ class Artikel extends Model
     protected $fillable = [
         'title',
         'content',
-        'category',
         'image',
         'slug',
         'is_published',
@@ -65,27 +64,11 @@ class Artikel extends Model
     }
 
     /**
-     * Scope for specific category
-     */
-    public function scopeByCategory($query, $category)
-    {
-        return $query->where('category', $category);
-    }
-
-    /**
      * Get formatted publication date
      */
     public function getFormattedDateAttribute()
     {
         return $this->created_at->format('d M Y');
-    }
-
-    /**
-     * Get category label with proper formatting
-     */
-    public function getCategoryLabelAttribute()
-    {
-        return ucfirst($this->category);
     }
 
     /**
@@ -98,19 +81,5 @@ class Artikel extends Model
         }
         
         return Str::limit(strip_tags($this->content), 150);
-    }
-
-    /**
-     * Get category color for UI
-     */
-    public function getCategoryColorAttribute()
-    {
-        $colors = [
-            'zakat' => 'green',
-            'infaq' => 'blue',
-            'sedekah' => 'purple'
-        ];
-
-        return $colors[$this->category] ?? 'gray';
     }
 }

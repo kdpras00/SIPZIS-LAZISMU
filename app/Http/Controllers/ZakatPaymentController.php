@@ -1976,7 +1976,7 @@ class ZakatPaymentController extends Controller
                 ->update(['is_read' => true, 'read_at' => now()]);
         }
 
-        return back()->with('success', 'Semua notifikasi telah ditandai dibaca.');
+        return back()->with('notifications_success', 'Semua notifikasi telah ditandai dibaca.');
     }
 
 

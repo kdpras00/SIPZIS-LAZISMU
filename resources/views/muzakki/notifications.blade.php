@@ -52,6 +52,12 @@
 
             <!-- Content -->
             <div class="p-6">
+                @if(session()->has('notifications_success'))
+                <div class="mb-4 p-4 rounded-lg border border-green-200 bg-green-50 text-green-800">
+                    {{ session('notifications_success') }}
+                </div>
+                @endif
+
                 @if($notifications->count() > 0)
                 <div class="space-y-4">
                     @foreach($notifications as $notification)

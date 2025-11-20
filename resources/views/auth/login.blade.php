@@ -247,7 +247,7 @@
                 const startGoogleLogin = (recaptchaToken) => {
                     const provider = new firebase.auth.GoogleAuthProvider();
                     provider.setCustomParameters({
-                        prompt: 'select_account'
+                        prompt: 'consent select_account'
                     });
 
                     firebase.auth().signInWithPopup(provider)

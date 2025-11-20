@@ -32,13 +32,6 @@
 
                 <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8">
                     <div class="flex items-center text-white mb-3">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                            @if($news->category === 'zakat') bg-green-500/90
-                            @elseif($news->category === 'infaq') bg-blue-500/90
-                            @else bg-purple-500/90 @endif">
-                            {{ $news->category_label }}
-                        </span>
-                        <span class="mx-3">•</span>
                         <span class="text-sm">{{ $news->formatted_date }}</span>
                     </div>
                     <h1 class="text-3xl md:text-4xl font-bold text-white leading-tight">{{ $news->title }}</h1>

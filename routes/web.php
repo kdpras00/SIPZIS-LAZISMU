@@ -487,13 +487,3 @@ Route::get('/campaigner/{email}', [CampaignController::class, 'showPersonalCampa
     ->name('campaigner.personal');
 
 
-use Illuminate\Support\Facades\Mail;
-
-// Route::get('/test-email', function () {
-//     Mail::raw('Ini percobaan kirim email via Gmail SMTP.', function ($message) {
-//         $message->to('kdpras00@gmail.com')
-//             ->subject('Test Email Laravel Gmail');
-//     });
-
-//     return 'Email percobaan sudah dikirim! Cek inbox/spam.';
-// });

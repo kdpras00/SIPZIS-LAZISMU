@@ -73,34 +73,6 @@
                                                         <i class="fas fa-image artikel-placeholder-icon"></i>
                                                     </div>
                                                 @endif
-                                                <div class="artikel-card-category">
-                                                    @php
-                                                        $categoryColors = [
-                                                            'zakat' => 'category-zakat',
-                                                            'infaq' => 'category-infaq',
-                                                            'sedekah' => 'category-sedekah',
-                                                        ];
-                                                        $textColors = [
-                                                            'zakat' => 'text-zakat',
-                                                            'infaq' => 'text-infaq',
-                                                            'sedekah' => 'text-sedekah',
-                                                        ];
-                                                        $bgColors = [
-                                                            'zakat' => 'bg-zakat',
-                                                            'infaq' => 'bg-infaq',
-                                                            'sedekah' => 'bg-sedekah',
-                                                        ];
-                                                        $hoverColors = [
-                                                            'zakat' => 'hover-zakat',
-                                                            'infaq' => 'hover-infaq',
-                                                            'sedekah' => 'hover-sedekah',
-                                                        ];
-                                                    @endphp
-                                                    <span
-                                                        class="artikel-category-badge {{ $categoryColors[$artikel->category] ?? 'category-default' }}">
-                                                        {{ $artikel->category_label }}
-                                                    </span>
-                                                </div>
                                             </div>
                                             <div class="artikel-card-content">
                                                 <h3 class="artikel-card-title line-clamp-2">
@@ -121,7 +93,7 @@
                                                             class="artikel-author-name">{{ $artikel->author->name }}</span>
                                                     </div>
                                                     <a href="{{ route('artikel.show', $artikel->slug) }}"
-                                                        class="artikel-read-more {{ $textColors[$artikel->category] ?? 'text-default' }} {{ $hoverColors[$artikel->category] ?? 'hover-default' }}">
+                                                        class="artikel-read-more text-green-600 hover:text-green-800">
                                                         Baca Selengkapnya
                                                         <svg class="artikel-read-more-icon" fill="none"
                                                             stroke="currentColor" viewBox="0 0 24 24">

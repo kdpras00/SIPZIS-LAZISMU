@@ -61,7 +61,6 @@ class NewsController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'category' => 'required|in:zakat,infaq,sedekah',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'excerpt' => 'nullable|string|max:500',
             'is_published' => 'boolean'
@@ -100,7 +99,6 @@ class NewsController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'category' => 'required|in:zakat,infaq,sedekah',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'excerpt' => 'nullable|string|max:500',
             'is_published' => 'boolean'

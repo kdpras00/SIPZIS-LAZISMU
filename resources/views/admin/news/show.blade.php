@@ -69,10 +69,6 @@
                     <h1 class="display-6 fw-bold text-dark mb-3">{{ $news->title }}</h1>
 
                     <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
-                        <span class="badge bg-{{ $news->category === 'zakat' ? 'success' : ($news->category === 'infaq' ? 'primary' : 'secondary') }} fs-6">
-                            <i class="bi bi-tag"></i> {{ $news->category_label }}
-                        </span>
-
                         <div class="text-muted">
                             <i class="bi bi-person"></i> {{ $news->author->name }}
                         </div>
@@ -196,14 +192,6 @@
                     <tr>
                         <td class="text-muted">Jumlah Karakter:</td>
                         <td class="fw-semibold">{{ strlen(strip_tags($news->content)) }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Kategori:</td>
-                        <td>
-                            <span class="badge bg-{{ $news->category === 'zakat' ? 'success' : ($news->category === 'infaq' ? 'primary' : 'secondary') }}">
-                                {{ $news->category_label }}
-                            </span>
-                        </td>
                     </tr>
                     <tr>
                         <td class="text-muted">Dibuat:</td>

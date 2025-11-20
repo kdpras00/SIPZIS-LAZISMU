@@ -34,13 +34,6 @@
             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
                 <h1 class="text-3xl font-bold text-white mb-2">{{ $artikel->title }}</h1>
                 <div class="flex flex-wrap items-center text-white/90">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                        @if($artikel->category === 'zakat') bg-green-500/90
-                        @elseif($artikel->category === 'infaq') bg-blue-500/90
-                        @else bg-purple-500/90 @endif">
-                        {{ $artikel->category_label }}
-                    </span>
-                    <span class="mx-3">•</span>
                     <span>{{ $artikel->formatted_date }}</span>
                     <span class="mx-3">•</span>
                     <span>Oleh {{ $artikel->author->name }}</span>

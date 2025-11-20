@@ -51,35 +51,6 @@
 
                                     <img src="{{ $imageUrl }}" alt="{{ $item->title }}"
                                         class="w-full h-48 object-cover">
-
-                                    <div class="absolute top-4 left-4">
-                                        @php
-                                            $categoryColors = [
-                                                'zakat' => 'from-green-500 to-green-700',
-                                                'infaq' => 'from-blue-500 to-blue-700',
-                                                'sedekah' => 'from-purple-500 to-purple-700',
-                                            ];
-                                            $textColors = [
-                                                'zakat' => 'text-green-600',
-                                                'infaq' => 'text-blue-600',
-                                                'sedekah' => 'text-purple-600',
-                                            ];
-                                            $bgColors = [
-                                                'zakat' => 'bg-green-50',
-                                                'infaq' => 'bg-blue-50',
-                                                'sedekah' => 'bg-purple-50',
-                                            ];
-                                            $hoverColors = [
-                                                'zakat' => 'hover:text-green-800',
-                                                'infaq' => 'hover:text-blue-800',
-                                                'sedekah' => 'hover:text-purple-800',
-                                            ];
-                                        @endphp
-                                        <span
-                                            class="inline-block bg-gradient-to-r {{ $categoryColors[$item->category] ?? 'from-gray-500 to-gray-700' }} text-white text-xs px-4 py-2 rounded-full uppercase font-bold tracking-wide shadow-lg">
-                                            {{ $item->category_label }}
-                                        </span>
-                                    </div>
                                 </div>
 
                                 <div class="p-6">

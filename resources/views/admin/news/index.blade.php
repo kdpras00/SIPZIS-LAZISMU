@@ -17,7 +17,6 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penulis</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -50,14 +49,6 @@
                                     <div class="text-sm text-gray-500">{{ Str::limit($article->excerpt, 80) }}</div>
                                 </div>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                @if($article->category === 'zakat') bg-green-100 text-green-800
-                                @elseif($article->category === 'infaq') bg-blue-100 text-blue-800
-                                @else bg-purple-100 text-purple-800 @endif">
-                                {{ $article->category_label }}
-                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ $article->author->name }}
@@ -100,7 +91,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center py-8">
                                 <i class="fas fa-newspaper text-gray-300 text-4xl mb-4"></i>
                                 <p class="text-lg font-medium">Belum ada berita</p>
