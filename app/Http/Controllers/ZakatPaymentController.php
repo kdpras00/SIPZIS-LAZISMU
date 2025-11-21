@@ -199,7 +199,8 @@ class ZakatPaymentController extends Controller
             // Update both payment_method (the user-facing method) and midtrans_payment_method (internal mapping)
             $updateData = [
                 'payment_method' => $method, // Store the actual method selected by user
-                'midtrans_order_id' => $orderId
+                'midtrans_order_id' => $orderId,
+                'snap_token' => $snapToken
             ];
 
             if ($internalMethod) {

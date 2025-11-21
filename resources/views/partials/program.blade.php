@@ -368,3 +368,5 @@
         });
     </script>
 </div>
+
+@include('partials.footer')

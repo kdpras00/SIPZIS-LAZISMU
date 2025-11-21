@@ -42,11 +42,11 @@
                 <ul class="space-y-3 text-sm">
                     <li class="flex items-start">
                         <i class="fas fa-map-marker-alt mt-1 mr-3 text-green-300"></i>
-                        <span class="text-green-100">Jl. Contoh Alamat No. 123, Kota, Provinsi 12345</span>
+                        <span class="text-green-100">Jl. Kiai Jurum No. 002, Cipocok Jaya, Komplek Depag, Serang, Banten 42121, Indonesia</span>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-phone-alt mr-3 text-green-300"></i>
-                        <span class="text-green-100">(021) 1234-5678</span>
+                        <span class="text-green-100">(0254) 221179</span>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-envelope mr-3 text-green-300"></i>
@@ -54,7 +54,7 @@
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-clock mr-3 text-green-300"></i>
-                        <span class="text-green-100">Senin - Jumat: 08.00 - 16.00 WIB</span>
+                        <span class="text-green-100">Senin - Jumat: 08.00 - 17.00 WIB</span>
                     </li>
                 </ul>
             </div>
