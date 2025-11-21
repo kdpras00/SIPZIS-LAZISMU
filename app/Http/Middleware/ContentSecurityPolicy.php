@@ -22,8 +22,16 @@ class ContentSecurityPolicy
 
         $cspHeader = implode('; ', $directives);
 
+        // Tentukan nilai COOP khusus halaman login (butuh akses pop-up)
+        $coopValue = 'unsafe-none';
+        if ($request->is('login') || $request->is('login/*')) {
+            $coopValue = 'same-origin-allow-popups';
+        }
+
         // Tambahkan header CSP
         $response->headers->set('Content-Security-Policy', $cspHeader);
+        $response->headers->set('Cross-Origin-Opener-Policy', $coopValue);
+        $response->headers->set('Cross-Origin-Embedder-Policy', 'unsafe-none');
 
         return $response;
     }

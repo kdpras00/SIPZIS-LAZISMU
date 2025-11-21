@@ -91,6 +91,15 @@
                         Google
                     </button>
 
+                    <button type="button" id="googleLoginRedirect"
+                        class="hidden w-full flex items-center justify-center gap-3 border border-dashed border-gray-300 hover:bg-gray-50 text-gray-500 py-3 px-6 rounded-lg transition-colors duration-200 text-sm">
+                        <i class="bi bi-box-arrow-up-right text-base"></i>
+                        Buka login Google di tab baru
+                    </button>
+
+                    <div id="socialLoginAlert"
+                        class="hidden mt-3 text-sm border rounded-lg px-4 py-3 bg-gray-50 border-gray-200 text-gray-700"></div>
+
 
                     {{-- <a href="/auth/facebook" class="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 px-6 rounded-lg transition-colors duration-200 no-underline">
                     <svg class="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
@@ -158,6 +167,76 @@
             const icon = togglePassword.querySelector('i');
             const loginForm = document.getElementById('loginForm');
             const googleLoginBtn = document.getElementById('googleLogin');
+            const socialLoginAlert = document.getElementById('socialLoginAlert');
+            const googleLoginRedirectBtn = document.getElementById('googleLoginRedirect');
+            const RECAPTCHA_STORAGE_KEY = 'firebase_login_recaptcha';
+            const alertBaseClasses = ['mt-3', 'text-sm', 'border', 'rounded-lg', 'px-4', 'py-3'];
+            const alertVariantClasses = {
+                info: ['bg-blue-50', 'border-blue-200', 'text-blue-800'],
+                warning: ['bg-yellow-50', 'border-yellow-200', 'text-yellow-800'],
+                error: ['bg-red-50', 'border-red-200', 'text-red-800'],
+                success: ['bg-green-50', 'border-green-200', 'text-green-800'],
+            };
+
+            const resetAlertClasses = () => {
+                if (!socialLoginAlert) {
+                    return;
+                }
+                socialLoginAlert.className = '';
+                alertBaseClasses.forEach(cls => socialLoginAlert.classList.add(cls));
+            };
+
+            const showSocialLoginAlert = (variant, message) => {
+                if (!socialLoginAlert) {
+                    alert(message);
+                    return;
+                }
+                resetAlertClasses();
+                (alertVariantClasses[variant] || alertVariantClasses.error).forEach(cls => socialLoginAlert.classList.add(cls));
+                socialLoginAlert.textContent = message;
+                socialLoginAlert.classList.remove('hidden');
+            };
+
+            const hideSocialLoginAlert = () => {
+                if (!socialLoginAlert) {
+                    return;
+                }
+                resetAlertClasses();
+                socialLoginAlert.classList.add('hidden');
+                socialLoginAlert.textContent = '';
+            };
+
+            const toggleFallbackButton = (show = false) => {
+                if (!googleLoginRedirectBtn) {
+                    return;
+                }
+                googleLoginRedirectBtn.classList.toggle('hidden', !show);
+            };
+
+            const storeRedirectRecaptchaToken = (token) => {
+                if (!token) return;
+                try {
+                    sessionStorage.setItem(RECAPTCHA_STORAGE_KEY, token);
+                } catch (err) {
+                    console.warn('Gagal menyimpan token reCAPTCHA:', err);
+                }
+            };
+
+            const consumeRedirectRecaptchaToken = () => {
+                try {
+                    const token = sessionStorage.getItem(RECAPTCHA_STORAGE_KEY);
+                    if (token) {
+                        sessionStorage.removeItem(RECAPTCHA_STORAGE_KEY);
+                        return token;
+                    }
+                } catch (err) {
+                    console.warn('Gagal mengambil token reCAPTCHA:', err);
+                }
+                return '';
+            };
+
+            hideSocialLoginAlert();
+            toggleFallbackButton(false);
 
             // Generate reCAPTCHA v3 token before normal form submission
             loginForm.addEventListener('submit', function(e) {
@@ -215,10 +294,17 @@
             firebase.auth().getRedirectResult()
                 .then((result) => {
                     if (result && result.user) {
-                        handleFirebaseLogin(result.user);
+                        const storedToken = consumeRedirectRecaptchaToken();
+                        if (!storedToken) {
+                            showSocialLoginAlert('warning',
+                                'Sesi login Google kadaluarsa. Silakan klik tombol Google lagi.');
+                            return;
+                        }
+                        handleFirebaseLogin(result.user, storedToken);
                     }
                 })
                 .catch((error) => {
+                    consumeRedirectRecaptchaToken();
                     console.error('Error from getRedirectResult:', error);
                 });
 
@@ -239,42 +325,77 @@
 
             // Firebase Google Login
             let isLoggingIn = false; // flag
+            const popupFallbackCodes = ['auth/popup-blocked', 'auth/web-storage-unsupported', 'auth/internal-error'];
+            const coopMessageRegex = /Cross-Origin-Opener-Policy|COOP/i;
+            const googleAuthFriendlyMessages = {
+                'auth/user-cancelled': 'Login Google dibatalkan oleh Anda.',
+                'auth/popup-closed-by-user': 'Jendela login Google ditutup sebelum selesai.',
+                'auth/cancelled-popup-request': 'Permintaan login sebelumnya dibatalkan. Silakan coba lagi.',
+                'auth/popup-blocked': 'Browser memblokir pop-up login Google.',
+                'auth/web-storage-unsupported': 'Browser tidak mengizinkan penyimpanan yang dibutuhkan Google Auth.',
+                'auth/internal-error': 'Browser memblokir proses popup Google.',
+                'auth/network-request-failed': 'Tidak dapat tersambung ke Google. Periksa koneksi internet Anda.',
+            };
 
-            googleLoginBtn.addEventListener('click', function() {
-                if (isLoggingIn) return; // cegah klik ganda
-                isLoggingIn = true;
+            const shouldOfferRedirect = (error) => {
+                if (!error) return false;
+                if (popupFallbackCodes.includes(error.code)) return true;
+                return coopMessageRegex.test(error.message || '');
+            };
 
-                const startGoogleLogin = (recaptchaToken) => {
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    provider.setCustomParameters({
-                        prompt: 'consent select_account'
-                    });
+            const startGoogleLogin = (recaptchaToken, useRedirect = false) => {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({
+                    prompt: 'consent select_account'
+                });
 
-                    firebase.auth().signInWithPopup(provider)
-                        .then((result) => {
-                            const user = result.user;
-                            handleFirebaseLogin(user, recaptchaToken);
-                        })
+                if (useRedirect) {
+                    firebase.auth().signInWithRedirect(provider)
                         .catch((error) => {
-                            console.error('Error during Google login:', error);
-                            // Fallback to redirect flow for popup issues or COOP-related blocking
-                            const popupIssues = ['auth/popup-closed-by-user',
-                                'auth/cancelled-popup-request'
-                            ];
-                            if (popupIssues.includes(error.code)) {
-                                try {
-                                    firebase.auth().signInWithRedirect(provider);
-                                    return; // stop further handling; redirect will occur
-                                } catch (e) {
-                                    console.error('Fallback to redirect failed:', e);
-                                }
-                            }
-                            alert('Login dengan Google gagal: ' + error.message);
+                            const friendlyMessage = googleAuthFriendlyMessages[error.code] || 'Login dengan Google gagal. Silakan coba beberapa saat lagi.';
+                            console.error('Error during Google redirect login:', error);
+                            showSocialLoginAlert('error', friendlyMessage);
                         })
                         .finally(() => {
-                            isLoggingIn = false; // reset flag setelah selesai
+                            isLoggingIn = false;
                         });
-                };
+                    return;
+                }
+
+                firebase.auth().signInWithPopup(provider)
+                    .then((result) => {
+                        const user = result.user;
+                        handleFirebaseLogin(user, recaptchaToken);
+                    })
+                    .catch((error) => {
+                        const friendlyMessage = googleAuthFriendlyMessages[error.code] || 'Login dengan Google gagal. Silakan coba beberapa saat lagi.';
+
+                        if (error.code === 'auth/user-cancelled') {
+                            console.info('Google login dibatalkan oleh pengguna.');
+                            showSocialLoginAlert('info', friendlyMessage);
+                            return;
+                        }
+
+                        if (shouldOfferRedirect(error)) {
+                            showSocialLoginAlert('warning',
+                                'Popup Google diblokir oleh browser. Klik "Buka login Google di tab baru".');
+                            toggleFallbackButton(true);
+                            return;
+                        }
+
+                        console.error('Error during Google login:', error);
+                        showSocialLoginAlert('error', friendlyMessage);
+                    })
+                    .finally(() => {
+                        isLoggingIn = false; // reset flag setelah selesai
+                    });
+            };
+
+            const executeGoogleLogin = (useRedirect = false) => {
+                if (isLoggingIn) return; // cegah klik ganda
+                isLoggingIn = true;
+                hideSocialLoginAlert();
+                toggleFallbackButton(false);
 
                 if (!window.grecaptcha || !window.grecaptcha.execute) {
                     isLoggingIn = false;
@@ -291,7 +412,10 @@
                             action: 'login'
                         })
                         .then(function(token) {
-                            startGoogleLogin(token);
+                            if (useRedirect) {
+                                storeRedirectRecaptchaToken(token);
+                            }
+                            startGoogleLogin(token, useRedirect);
                         })
                         .catch(function(err) {
                             console.error('reCAPTCHA execute error:', err);
@@ -299,7 +423,17 @@
                             alert('Validasi reCAPTCHA gagal. Coba lagi.');
                         });
                 });
+            };
+
+            googleLoginBtn.addEventListener('click', function() {
+                executeGoogleLogin(false);
             });
+
+            if (googleLoginRedirectBtn) {
+                googleLoginRedirectBtn.addEventListener('click', function() {
+                    executeGoogleLogin(true);
+                });
+            }
 
             // Handle Firebase login and integrate with Laravel
             function handleFirebaseLogin(user, recaptchaResponse) {
@@ -334,7 +468,7 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert(error.message || 'Terjadi kesalahan saat login.');
+                        showSocialLoginAlert('error', error.message || 'Terjadi kesalahan saat login.');
                     });
             }
         });

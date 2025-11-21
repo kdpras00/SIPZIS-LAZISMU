@@ -292,13 +292,13 @@ class Notification extends Model
 
     public static function createDistributionNotification($muzakki, $distribution)
     {
-        $message = 'Zakat Anda telah disalurkan kepada mustahik di wilayah ' . ($distribution->location ?? 'yang membutuhkan') . '.';
+        $message = 'Donasi Anda telah disalurkan kepada mustahik di wilayah ' . ($distribution->location ?? 'yang membutuhkan') . '.';
 
         return self::create([
             'muzakki_id' => $muzakki->id,
             'user_id' => $muzakki->user_id,
             'type' => 'distribution',
-            'title' => '📬 Zakat Telah Disalurkan',
+            'title' => '📬 Donasi Telah Disalurkan',
             'message' => $message,
             'notifiable_type' => ZakatDistribution::class,
             'notifiable_id' => $distribution->id,
@@ -347,7 +347,7 @@ class Notification extends Model
 
         return self::create([
             'user_id' => $user->id,
-            'muzakki_id' => $muzakki ? $muzakki->id : null, // ✅ TAMBAHKAN INI
+            'muzakki_id' => $muzakki ? $muzakki->id : null, 
             'type' => 'program',
             'title' => $titles[$eventType],
             'message' => $messages[$eventType],

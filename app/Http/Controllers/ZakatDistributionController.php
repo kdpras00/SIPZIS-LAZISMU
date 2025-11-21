@@ -173,19 +173,11 @@ class ZakatDistributionController extends Controller
                 'is_received' => false,
             ]);
 
-            // Buat notifikasi untuk semua muzakki yang telah melakukan pembayaran completed
-            // Semua muzakki berhak tahu bahwa zakat mereka telah disalurkan
-            $muzakkiIds = ZakatPayment::completed()
-                ->whereNotNull('muzakki_id')
-                ->distinct()
-                ->pluck('muzakki_id');
+            // Kirim notifikasi penyaluran kepada semua muzakki yang memiliki akun pengguna
+            $registeredMuzakki = \App\Models\Muzakki::whereNotNull('user_id')->get();
 
-            // Buat notifikasi untuk setiap muzakki
-            foreach ($muzakkiIds as $muzakkiId) {
-                $muzakki = \App\Models\Muzakki::find($muzakkiId);
-                if ($muzakki && $muzakki->user_id) {
-                    Notification::createDistributionNotification($muzakki, $distribution);
-                }
+            foreach ($registeredMuzakki as $muzakki) {
+                Notification::createDistributionNotification($muzakki, $distribution);
             }
 
             return redirect()->route('distributions.index')->with('success', 'Distribusi zakat berhasil dicatat.');
