@@ -231,13 +231,13 @@ class Notification extends Model
     public static function createPaymentNotification($muzakki, $payment, $status)
     {
         // Tentukan jenis pembayaran berdasarkan program_category
-        $paymentType = 'Pembayaran'; // Default
+        $paymentType = 'Donasi'; // Default
         if ($payment->program_category) {
             $category = strtolower(trim($payment->program_category));
             
             // Cek kategori utama (exact match atau dimulai dengan kategori tersebut)
             if ($category === 'zakat' || strpos($category, 'zakat-') === 0) {
-                $paymentType = 'Zakat';
+                $paymentType = 'Donasi';
             } elseif ($category === 'infaq' || strpos($category, 'infaq-') === 0) {
                 $paymentType = 'Infaq';
             } elseif ($category === 'shadaqah' || strpos($category, 'shadaqah-') === 0 || 

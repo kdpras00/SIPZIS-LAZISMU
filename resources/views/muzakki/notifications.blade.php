@@ -112,8 +112,11 @@
                                 </div>
                             </div>
                             <div class="ml-4 flex-shrink-0">
-                                @if($notification->notifiable_type === 'App\Models\ZakatPayment')
-                                <a href="{{ route('payments.show', $notification->notifiable) }}"
+                                @php
+                                    $actionUrl = $notification->action_url ?? null;
+                                @endphp
+                                @if($notification->notifiable_type === 'App\Models\ZakatPayment' && $actionUrl)
+                                <a href="{{ $actionUrl }}"
                                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     Lihat Detail
                                 </a>
