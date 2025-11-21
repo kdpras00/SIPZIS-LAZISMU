@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use App\Models\Muzakki;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Services\WhatsAppService;
 
 class OTPController extends Controller
 {
+    protected $whatsAppService;
+
+    public function __construct(WhatsAppService $whatsAppService)
+    {
+        $this->whatsAppService = $whatsAppService;
+    }
+
     // Kirim kode OTP ke nomor WA
     public function sendOTP(Request $request)
     {
@@ -44,21 +51,17 @@ class OTPController extends Controller
                 'otp_expires' => Session::get('otp_expires')
             ]);
 
-            // Kirim ke Fonnte
-            $response = Http::withHeaders([
-                'Authorization' => env('FONNTE_API_KEY'),
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $phone,
-                'message' => "Kode OTP Anda adalah *{$otp}*. Berlaku 5 menit.",
+            // Kirim via WhatsAppService (Fonnte)
+            $message = "Kode OTP Anda adalah *{$otp}*. Berlaku 5 menit.";
+            $result = $this->whatsAppService->sendMessage($phone, $message);
+
+            Log::info('sendOTP WhatsApp result', [
+                'success' => $result['success'],
+                'message' => $result['message'] ?? null,
+                'response' => $result['response'] ?? null
             ]);
 
-            Log::info('sendOTP Fonnte response', [
-                'status' => $response->status(),
-                'successful' => $response->successful(),
-                'body' => $response->body()
-            ]);
-
-            if ($response->successful()) {
+            if ($result['success']) {
                 // TIDAK PERLU ALERT - Toast akan handle di frontend
                 return response()->json([
                     'success' => true,
@@ -67,7 +70,7 @@ class OTPController extends Controller
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal mengirim OTP. Silakan coba lagi.'
+                    'message' => $result['message'] ?? 'Gagal mengirim OTP. Silakan coba lagi.'
                 ]);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -217,15 +220,11 @@ class OTPController extends Controller
                 'otp' => $otp
             ]);
 
-            // Send via Fonnte
-            $response = Http::withHeaders([
-                'Authorization' => env('FONNTE_API_KEY'),
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $phone,
-                'message' => "Kode OTP Anda adalah *{$otp}*. Berlaku 5 menit.",
-            ]);
+            // Send via WhatsAppService (Fonnte)
+            $message = "Kode OTP Anda adalah *{$otp}*. Berlaku 5 menit.";
+            $result = $this->whatsAppService->sendMessage($phone, $message);
 
-            if ($response->successful()) {
+            if ($result['success']) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Kode OTP baru telah dikirim.'
@@ -233,7 +232,7 @@ class OTPController extends Controller
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal mengirim ulang OTP. Silakan coba lagi.'
+                    'message' => $result['message'] ?? 'Gagal mengirim ulang OTP. Silakan coba lagi.'
                 ]);
             }
         } catch (\Exception $e) {

@@ -73,7 +73,7 @@
                     <span class="text-gray-900 font-medium text-right">{{ $payment->zakatType->name ?? 'Donasi Umum' }}</span>
                 </div>
                 @php
-                    $campaign = $payment->campaign();
+                    $campaign = $payment->campaign;
                 @endphp
                 @if($campaign || $payment->program || $payment->programType)
                 <div class="flex justify-between items-start py-3 border-b border-gray-100">

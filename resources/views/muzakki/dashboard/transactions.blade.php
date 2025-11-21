@@ -33,7 +33,7 @@
                         </small>
                         <p class="font-semibold text-gray-900 mb-1 mt-1 text-base">
                             @php
-                                $campaign = $payment->campaign();
+                                $campaign = $payment->campaign;
                             @endphp
                             @if($campaign)
                                 {{ $campaign->title }}

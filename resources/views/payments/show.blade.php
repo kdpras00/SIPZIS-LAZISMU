@@ -145,7 +145,7 @@
                             </div>
                             @endif
                             @php
-                                $campaign = $payment->campaign();
+                                $campaign = $payment->campaign;
                             @endphp
                             @if($campaign || $payment->program || $payment->programType)
                             <div>
