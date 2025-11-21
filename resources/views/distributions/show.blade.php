@@ -3,372 +3,383 @@
 @section('page-title', 'Detail Distribusi - ' . $distribution->distribution_code)
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-1">Detail Distribusi</h2>
-        <p class="text-muted">{{ $distribution->distribution_code }}</p>
-    </div>
-    <div class="btn-group">
-        <a href="{{ route('distributions.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Kembali
-        </a>
-        <a href="{{ route('distributions.edit', $distribution) }}" class="btn btn-outline-primary">
-            <i class="bi bi-pencil"></i> Edit
-        </a>
-        <a href="{{ route('distributions.receipt', $distribution) }}" class="btn btn-outline-success" target="_blank">
-            <i class="bi bi-receipt"></i> Kwitansi
-        </a>
-        @if(!$distribution->is_received)
-        <button type="button" class="btn btn-outline-warning" onclick="showMarkReceivedModal()">
-            <i class="bi bi-check-circle"></i> Tandai Diterima
-        </button>
-        @endif
-    </div>
-</div>
+@php
+    $statusBadge = $distribution->is_received
+        ? ['text' => 'Sudah Diterima', 'class' => 'bg-emerald-100 text-emerald-700']
+        : ['text' => 'Belum Diterima', 'class' => 'bg-amber-100 text-amber-700'];
 
-<div class="row">
-    <div class="col-lg-8">
-        <!-- Distribution Details Card -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Informasi Distribusi</h5>
-                    @if($distribution->is_received)
-                        <span class="badge bg-success fs-6">Sudah Diterima</span>
-                    @else
-                        <span class="badge bg-warning fs-6">Belum Diterima</span>
-                    @endif
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tr>
-                                <td class="text-muted" style="width: 40%;">Kode Distribusi:</td>
-                                <td class="fw-semibold">{{ $distribution->distribution_code }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Jenis Distribusi:</td>
-                                <td>
-                                    @switch($distribution->distribution_type)
-                                        @case('cash')
-                                            <span class="badge bg-success">Tunai</span>
-                                            @break
-                                        @case('goods')
-                                            <span class="badge bg-info">Barang</span>
-                                            @break
-                                        @case('voucher')
-                                            <span class="badge bg-warning">Voucher</span>
-                                            @break
-                                        @case('service')
-                                            <span class="badge bg-primary">Layanan</span>
-                                            @break
-                                        @default
-                                            <span class="badge bg-secondary">{{ ucwords($distribution->distribution_type) }}</span>
-                                    @endswitch
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Jumlah:</td>
-                                <td class="fw-bold text-primary fs-5">Rp {{ number_format($distribution->amount, 0, ',', '.') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Tanggal Distribusi:</td>
-                                <td class="fw-semibold">{{ $distribution->distribution_date->format('d F Y') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Lokasi:</td>
-                                <td class="fw-semibold">{{ $distribution->location ?? '-' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tr>
-                                <td class="text-muted" style="width: 40%;">Program:</td>
-                                <td>
-                                    @if($distribution->program_name)
-                                        <span class="badge bg-info">{{ $distribution->program_name }}</span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Dicatat Oleh:</td>
-                                <td class="fw-semibold">{{ $distribution->distributedBy->name ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Tanggal Dicatat:</td>
-                                <td class="fw-semibold">{{ $distribution->created_at->format('d F Y H:i') }}</td>
-                            </tr>
-                            @if($distribution->is_received)
-                            <tr>
-                                <td class="text-muted">Tanggal Diterima:</td>
-                                <td class="fw-semibold text-success">{{ $distribution->received_date?->format('d F Y H:i') ?? 'Tidak tercatat' }}</td>
-                            </tr>
-                            @endif
-                            @if($distribution->received_by_name)
-                            <tr>
-                                <td class="text-muted">Diterima Oleh:</td>
-                                <td class="fw-semibold">{{ $distribution->received_by_name }}</td>
-                            </tr>
-                            @endif
-                        </table>
-                    </div>
-                </div>
-                
-                @if($distribution->goods_description)
-                <div class="mt-3">
-                    <h6 class="text-muted mb-2">Deskripsi Barang/Layanan:</h6>
-                    <div class="p-3 bg-light rounded">
-                        {{ $distribution->goods_description }}
-                    </div>
-                </div>
-                @endif
-                
-                @if($distribution->notes)
-                <div class="mt-3">
-                    <h6 class="text-muted mb-2">Catatan:</h6>
-                    <div class="p-3 bg-light rounded">
-                        {{ $distribution->notes }}
-                    </div>
-                </div>
-                @endif
-                
-                @if($distribution->received_notes)
-                <div class="mt-3">
-                    <h6 class="text-muted mb-2">Catatan Penerimaan:</h6>
-                    <div class="p-3 bg-success bg-opacity-10 rounded border border-success">
-                        {{ $distribution->received_notes }}
-                    </div>
-                </div>
-                @endif
-            </div>
+    $typeLabels = [
+        'cash' => ['Tunai', 'bg-emerald-100 text-emerald-700'],
+        'goods' => ['Barang', 'bg-sky-100 text-sky-700'],
+        'voucher' => ['Voucher', 'bg-amber-100 text-amber-700'],
+        'service' => ['Layanan', 'bg-indigo-100 text-indigo-700'],
+    ];
+    $typeLabel = $typeLabels[$distribution->distribution_type] ?? [ucwords($distribution->distribution_type), 'bg-gray-100 text-gray-700'];
+@endphp
+
+<div class="space-y-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm font-medium text-emerald-600">#{{ $distribution->distribution_code }}</p>
+            <h1 class="text-3xl font-semibold text-gray-900">Detail Distribusi</h1>
+            <p class="text-sm text-gray-500">Pantau status dan riwayat distribusi mustahik.</p>
         </div>
-        
-        <!-- History Card -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Aktivitas</h5>
-            </div>
-            <div class="card-body">
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-primary"></div>
-                        <div class="timeline-content">
-                            <h6 class="mb-1">Distribusi Dicatat</h6>
-                            <p class="mb-1">{{ $distribution->distributedBy->name ?? 'Sistem' }} mencatat distribusi ini</p>
-                            <small class="text-muted">{{ $distribution->created_at->format('d F Y H:i') }}</small>
-                        </div>
-                    </div>
-                    
-                    @if($distribution->updated_at != $distribution->created_at)
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-info"></div>
-                        <div class="timeline-content">
-                            <h6 class="mb-1">Data Diperbarui</h6>
-                            <p class="mb-1">Informasi distribusi diperbarui</p>
-                            <small class="text-muted">{{ $distribution->updated_at->format('d F Y H:i') }}</small>
-                        </div>
-                    </div>
-                    @endif
-                    
-                    @if($distribution->is_received)
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-success"></div>
-                        <div class="timeline-content">
-                            <h6 class="mb-1">Distribusi Diterima</h6>
-                            <p class="mb-1">Dikonfirmasi telah diterima {{ $distribution->received_by_name ? 'oleh ' . $distribution->received_by_name : '' }}</p>
-                            <small class="text-muted">{{ $distribution->received_date?->format('d F Y H:i') ?? 'Tanggal tidak tercatat' }}</small>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ route('distributions.index') }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                <i class="bi bi-arrow-left text-base"></i>
+                Kembali
+            </a>
+            <a href="{{ route('distributions.edit', $distribution) }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+                <i class="bi bi-pencil text-base"></i>
+                Edit
+            </a>
+            <a href="{{ route('distributions.receipt', $distribution) }}" target="_blank"
+               class="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100">
+                <i class="bi bi-receipt text-base"></i>
+                Kwitansi
+            </a>
+            @if (! $distribution->is_received)
+                <button type="button" data-open-mark-received
+                        class="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100">
+                    <i class="bi bi-check-circle text-base"></i>
+                    Tandai Diterima
+                </button>
+            @endif
         </div>
     </div>
-    
-    <div class="col-lg-4">
-        <!-- Mustahik Information Card -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
-                <h6 class="mb-0"><i class="bi bi-person-heart"></i> Informasi Mustahik</h6>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="bi bi-person-circle display-4 text-primary"></i>
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <div class="space-y-6 lg:col-span-2">
+            <section class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center justify-center rounded-full bg-emerald-50 p-2 text-emerald-600">
+                            <i class="bi bi-hand-thumbs-up text-lg"></i>
+                        </span>
+                        <h2 class="text-lg font-semibold text-gray-900">Informasi Distribusi</h2>
                     </div>
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $statusBadge['class'] }}">
+                        {{ $statusBadge['text'] }}
+                    </span>
                 </div>
-                
-                <table class="table table-borderless table-sm">
-                    <tr>
-                        <td class="text-muted" style="width: 35%;">Nama:</td>
-                        <td class="fw-semibold">{{ $distribution->mustahik->name }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">NIK:</td>
-                        <td class="fw-semibold">{{ $distribution->mustahik->nik ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Kategori:</td>
-                        <td>
-                            <span class="badge bg-secondary">
-                                {{ ucfirst(str_replace('_', ' ', $distribution->mustahik->category)) }}
+                <div class="space-y-6 p-6">
+                    <dl class="grid gap-6 sm:grid-cols-2">
+                        <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Kode Distribusi</dt>
+                            <dd class="mt-1 text-lg font-semibold text-gray-900">{{ $distribution->distribution_code }}</dd>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Jenis Distribusi</dt>
+                            <dd class="mt-2">
+                                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $typeLabel[1] }}">
+                                    {{ $typeLabel[0] }}
+                                </span>
+                            </dd>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-inner">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Jumlah</dt>
+                            <dd class="mt-1 text-2xl font-bold text-emerald-600">
+                                Rp {{ number_format($distribution->amount, 0, ',', '.') }}
+                            </dd>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-inner">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal Distribusi</dt>
+                            <dd class="mt-1 text-lg font-semibold text-gray-900">
+                                {{ $distribution->distribution_date->format('d F Y') }}
+                            </dd>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Lokasi</dt>
+                            <dd class="mt-1 text-base font-medium text-gray-900">{{ $distribution->location ?? '-' }}</dd>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Program</dt>
+                            <dd class="mt-1">
+                                @if ($distribution->program_name)
+                                    <span class="inline-flex items-center rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
+                                        {{ $distribution->program_name }}
+                                    </span>
+                                @else
+                                    <span class="text-sm text-gray-500">Tidak tercatat</span>
+                                @endif
+                            </dd>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Dicatat Oleh</dt>
+                            <dd class="mt-1 text-base font-semibold text-gray-900">{{ $distribution->distributedBy->name ?? '-' }}</dd>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-4">
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal Dicatat</dt>
+                            <dd class="mt-1 text-base font-medium text-gray-900">{{ $distribution->created_at->format('d F Y H:i') }}</dd>
+                        </div>
+                        @if ($distribution->is_received)
+                            <div class="rounded-2xl border border-gray-100 bg-emerald-50 p-4">
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Tanggal Diterima</dt>
+                                <dd class="mt-1 text-base font-semibold text-emerald-900">
+                                    {{ $distribution->received_date?->format('d F Y H:i') ?? 'Tidak tercatat' }}
+                                </dd>
+                            </div>
+                        @endif
+                        @if ($distribution->received_by_name)
+                            <div class="rounded-2xl border border-gray-100 bg-emerald-50 p-4">
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Diterima Oleh</dt>
+                                <dd class="mt-1 text-base font-semibold text-emerald-900">
+                                    {{ $distribution->received_by_name }}
+                                </dd>
+                            </div>
+                        @endif
+                    </dl>
+
+                    @if ($distribution->goods_description)
+                        <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <h3 class="text-sm font-semibold text-gray-700">Deskripsi Barang / Layanan</h3>
+                            <p class="mt-2 text-sm text-gray-600">{{ $distribution->goods_description }}</p>
+                        </div>
+                    @endif
+
+                    @if ($distribution->notes)
+                        <div class="rounded-2xl border border-gray-100 bg-white p-4">
+                            <h3 class="text-sm font-semibold text-gray-700">Catatan</h3>
+                            <p class="mt-2 text-sm text-gray-600">{{ $distribution->notes }}</p>
+                        </div>
+                    @endif
+
+                    @if ($distribution->received_notes)
+                        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                            <h3 class="text-sm font-semibold text-emerald-800">Catatan Penerimaan</h3>
+                            <p class="mt-2 text-sm text-emerald-900">{{ $distribution->received_notes }}</p>
+                        </div>
+                    @endif
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <div class="flex items-center gap-3 border-b border-gray-100 px-6 py-4">
+                    <span class="inline-flex items-center justify-center rounded-full bg-indigo-50 p-2 text-indigo-600">
+                        <i class="bi bi-clock-history text-lg"></i>
+                    </span>
+                    <h2 class="text-lg font-semibold text-gray-900">Riwayat Aktivitas</h2>
+                </div>
+                <div class="p-6">
+                    <ol class="relative border-l border-gray-200">
+                        <li class="mb-10 ml-6">
+                            <span class="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                                <i class="bi bi-journal-check text-sm"></i>
                             </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Telepon:</td>
-                        <td class="fw-semibold">{{ $distribution->mustahik->phone ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Email:</td>
-                        <td class="fw-semibold">{{ $distribution->mustahik->email ?? '-' }}</td>
-                    </tr>
-                </table>
-                
-                @if($distribution->mustahik->address)
-                <div class="mt-3">
-                    <h6 class="text-muted mb-2">Alamat:</h6>
-                    <p class="small">{{ $distribution->mustahik->address }}</p>
+                            <h3 class="text-base font-semibold text-gray-900">Distribusi Dicatat</h3>
+                            <p class="text-sm text-gray-600">
+                                {{ $distribution->distributedBy->name ?? 'Sistem' }} mencatat distribusi ini.
+                            </p>
+                            <time class="text-xs text-gray-400">{{ $distribution->created_at->format('d F Y H:i') }}</time>
+                        </li>
+
+                        @if ($distribution->updated_at != $distribution->created_at)
+                            <li class="mb-10 ml-6">
+                                <span class="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-cyan-100 text-cyan-600">
+                                    <i class="bi bi-arrow-repeat text-sm"></i>
+                                </span>
+                                <h3 class="text-base font-semibold text-gray-900">Data Diperbarui</h3>
+                                <p class="text-sm text-gray-600">Informasi distribusi diperbarui.</p>
+                                <time class="text-xs text-gray-400">{{ $distribution->updated_at->format('d F Y H:i') }}</time>
+                            </li>
+                        @endif
+
+                        @if ($distribution->is_received)
+                            <li class="ml-6">
+                                <span class="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                                    <i class="bi bi-check-lg text-sm"></i>
+                                </span>
+                                <h3 class="text-base font-semibold text-gray-900">Distribusi Diterima</h3>
+                                <p class="text-sm text-gray-600">
+                                    Dikonfirmasi telah diterima {{ $distribution->received_by_name ? 'oleh ' . $distribution->received_by_name : '' }}.
+                                </p>
+                                <time class="text-xs text-gray-400">
+                                    {{ $distribution->received_date?->format('d F Y H:i') ?? 'Tanggal tidak tercatat' }}
+                                </time>
+                            </li>
+                        @endif
+                    </ol>
                 </div>
-                @endif
-                
-                <div class="d-grid">
-                    <a href="{{ route('mustahik.show', $distribution->mustahik) }}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-eye"></i> Lihat Profile Mustahik
-                    </a>
-                </div>
-            </div>
+            </section>
         </div>
-        
-        <!-- Quick Actions Card -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-secondary text-white">
-                <h6 class="mb-0"><i class="bi bi-lightning"></i> Aksi Cepat</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    @if(!$distribution->is_received)
-                    <button type="button" class="btn btn-success btn-sm" onclick="showMarkReceivedModal()">
-                        <i class="bi bi-check-circle"></i> Tandai Sudah Diterima
-                    </button>
+
+        <div class="space-y-6">
+            <section class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <div class="flex items-center gap-3 border-b border-gray-100 px-6 py-4">
+                    <span class="inline-flex items-center justify-center rounded-full bg-purple-50 p-2 text-purple-600">
+                        <i class="bi bi-person-heart text-lg"></i>
+                    </span>
+                    <h2 class="text-lg font-semibold text-gray-900">Informasi Mustahik</h2>
+                </div>
+                <div class="space-y-5 p-6">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                            <i class="bi bi-person text-3xl"></i>
+                        </div>
+                        <p class="mt-3 text-lg font-semibold text-gray-900">{{ $distribution->mustahik->name }}</p>
+                        <span class="mt-1 inline-flex rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">
+                            {{ ucfirst(str_replace('_', ' ', $distribution->mustahik->category)) }}
+                        </span>
+                    </div>
+
+                    <dl class="space-y-4 text-sm text-gray-600">
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">NIK</dt>
+                            <dd class="font-semibold text-gray-900">{{ $distribution->mustahik->nik ?? '-' }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">Telepon</dt>
+                            <dd class="font-semibold text-gray-900">{{ $distribution->mustahik->phone ?? '-' }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">Email</dt>
+                            <dd class="font-semibold text-gray-900">{{ $distribution->mustahik->email ?? '-' }}</dd>
+                        </div>
+                    </dl>
+
+                    @if ($distribution->mustahik->address)
+                        <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
+                            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500">Alamat</h3>
+                            <p class="mt-1">{{ $distribution->mustahik->address }}</p>
+                        </div>
                     @endif
-                    
-                    <a href="{{ route('distributions.edit', $distribution) }}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-pencil"></i> Edit Distribusi
+
+                    <a href="{{ route('mustahik.show', $distribution->mustahik) }}"
+                       class="inline-flex w-full items-center justify-center rounded-xl border border-purple-200 bg-white px-4 py-2.5 text-sm font-semibold text-purple-700 shadow-sm hover:bg-purple-50">
+                        <i class="bi bi-eye me-2 text-base"></i>
+                        Lihat Profil Mustahik
                     </a>
-                    
-                    <a href="{{ route('distributions.receipt', $distribution) }}" class="btn btn-info btn-sm" target="_blank">
-                        <i class="bi bi-receipt"></i> Cetak Kwitansi
-                    </a>
-                    
-                    <a href="{{ route('distributions.create', ['mustahik' => $distribution->mustahik->id]) }}" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-plus-circle"></i> Distribusi Lagi ke Mustahik Ini
-                    </a>
-                    
-                    @if(!$distribution->is_received)
-                    <hr>
-                    <form action="{{ route('distributions.destroy', $distribution) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus distribusi ini?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                            <i class="bi bi-trash"></i> Hapus Distribusi
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <div class="flex items-center gap-3 border-b border-gray-100 px-6 py-4">
+                    <span class="inline-flex items-center justify-center rounded-full bg-orange-50 p-2 text-orange-600">
+                        <i class="bi bi-lightning text-lg"></i>
+                    </span>
+                    <h2 class="text-lg font-semibold text-gray-900">Aksi Cepat</h2>
+                </div>
+                <div class="space-y-3 p-6">
+                    @if (! $distribution->is_received)
+                        <button type="button" data-open-mark-received
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-700">
+                            <i class="bi bi-check-circle text-base"></i>
+                            Tandai Sudah Diterima
                         </button>
-                    </form>
+                    @endif
+
+                    <a href="{{ route('distributions.edit', $distribution) }}"
+                       class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-100">
+                        <i class="bi bi-pencil text-base"></i>
+                        Edit Distribusi
+                    </a>
+
+                    <a href="{{ route('distributions.receipt', $distribution) }}" target="_blank"
+                       class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-100">
+                        <i class="bi bi-receipt text-base"></i>
+                        Cetak Kwitansi
+                    </a>
+
+                    <a href="{{ route('distributions.create', ['mustahik' => $distribution->mustahik->id]) }}"
+                       class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <i class="bi bi-plus-circle text-base"></i>
+                        Distribusi Lagi ke Mustahik Ini
+                    </a>
+
+                    @if (! $distribution->is_received)
+                        <form action="{{ route('distributions.destroy', $distribution) }}" method="POST"
+                              onsubmit="return confirm('Yakin ingin menghapus distribusi ini?')"
+                              class="pt-4">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100">
+                                <i class="bi bi-trash text-base"></i>
+                                Hapus Distribusi
+                            </button>
+                        </form>
                     @endif
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 </div>
 
-<!-- Mark as Received Modal -->
-<div class="modal fade" id="markReceivedModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tandai Sebagai Diterima</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('distributions.mark-received', $distribution) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <div class="modal-body">
-                    <p>Konfirmasi bahwa distribusi untuk <strong>{{ $distribution->mustahik->name }}</strong> telah diterima?</p>
-                    
-                    <div class="mb-3">
-                        <label for="received_by_name" class="form-label">Diterima Oleh</label>
-                        <input type="text" class="form-control" id="received_by_name" name="received_by_name" placeholder="Nama penerima (opsional)">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="received_notes" class="form-label">Catatan Penerimaan</label>
-                        <textarea class="form-control" id="received_notes" name="received_notes" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">Tandai Diterima</button>
-                </div>
-            </form>
+<!-- Modal -->
+<div id="markReceivedModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4">
+    <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+            <h3 class="text-lg font-semibold text-gray-900">Tandai Sebagai Diterima</h3>
+            <button type="button" data-close-mark-received class="text-gray-400 hover:text-gray-600">
+                <i class="bi bi-x-lg text-base"></i>
+            </button>
         </div>
+        <form action="{{ route('distributions.mark-received', $distribution) }}" method="POST">
+            @csrf
+            @method('PATCH')
+            <div class="space-y-4 px-6 py-5">
+                <p class="text-sm text-gray-600">
+                    Konfirmasi bahwa distribusi untuk <span class="font-semibold text-gray-900">{{ $distribution->mustahik->name }}</span> telah diterima.
+                </p>
+                <div>
+                    <label for="received_by_name" class="mb-1 block text-sm font-medium text-gray-700">Diterima Oleh</label>
+                    <input type="text" id="received_by_name" name="received_by_name"
+                           class="block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-emerald-500 focus:ring-emerald-500"
+                           placeholder="Nama penerima (opsional)">
+                </div>
+                <div>
+                    <label for="received_notes" class="mb-1 block text-sm font-medium text-gray-700">Catatan Penerimaan</label>
+                    <textarea id="received_notes" name="received_notes" rows="3"
+                              class="block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-emerald-500 focus:ring-emerald-500"
+                              placeholder="Catatan tambahan (opsional)"></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 border-t border-gray-100 px-6 py-4">
+                <button type="button" data-close-mark-received
+                        class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                    Tandai Diterima
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
 
-@push('styles')
-<style>
-.timeline {
-    position: relative;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #dee2e6;
-}
-
-.timeline-item {
-    position: relative;
-    padding: 0 0 20px 40px;
-}
-
-.timeline-marker {
-    position: absolute;
-    left: 8px;
-    top: 4px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px #dee2e6;
-}
-
-.timeline-content h6 {
-    margin-bottom: 0.25rem;
-    color: #495057;
-}
-
-.timeline-content p {
-    margin-bottom: 0.25rem;
-    color: #6c757d;
-    font-size: 0.9rem;
-}
-</style>
-@endpush
-
 @push('scripts')
 <script>
-function showMarkReceivedModal() {
-    new bootstrap.Modal(document.getElementById('markReceivedModal')).show();
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('markReceivedModal');
+    if (!modal) return;
+
+    const toggleModal = (show) => {
+        modal.classList.toggle('hidden', !show);
+        if (show) {
+            modal.classList.add('flex');
+        } else {
+            modal.classList.remove('flex');
+        }
+    };
+
+    document.querySelectorAll('[data-open-mark-received]').forEach((btn) => {
+        btn.addEventListener('click', () => toggleModal(true));
+    });
+
+    modal.querySelectorAll('[data-close-mark-received]').forEach((btn) => {
+        btn.addEventListener('click', () => toggleModal(false));
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            toggleModal(false);
+        }
+    });
+});
 </script>
 @endpush

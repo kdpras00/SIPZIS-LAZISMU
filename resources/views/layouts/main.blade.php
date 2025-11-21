@@ -72,9 +72,10 @@
     {{-- Additional Scripts from Pages --}}
     @stack('scripts')
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (!request()->routeIs('admin.login'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
+        <script>
         document.addEventListener('DOMContentLoaded', function() {
             const useSweetAlert = {{ auth()->check() && auth()->user()->role === 'muzakki' ? 'true' : 'false' }};
 
@@ -118,6 +119,7 @@
             }
         });
     </script>
+    @endif
 
     <script>
         // Add page-loaded class to body after page loads to show animated elements

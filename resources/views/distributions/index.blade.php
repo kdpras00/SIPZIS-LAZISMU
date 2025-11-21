@@ -133,7 +133,7 @@
 
         // Configuration from server
         const config = {
-            apiRoute: "{{ route('api.distributions.search') }}",
+            apiRoute: "{{ route('api.distributions.search', [], false) }}",
             csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         };
 
@@ -166,12 +166,20 @@
 
             fetch(apiRoute + '?' + params.toString(), {
                     method: 'GET',
+                    credentials: 'same-origin',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken
-                    }
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    cache: 'no-store'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Permintaan pencarian gagal (${response.status})`);
+                    }
+                    return response.json();
+                })
                 .then(response => {
                     if (response.success) {
                         // Update table

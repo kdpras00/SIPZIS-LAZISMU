@@ -56,7 +56,7 @@ class ZakatDistributionController extends Controller
         }
 
         // Filter status penerimaan
-        if ($request->has('received_status')) {
+        if ($request->filled('received_status')) {
             $query->where('is_received', $request->received_status === 'received');
         }
 
@@ -393,10 +393,10 @@ class ZakatDistributionController extends Controller
         }
 
         $stats = [
-            'total_amount' => $statsQuery->sum('amount'),
-            'total_count' => $statsQuery->count(),
-            'this_month' => $statsQuery->whereMonth('distribution_date', date('m'))->sum('amount'),
-            'pending_receipt' => $statsQuery->where('is_received', false)->count(),
+            'total_amount' => (clone $statsQuery)->sum('amount'),
+            'total_count' => (clone $statsQuery)->count(),
+            'this_month' => (clone $statsQuery)->whereMonth('distribution_date', date('m'))->sum('amount'),
+            'pending_receipt' => (clone $statsQuery)->where('is_received', false)->count(),
             'available_balance' => self::availableBalance(),
         ];
 
